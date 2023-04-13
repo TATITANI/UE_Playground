@@ -57,15 +57,24 @@ void AProtagonistCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (PlayerController)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+
+		// clamp camera pitch
+		if (auto CameraManager = PlayerController->PlayerCameraManager)
+		{
+			CameraManager->ViewPitchMin = -45.0;
+			CameraManager->ViewPitchMax = 45.0;
+		}
 	}
+
 
 	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
@@ -144,7 +153,7 @@ void AProtagonistCharacter::Jump()
 	MovementInfo->OnJump = true;
 }
 
-void AProtagonistCharacter::OnLand (const FHitResult& Hit)
+void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {
 	MovementInfo->OnJump = false;
 }
@@ -168,7 +177,6 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 	// UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
 	//        *UEnum::GetValueAsString(MovementInfo->CurrentMovementMode), *UEnum::GetValueAsString(PrevMovementMode));
 }
-
 
 
 void AProtagonistCharacter::SetHasRifle(bool bNewHasRifle)

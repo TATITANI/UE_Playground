@@ -19,11 +19,6 @@ UWeaponComponent::UWeaponComponent()
 
 void UWeaponComponent::Fire()
 {
-	if (Character == nullptr || Character->GetController() == nullptr)
-	{
-		return;
-	}
-
 	// Try and fire a projectile
 	if (ProjectileClass != nullptr)
 	{

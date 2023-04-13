@@ -45,7 +45,7 @@ public:
 	AProtagonistCharacter();
 
 private:
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 private:
 	//** Camera boom positioning the camera behind the character */
