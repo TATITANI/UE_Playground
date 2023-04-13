@@ -10,22 +10,23 @@ APlaygroundGameMode::APlaygroundGameMode()
 	: Super()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPerson/Blueprints/BP_FirstPersonCharacter"));
-	DefaultPawnClass = PlayerPawnClassFinder.Class;
-
-	HUDClass = AProtagonistCharacter::StaticClass();
+	// static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Script/Engine.Blueprint'/Game/Blueprints/BP_ProtagonistCharacter.BP_ProtagonistCharacter'"));
 	
-	static ConstructorHelpers::FClassFinder<UMyHUD> UI_HUD(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/WBP_HUD.WBP_HUD_C'"));
-	if(UI_HUD.Succeeded())
-	{
-		HUD_Class = UI_HUD.Class;
-	
-		CurrentWidget = CreateWidget(GetWorld(), HUD_Class);
-		if(CurrentWidget)
-		{
-			CurrentWidget->AddToViewport();
-			// CurrentWidget->RemoveFromViewport();
-		}
-	}
+	// DefaultPawnClass = PlayerPawnClassFinder.Class;
+	//
+	// HUDClass = AProtagonistCharacter::StaticClass();
+	//
+	// static ConstructorHelpers::FClassFinder<UMyHUD> UI_HUD(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/WBP_HUD.WBP_HUD_C'"));
+	// if(UI_HUD.Succeeded())
+	// {
+	// 	HUD_Class = UI_HUD.Class;
+	//
+	// 	CurrentWidget = CreateWidget(GetWorld(), HUD_Class);
+	// 	if(CurrentWidget)
+	// 	{
+	// 		CurrentWidget->AddToViewport();
+	// 		// CurrentWidget->RemoveFromViewport();
+	// 	}
+	// }
 
 }

@@ -10,12 +10,11 @@
 /**
  * 
  */
-
 UCLASS()
 class PLAYGROUND_API UProtagonistAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	
+
 private:
 	virtual void PostInitProperties() override;
 	virtual void NativeBeginPlay() override;
@@ -26,5 +25,5 @@ private:
 
 private:
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	class UMovementInfo *MovementInfo;
+	class UMovementInfo* MovementInfo;
 };
