@@ -16,7 +16,6 @@ UWeaponComponent::UWeaponComponent()
 {
 }
 
-
 void UWeaponComponent::Fire()
 {
 	// Try and fire a projectile
@@ -27,11 +26,14 @@ void UWeaponComponent::Fire()
 		if (World != nullptr)
 		{
 			const auto Arrow = Cast<USceneComponent>(GetOwner()->FindComponentByClass(UArrowComponent::StaticClass()));
-			if(Arrow != nullptr)
+			APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+			if (Arrow != nullptr || PlayerController != nullptr)
 			{
 				//world trf
 				FVector ProjectilePos = Arrow->GetComponentLocation();
-				auto ProejctileRot = Arrow->GetComponentRotation();
+				// auto ProejctileRot = Arrow->GetComponentRotation();
+				const auto ProejctileRot = PlayerController->PlayerCameraManager->GetCameraRotation();
+
 				//Set Spawn Collision Handling Override
 				FActorSpawnParameters ActorSpawnParams;
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
@@ -39,7 +41,6 @@ void UWeaponComponent::Fire()
 				// Spawn the projectile at the muzzle
 				auto Projectile = World->SpawnActor<AProtagonistProjectile>(ProjectileClass, ProjectilePos, ProejctileRot, ActorSpawnParams);
 			}
-				
 		}
 	}
 

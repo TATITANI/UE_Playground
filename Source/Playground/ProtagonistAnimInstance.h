@@ -5,11 +5,15 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "MovementInfo.h"
 #include "ProtagonistAnimInstance.generated.h"
 
 /**
  * 
  */
+
+
+
 UCLASS()
 class PLAYGROUND_API UProtagonistAnimInstance : public UAnimInstance
 {
@@ -24,6 +28,8 @@ private:
 	// void AnimNotify_AttackHit(); // "AnimNotify_노티파이명(AttackHit)" 네이밍 필요
 
 private:
-	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	class UMovementInfo* MovementInfo;
+	UPROPERTY(Instanced, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UMovementInfo* MovementInfo;
+    
+	
 };

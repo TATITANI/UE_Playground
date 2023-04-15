@@ -1,11 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ProtagonistCharacter.h"
-#include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "MovementInfo.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -107,6 +107,7 @@ void AProtagonistCharacter::Tick(float DeltaSeconds)
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
+
 	GetMovementComponent()->IsFalling();
 	// input is a Vector2D
 	MovementInfo->Dir = Value.Get<FVector2D>();

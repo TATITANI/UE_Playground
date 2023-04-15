@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "MovementInfo.h"
 #include "ProtagonistCharacter.generated.h"
 
 class UInputComponent;
@@ -14,27 +15,6 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
-
-UCLASS(BlueprintType)
-class UMovementInfo : public UObject
-{
-	GENERATED_BODY()
-
-private:
-	friend class AProtagonistCharacter;
-
-	UPROPERTY(BlueprintReadOnly, Category=Movement, meta = (AllowPrivateAccess=true))
-	FVector2D Dir = FVector2d::ZeroVector;
-
-	UPROPERTY(BlueprintReadOnly, Category=Movement, meta = (AllowPrivateAccess=true))
-	bool OnJump = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement, meta = (AllowPrivateAccess=true))
-	TEnumAsByte<enum EMovementMode> CurrentMovementMode;
-
-public:
-	FORCEINLINE FVector2D GetDir() const { return Dir; }
-};
 
 UCLASS(config=Game)
 class AProtagonistCharacter : public ACharacter
@@ -79,7 +59,7 @@ private:
 
 public:
 	int32 AmmoCount = 5;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMovementInfo* MovementInfo;
 
 	/** Look Input Action */
