@@ -107,7 +107,6 @@ void AProtagonistCharacter::Tick(float DeltaSeconds)
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
-
 	GetMovementComponent()->IsFalling();
 	// input is a Vector2D
 	MovementInfo->Dir = Value.Get<FVector2D>();

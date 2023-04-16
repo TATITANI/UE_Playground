@@ -13,16 +13,14 @@ class UMovementInfo : public UObject
 {
 	GENERATED_BODY()
 
-private:
-	friend class AProtagonistCharacter;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement, meta = (AllowPrivateAccess=true))
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	FVector2D Dir = FVector2d::ZeroVector;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement, meta = (AllowPrivateAccess=true))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	bool OnJump = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement, meta = (AllowPrivateAccess=true))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	TEnumAsByte<enum EMovementMode> CurrentMovementMode;
 
 public:

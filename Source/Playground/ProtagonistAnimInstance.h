@@ -19,9 +19,10 @@ class PLAYGROUND_API UProtagonistAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 
-private:
+public:
 	virtual void PostInitProperties() override;
 	virtual void NativeBeginPlay() override;
+	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 	// UFUNCTION()

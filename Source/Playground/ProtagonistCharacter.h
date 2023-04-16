@@ -59,7 +59,7 @@ private:
 
 public:
 	int32 AmmoCount = 5;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMovementInfo* MovementInfo;
 
 	/** Look Input Action */

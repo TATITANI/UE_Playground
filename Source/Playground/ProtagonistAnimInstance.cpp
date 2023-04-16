@@ -12,9 +12,17 @@ void UProtagonistAnimInstance::PostInitProperties()
 void UProtagonistAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
+}
+
+void UProtagonistAnimInstance::NativeInitializeAnimation()
+{
+	Super::NativeInitializeAnimation();
 	AProtagonistCharacter* Protagonist = Cast<AProtagonistCharacter>(TryGetPawnOwner());
-	MovementInfo = Protagonist->MovementInfo;
-	
+	if (Protagonist)
+	{
+		MovementInfo = Protagonist->MovementInfo;
+		UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
+	}
 }
 
 
@@ -22,4 +30,3 @@ void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 }
-
