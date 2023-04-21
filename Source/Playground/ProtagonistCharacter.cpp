@@ -67,7 +67,7 @@ void AProtagonistCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 
-		// clamp camera pitch
+		// clamp camera pitch	
 		if (auto CameraManager = PlayerController->PlayerCameraManager)
 		{
 			CameraManager->ViewPitchMin = -45.0;
@@ -75,8 +75,9 @@ void AProtagonistCharacter::BeginPlay()
 		}
 	}
 
-
+	
 	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
+
 	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
 }
 
@@ -96,20 +97,22 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProtagonistCharacter::Look);
+	
 	}
 }
 
 void AProtagonistCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-}
 
+}
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
 	GetMovementComponent()->IsFalling();
 	// input is a Vector2D
 	MovementInfo->Dir = Value.Get<FVector2D>();
+
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
@@ -147,6 +150,7 @@ void AProtagonistCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+
 void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
@@ -157,6 +161,7 @@ void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {
 	MovementInfo->OnJump = false;
 }
+
 
 void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMovementMode PrevMovementMode,
                                                   uint8 PreviousCustomMode)
@@ -174,8 +179,8 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 
 	MovementInfo->CurrentMovementMode = GetCharacterMovement()->MovementMode;
 
-	// UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
-	//        *UEnum::GetValueAsString(MovementInfo->CurrentMovementMode), *UEnum::GetValueAsString(PrevMovementMode));
+	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
+	       *UEnum::GetValueAsString(MovementInfo->CurrentMovementMode), *UEnum::GetValueAsString(PrevMovementMode));
 }
 
 

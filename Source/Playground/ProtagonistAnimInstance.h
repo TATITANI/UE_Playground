@@ -12,8 +12,6 @@
  * 
  */
 
-
-
 UCLASS()
 class PLAYGROUND_API UProtagonistAnimInstance : public UAnimInstance
 {
@@ -29,7 +27,7 @@ public:
 	// void AnimNotify_AttackHit(); // "AnimNotify_노티파이명(AttackHit)" 네이밍 필요
 
 private:
-	UPROPERTY(Instanced, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY( BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UMovementInfo* MovementInfo;
     
 	

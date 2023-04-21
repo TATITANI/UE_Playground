@@ -8,11 +8,12 @@
  * 
  */
 
+
 UCLASS(BlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew )
 class UMovementInfo : public UObject
 {
 	GENERATED_BODY()
-
+	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	FVector2D Dir = FVector2d::ZeroVector;

@@ -22,6 +22,7 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 	{
 		MovementInfo = Protagonist->MovementInfo;
 		UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
+		
 	}
 }
 
