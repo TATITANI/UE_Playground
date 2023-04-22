@@ -2,6 +2,8 @@
 
 
 #include "ProtagonistAnimInstance.h"
+
+#include "PickUpComponent.h"
 #include "ProtagonistCharacter.h"
 
 void UProtagonistAnimInstance::PostInitProperties()
@@ -24,10 +26,17 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 		UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
 		
 	}
+
+	// UPickUpComponent::OnPickUp.AddDynamic(this, &UProtagonistAnimInstance::Foo);
 }
 
 
 void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+	// UE_LOG(LogTemp,Log, TEXT("NativeUpdateAnimation"));
+}
+
+void UProtagonistAnimInstance::Foo(AProtagonistCharacter* PickUpCharacter)
+{
 }

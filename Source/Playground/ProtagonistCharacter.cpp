@@ -75,7 +75,7 @@ void AProtagonistCharacter::BeginPlay()
 		}
 	}
 
-	
+
 	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 
 	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
@@ -97,14 +97,12 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProtagonistCharacter::Look);
-	
 	}
 }
 
 void AProtagonistCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 }
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
@@ -180,7 +178,7 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 	MovementInfo->CurrentMovementMode = GetCharacterMovement()->MovementMode;
 
 	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
-	       *UEnum::GetValueAsString(MovementInfo->CurrentMovementMode), *UEnum::GetValueAsString(PrevMovementMode));
+	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(MovementInfo->CurrentMovementMode));
 }
 
 
