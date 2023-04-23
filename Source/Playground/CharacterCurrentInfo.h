@@ -2,15 +2,21 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "MovementInfo.generated.h"
+#include "CharacterCurrentInfo.generated.h"
 
 /**
  * 
  */
 
+UENUM(BlueprintType)
+enum EWeaponType
+{
+	WEAPON_None		UMETA(DisplayName="None"),
+	GUN			UMETA(displayDisplayName = "Gun"),
+};
 
 UCLASS(BlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew )
-class UMovementInfo : public UObject
+class UCharacterCurrentInfo : public UObject
 {
 	GENERATED_BODY()
 	
@@ -23,6 +29,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	TEnumAsByte<enum EMovementMode> CurrentMovementMode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON)
+	TEnumAsByte<enum EWeaponType> CurrentWeaponType = WEAPON_None;
 
 public:
 	FORCEINLINE FVector2D GetDir() const { return Dir; }

@@ -22,9 +22,8 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 	AProtagonistCharacter* Protagonist = Cast<AProtagonistCharacter>(TryGetPawnOwner());
 	if (Protagonist)
 	{
-		MovementInfo = Protagonist->MovementInfo;
+		CharacterCurrentInfo = Protagonist->CharacterCurrentInfo;
 		UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
-		
 	}
 
 	// UPickUpComponent::OnPickUp.AddDynamic(this, &UProtagonistAnimInstance::Foo);
@@ -34,6 +33,15 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
+	if (!CharacterCurrentInfo)
+	{
+		AProtagonistCharacter* Protagonist = Cast<AProtagonistCharacter>(TryGetPawnOwner());
+		if (Protagonist)
+		{
+			CharacterCurrentInfo = Protagonist->CharacterCurrentInfo;
+			UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
+		}
+	}
 	// UE_LOG(LogTemp,Log, TEXT("NativeUpdateAnimation"));
 }
 

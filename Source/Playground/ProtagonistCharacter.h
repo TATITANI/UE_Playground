@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "MovementInfo.h"
+#include "CharacterCurrentInfo.h"
 #include "ProtagonistCharacter.generated.h"
 
 class UInputComponent;
@@ -63,7 +63,7 @@ private:
 
 public:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UMovementInfo* MovementInfo;
+	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 	/** Bool for AnimBP to switch to another animation set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)

@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "MovementInfo.h"
+#include "CharacterCurrentInfo.h"
 #include "ProtagonistAnimInstance.generated.h"
 
 /**
@@ -27,7 +27,7 @@ public:
 
 private:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	UMovementInfo* MovementInfo;
+	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 	void Foo(class AProtagonistCharacter* PickUpCharacter);
 

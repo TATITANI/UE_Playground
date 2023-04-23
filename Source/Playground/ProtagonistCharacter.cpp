@@ -5,7 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "MovementInfo.h"
+#include "CharacterCurrentInfo.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -49,7 +49,7 @@ AProtagonistCharacter::AProtagonistCharacter()
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	MovementInfo = CreateDefaultSubobject<UMovementInfo>(TEXT("Movement"));
+	CharacterCurrentInfo = CreateDefaultSubobject<UCharacterCurrentInfo>(TEXT("Movement"));
 }
 
 void AProtagonistCharacter::BeginPlay()
@@ -109,7 +109,7 @@ void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
 	GetMovementComponent()->IsFalling();
 	// input is a Vector2D
-	MovementInfo->Dir = Value.Get<FVector2D>();
+	CharacterCurrentInfo->Dir = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -124,15 +124,15 @@ void AProtagonistCharacter::Move(const FInputActionValue& Value)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementInfo->Dir.Y);
-		AddMovementInput(RightDirection, MovementInfo->Dir.X);
+		AddMovementInput(ForwardDirection, CharacterCurrentInfo->Dir.Y);
+		AddMovementInput(RightDirection, CharacterCurrentInfo->Dir.X);
 	}
 }
 
 void AProtagonistCharacter::Stop(const FInputActionValue& Value)
 {
 	// UE_LOG(LogTemp, Log, TEXT("STOP"));
-	MovementInfo->Dir = {0, 0};
+	CharacterCurrentInfo->Dir = {0, 0};
 }
 
 void AProtagonistCharacter::Look(const FInputActionValue& Value)
@@ -152,12 +152,12 @@ void AProtagonistCharacter::Look(const FInputActionValue& Value)
 void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
-	MovementInfo->OnJump = true;
+	CharacterCurrentInfo->OnJump = true;
 }
 
 void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {
-	MovementInfo->OnJump = false;
+	CharacterCurrentInfo->OnJump = false;
 }
 
 
@@ -175,16 +175,17 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 		return;
 	}
 
-	MovementInfo->CurrentMovementMode = GetCharacterMovement()->MovementMode;
+	CharacterCurrentInfo->CurrentMovementMode = GetCharacterMovement()->MovementMode;
 
 	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
-	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(MovementInfo->CurrentMovementMode));
+	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo->CurrentMovementMode));
 }
 
 
 void AProtagonistCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
+	CharacterCurrentInfo->CurrentWeaponType = GUN;
 }
 
 bool AProtagonistCharacter::GetHasRifle()
