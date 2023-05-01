@@ -29,7 +29,4 @@ private:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
-	void Foo(class AProtagonistCharacter* PickUpCharacter);
-
-	
 };

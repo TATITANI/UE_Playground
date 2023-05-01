@@ -13,5 +13,12 @@ UCLASS()
 class PLAYGROUND_API UBotAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+	virtual void NativeBeginPlay() override;
+	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+
+private:
+	UPROPERTY(BlueprintReadOnly, Category=State, meta=(AllowPrivateAccess = "true", BlueprintThreadSafe))
+	FVector CurrentVelocity = FVector::ZeroVector;
 };
