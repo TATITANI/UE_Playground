@@ -21,5 +21,9 @@ bool UBTDecorator_CanAttack::CalculateRawConditionValue(UBehaviorTreeComponent& 
 	if (Target == nullptr)
 		return false;
 
-	return isResult && Target->GetDistanceTo(CurrentPawn) <= 300.0f;
+	DrawDebugSphere(CurrentPawn->GetWorld(), CurrentPawn->GetActorLocation(),
+		DistanceAttackable, 16, FColor::Cyan, false, 0.2f);
+
+
+	return isResult && Target->GetDistanceTo(CurrentPawn) <= DistanceAttackable;
 }

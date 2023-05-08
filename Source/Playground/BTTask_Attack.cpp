@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "BotCharacter.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_Attack::UBTTask_Attack()
 {
@@ -18,11 +19,12 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	Bot = Cast<ABotCharacter>(OwnerComp.GetAIOwner()->GetCharacter());
+	verify(Bot);
 	if (Bot == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
-	
+
 	AttackEndHandle = Bot->OnAttackEnd->AddLambda([this]()
 	{
 		IsAttacking = false;
@@ -39,6 +41,22 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
+
+	const UBlackboardComponent* const BlackboardComponent = OwnerComp.GetBlackboardComponent();
+
+	if (ensure(BlackboardComponent))
+	{
+		check(Bot);
+		const auto TargetActor = Cast<AActor>(BlackboardComponent->GetValueAsObject(TargetKeySelector.SelectedKeyName));
+		if (ensure(TargetActor))
+		{
+			const auto dir = TargetActor->GetActorLocation() - Bot->GetActorLocation();
+			auto Rot = FRotationMatrix::MakeFromX(dir).Rotator();
+			Rot = FMath::RInterpTo(Bot->GetActorRotation(), Rot, DeltaSeconds, 3.0f); // 회전 보간
+			Bot->SetActorRotation(Rot);
+		}
+	}
+
 	if (!IsAttacking)
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded); // 태스크 종료
 }

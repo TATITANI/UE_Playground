@@ -25,6 +25,8 @@ private:
 	class ABotCharacter* Bot;
 
 	bool IsAttacking = false;
-	
 	FDelegateHandle AttackEndHandle;
+
+	UPROPERTY(EditInstanceOnly, Category=BlackBoard, meta=(AllowPrivateAccess=true))
+	FBlackboardKeySelector TargetKeySelector;
 };

@@ -17,5 +17,8 @@ class PLAYGROUND_API UBTDecorator_CanAttack : public UBTDecorator
 public:
 	UBTDecorator_CanAttack();
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
-	
+
+private:
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+	float DistanceAttackable = 300.0f;
 };
