@@ -26,9 +26,7 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 		UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
 	}
 
-	// UPickUpComponent::OnPickUp.AddDynamic(this, &UProtagonistAnimInstance::Foo);
 }
-
 
 void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {

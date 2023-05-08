@@ -40,21 +40,3 @@ void ABotAIController::OnUnPossess()
 }
 
 
-
-void ABotAIController::RandomMove()
-{
-	auto CurrentPawn = GetPawn();
-
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	if (NavSystem == nullptr)
-		return;
-	
-	FNavLocation RandomLocation;
-	if (NavSystem->GetRandomPointInNavigableRadius(FVector::ZeroVector, 1000.f, RandomLocation))
-	{
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(this, RandomLocation);
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("RandomMove"));
-
-}

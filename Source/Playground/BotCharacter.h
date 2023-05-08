@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "BotCharacter.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
+
+
 UCLASS()
 class PLAYGROUND_API ABotCharacter : public ACharacter
 {
@@ -19,11 +22,29 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+public:
+	virtual void Attack();
+
+	TSharedPtr<FOnAttackEnd> OnAttackEnd;
+
+
+private:
+	UPROPERTY()
+	class UBotAnimInstance* AnimInstance;
+	
+
+	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
+	float attackDistance = 100.f;
+	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
+	float attackRadius = 50.f;
+
+private:
+	virtual void CheckAttack();
 };

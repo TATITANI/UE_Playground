@@ -22,8 +22,7 @@ public:
 	virtual void NativeBeginPlay() override;
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-	// UFUNCTION()
-	// void AnimNotify_AttackHit(); // "AnimNotify_노티파이명(AttackHit)" 네이밍 필요
+	
 
 private:
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
