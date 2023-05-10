@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "BotCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Engine/DataTable.h"
 
 UBTTask_Attack::UBTTask_Attack()
 {
@@ -34,7 +35,6 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	IsAttacking = true;
 	Bot->Attack();
-
 	return EBTNodeResult::InProgress;
 }
 
@@ -48,7 +48,7 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	{
 		check(Bot);
 		const auto TargetActor = Cast<AActor>(BlackboardComponent->GetValueAsObject(TargetKeySelector.SelectedKeyName));
-		if (ensure(TargetActor))
+		if (TargetActor != nullptr)
 		{
 			const auto dir = TargetActor->GetActorLocation() - Bot->GetActorLocation();
 			auto Rot = FRotationMatrix::MakeFromX(dir).Rotator();

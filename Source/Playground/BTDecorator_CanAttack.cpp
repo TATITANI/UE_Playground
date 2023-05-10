@@ -17,7 +17,7 @@ bool UBTDecorator_CanAttack::CalculateRawConditionValue(UBehaviorTreeComponent& 
 	if (CurrentPawn == nullptr)
 		return false;
 
-	const auto Target = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
+	const auto Target = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TargetKeySelector.SelectedKeyName));
 	if (Target == nullptr)
 		return false;
 

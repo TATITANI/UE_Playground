@@ -19,6 +19,9 @@ public:
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 
 private:
+	UPROPERTY(EditInstanceOnly, Category=BlackBoard, meta=(AllowPrivateAccess=true))
+	FBlackboardKeySelector TargetKeySelector;
+
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
 	float DistanceAttackable = 300.0f;
 };
