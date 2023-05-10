@@ -3,7 +3,7 @@
 
 #include "ProtagonistAnimInstance.h"
 
-#include "PickUpComponent.h"
+#include "Component/PickUpComponent.h"
 #include "ProtagonistCharacter.h"
 
 void UProtagonistAnimInstance::PostInitProperties()

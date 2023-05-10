@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "CharacterCurrentInfo.h"
+#include "Character/CharacterCurrentInfo.h"
 #include "ProtagonistAnimInstance.generated.h"
 
 /**

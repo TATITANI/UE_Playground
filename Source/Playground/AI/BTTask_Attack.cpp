@@ -4,7 +4,7 @@
 #include "BTTask_Attack.h"
 
 #include "AIController.h"
-#include "BotCharacter.h"
+#include "Character/Bot/BotCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/DataTable.h"
 

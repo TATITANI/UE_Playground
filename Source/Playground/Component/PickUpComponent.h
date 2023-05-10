@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
-#include "ProtagonistCharacter.h"
+#include "Character/Protagonist/ProtagonistCharacter.h"
 #include "PickUpComponent.generated.h"
 
 class UWeaponComponent;

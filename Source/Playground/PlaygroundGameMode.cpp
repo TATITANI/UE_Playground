@@ -2,7 +2,7 @@
 
 #include "PlaygroundGameMode.h"
 
-#include "ProtagonistCharacter.h"
+#include "Character/Protagonist/ProtagonistCharacter.h"
 #include "MyHUD.h"
 #include "UObject/ConstructorHelpers.h"
 

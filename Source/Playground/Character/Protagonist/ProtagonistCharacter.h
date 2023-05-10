@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
-#include "CharacterCurrentInfo.h"
+#include "Character/CharacterCurrentInfo.h"
 #include "ProtagonistCharacter.generated.h"
 
 class UInputComponent;

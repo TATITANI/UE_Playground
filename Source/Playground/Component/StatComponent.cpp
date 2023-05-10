@@ -3,7 +3,7 @@
 
 #include "StatComponent.h"
 
-#include "BotCharacter.h"
+#include "Character/Bot/BotCharacter.h"
 #include "MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -23,7 +23,7 @@ void UStatComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	CharacterData = GameInstance->GetProtagonistData(StatType, "Default").GetValue();
+	CharacterData = GameInstance->GetProtagonistData(StatType, "Default").Get(CharacterData);
 	UE_LOG(LogTemp, Log, TEXT("stat hp : %d"), CharacterData.Hp);
 
 }

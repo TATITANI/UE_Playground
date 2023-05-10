@@ -2,8 +2,8 @@
 
 
 #include "WeaponComponent.h"
-#include "ProtagonistCharacter.h"
-#include "ProtagonistProjectile.h"
+#include "Character/Protagonist/ProtagonistCharacter.h"
+#include "Character/Protagonist/ProtagonistProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"
