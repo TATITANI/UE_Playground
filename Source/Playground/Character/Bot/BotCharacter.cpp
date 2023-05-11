@@ -5,6 +5,7 @@
 
 #include "BotAnimInstance.h"
 #include "Engine/DamageEvents.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABotCharacter::ABotCharacter()
@@ -33,11 +34,6 @@ void ABotCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
-void ABotCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
 
 void ABotCharacter::Attack()
 {
@@ -69,12 +65,12 @@ void ABotCharacter::CheckAttack()
 	DrawDebugCapsule(GetWorld(), GetActorLocation() + TraceRelatviePos * 0.5f,
 	                 attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
 
-
-	bool ExistsTargetActor = hitResult.GetActor() != nullptr;
+	AActor* ActorHit = hitResult.GetActor();
+	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *hitResult.GetActor()->GetActorLabel());
-		FDamageEvent DamageEvent;
-		hitResult.GetActor()->TakeDamage(5, DamageEvent, GetController(), this);
+		// UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *ActorHit->GetActorLabel());
+		UGameplayStatics::ApplyDamage(ActorHit, 5, this->GetController(),
+		                              this->GetOwner(), UDamageType::StaticClass());
 	}
 }

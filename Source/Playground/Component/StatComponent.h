@@ -37,4 +37,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	FCharacterData CharacterData;
+
+private:
+	UFUNCTION()
+	void HandleTakenDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	                       class AController* InstigatedBy, AActor* DamageCauser);
 };

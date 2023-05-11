@@ -74,11 +74,11 @@ void AProtagonistCharacter::BeginPlay()
 			CameraManager->ViewPitchMax = 45.0;
 		}
 	}
-
+	
 
 	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
-
 	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
+
 }
 
 //////////////////////////////////////////////////////////////////////////// Input

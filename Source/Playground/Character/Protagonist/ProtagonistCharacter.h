@@ -61,6 +61,7 @@ private:
 	UFUNCTION()
 	void OnLand(const FHitResult& Hit);
 
+
 public:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;

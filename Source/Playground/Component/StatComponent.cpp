@@ -21,18 +21,24 @@ UStatComponent::UStatComponent()
 void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	CharacterData = GameInstance->GetProtagonistData(StatType, "Default").Get(CharacterData);
 	UE_LOG(LogTemp, Log, TEXT("stat hp : %d"), CharacterData.Hp);
 
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UStatComponent::HandleTakenDamage);
 }
 
 
 void UStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+}
 
+void UStatComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
+                                       AActor* DamageCauser)
+{
+	CharacterData.Hp = FMath::Max(CharacterData.Hp - Damage, 0);
 
-
+	UE_LOG(LogTemp, Log, TEXT("taken damage hp : %d"), CharacterData.Hp);
 }
