@@ -20,19 +20,20 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	Bot = Cast<ABotCharacter>(OwnerComp.GetAIOwner()->GetCharacter());
-	verify(Bot);
+	ensure(Bot);
 	if (Bot == nullptr)
 	{
 		return EBTNodeResult::Failed;
 	}
 
+	ensure(Bot->OnAttackEnd != nullptr);
 	AttackEndHandle = Bot->OnAttackEnd->AddLambda([this]()
 	{
 		IsAttacking = false;
 		Bot->OnAttackEnd->Remove(AttackEndHandle);
 		UE_LOG(LogTemp, Log, TEXT("OnAttackEnd"));
 	});
-
+	
 	IsAttacking = true;
 	Bot->Attack();
 	return EBTNodeResult::InProgress;
@@ -46,10 +47,10 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 	if (ensure(BlackboardComponent))
 	{
-		check(Bot);
 		const auto TargetActor = Cast<AActor>(BlackboardComponent->GetValueAsObject(TargetKeySelector.SelectedKeyName));
 		if (TargetActor != nullptr)
 		{
+			ensure(Bot);
 			const auto dir = TargetActor->GetActorLocation() - Bot->GetActorLocation();
 			auto Rot = FRotationMatrix::MakeFromX(dir).Rotator();
 			Rot = FMath::RInterpTo(Bot->GetActorRotation(), Rot, DeltaSeconds, 3.0f); // 회전 보간

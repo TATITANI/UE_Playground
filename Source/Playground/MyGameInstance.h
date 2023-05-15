@@ -19,5 +19,5 @@ private:
 	TMap<ECharacterStatType, UDataTable*> StatMap;
 
 public:
-	TOptional<FCharacterData> GetProtagonistData(ECharacterStatType StatType, FName RowName);
+	TOptional<FCharacterData> GetCharacterData(ECharacterStatType StatType, FName RowName);
 };

@@ -17,28 +17,32 @@ UStatComponent::UStatComponent()
 }
 
 
+void UStatComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UStatComponent::HandleTakenDamage);
+}
+
 // Called when the game starts
 void UStatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// init data
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	CharacterData = GameInstance->GetProtagonistData(StatType, "Default").Get(CharacterData);
-	UE_LOG(LogTemp, Log, TEXT("stat hp : %d"), CharacterData.Hp);
-
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UStatComponent::HandleTakenDamage);
-}
-
-
-void UStatComponent::InitializeComponent()
-{
-	Super::InitializeComponent();
+	ensure(GameInstance != nullptr);
+	CharacterData = GameInstance->GetCharacterData(StatType, "Default").Get(CharacterData);
+	CurrentHp = CharacterData.MaxHp;
+	OnHpChanged.Broadcast(CurrentHp, CharacterData.MaxHp);
 }
 
 void UStatComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
                                        AActor* DamageCauser)
 {
-	CharacterData.Hp = FMath::Max(CharacterData.Hp - Damage, 0);
+	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
+	OnHpChanged.Broadcast(CurrentHp, CharacterData.MaxHp);
 
-	UE_LOG(LogTemp, Log, TEXT("taken damage hp : %d"), CharacterData.Hp);
+	UE_LOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
+	       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
 }

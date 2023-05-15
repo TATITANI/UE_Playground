@@ -3,10 +3,10 @@
 
 #include "MyGameInstance.h"
 
-TOptional<FCharacterData> UMyGameInstance::GetProtagonistData(ECharacterStatType StatType, FName RowName)
+TOptional<FCharacterData> UMyGameInstance::GetCharacterData(ECharacterStatType StatType, FName RowName)
 {
 	UDataTable *DataTable = *StatMap.Find(StatType);
-	check(DataTable != nullptr);
+	ensure(DataTable != nullptr);
 	const FCharacterData* Data = DataTable->FindRow<FCharacterData>(RowName,TEXT(""));
 	
 	if (Data != nullptr)

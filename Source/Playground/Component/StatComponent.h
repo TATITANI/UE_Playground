@@ -14,7 +14,7 @@ enum class ECharacterStatType : uint8
 	Bot UMETA(displayDisplayName = "Bot"),
 };
 
-
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHpChanged, int32 /*Hp*/ , int32 /*maxHP*/);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLAYGROUND_API UStatComponent : public UActorComponent
 {
@@ -28,7 +28,6 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:
 	virtual void InitializeComponent() override;
 
 private:
@@ -38,8 +37,17 @@ private:
 	UPROPERTY(VisibleAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	FCharacterData CharacterData;
 
+	int32 CurrentHp = 0;
+
 private:
 	UFUNCTION()
 	void HandleTakenDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	                       class AController* InstigatedBy, AActor* DamageCauser);
+
+public:
+	FOnHpChanged OnHpChanged;
+
+	int32 GetCurrentHP() const { return CurrentHp; }
+	int32 GetMaxHP() const { return CharacterData.MaxHp; }
+	
 };

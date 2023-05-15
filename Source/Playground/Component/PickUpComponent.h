@@ -17,6 +17,7 @@ class PLAYGROUND_API UPickUpComponent : public USphereComponent
 {
 	GENERATED_BODY()
 
+	
 private:
 
 public:

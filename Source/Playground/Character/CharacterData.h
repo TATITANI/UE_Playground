@@ -12,7 +12,7 @@ struct FCharacterData : public FTableRowBase
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Hp;
+	int32 MaxHp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Damage;

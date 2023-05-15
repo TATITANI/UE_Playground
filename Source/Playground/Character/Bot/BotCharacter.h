@@ -19,6 +19,8 @@ public:
 	ABotCharacter();
 
 protected:
+	
+	virtual void PostInitializeComponents() override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -43,5 +45,8 @@ private:
 	float attackRadius = 50.f;
 
 private:
+	UFUNCTION()
+	void BindUI();
+	
 	virtual void CheckAttack();
 };

@@ -4,8 +4,11 @@
 #include "BotCharacter.h"
 
 #include "BotAnimInstance.h"
-#include "Engine/DamageEvents.h"
+#include "UI/BotWidget.h"
+#include "Component/StatComponent.h"
+#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Logging/LogMacros.h"
 
 // Sets default values
 ABotCharacter::ABotCharacter()
@@ -18,15 +21,21 @@ ABotCharacter::ABotCharacter()
 void ABotCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void ABotCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
 	AnimInstance = Cast<UBotAnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance == nullptr)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Bot animinstance cast faield"));
-		return;
-	}
+	ensureMsgf(AnimInstance != nullptr, TEXT("Bot animinstance cast failed"));
 	AnimInstance->OnAttackHit.AddUObject(this, &ABotCharacter::CheckAttack);
 	OnAttackEnd = AnimInstance->OnAttackEnded;
+	ensure( OnAttackEnd != nullptr);
+
+	BindUI();
 }
+
 
 // Called every frame
 void ABotCharacter::Tick(float DeltaTime)
@@ -38,6 +47,20 @@ void ABotCharacter::Tick(float DeltaTime)
 void ABotCharacter::Attack()
 {
 	AnimInstance->PlayAttackMontage();
+}
+
+
+void ABotCharacter::BindUI()
+{
+	UWidgetComponent* WidgetComponent = Cast<UWidgetComponent>(GetComponentByClass(UWidgetComponent::StaticClass()));
+	WidgetComponent->InitWidget();
+	ensure(WidgetComponent != nullptr);
+	auto* BotWidget = Cast<UBotWidget>(WidgetComponent->GetWidget());
+	ensureMsgf(BotWidget != nullptr, TEXT("Bot Widget not found"));
+
+	UStatComponent* StatComponent = Cast<UStatComponent>( GetComponentByClass(UStatComponent::StaticClass()));
+	ensure(StatComponent != nullptr);
+	BotWidget->Bind(StatComponent);
 }
 
 /**
@@ -69,7 +92,7 @@ void ABotCharacter::CheckAttack()
 	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)
 	{
-		// UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *ActorHit->GetActorLabel());
+		UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *ActorHit->GetName());
 		UGameplayStatics::ApplyDamage(ActorHit, 5, this->GetController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
 	}
