@@ -43,6 +43,9 @@ void UStatComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
 	OnHpChanged.Broadcast(CurrentHp, CharacterData.MaxHp);
 
-	UE_LOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
-	       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
+	if (DamagedActor != nullptr && DamageCauser != nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
+		       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
+	}
 }

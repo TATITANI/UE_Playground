@@ -49,5 +49,6 @@ public:
 
 	int32 GetCurrentHP() const { return CurrentHp; }
 	int32 GetMaxHP() const { return CharacterData.MaxHp; }
+	int32 GetDamage() const { return CharacterData.Damage; }
 	
 };

@@ -14,6 +14,10 @@ class PLAYGROUND_API UWeaponComponent : public USkeletalMeshComponent
 	GENERATED_BODY()
 
 public:
+	/** Sets default values for this component's properties */
+	UWeaponComponent();
+	
+public:
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<class AProtagonistProjectile> ProjectileClass;
@@ -35,9 +39,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* FireAction;
 
-	/** Sets default values for this component's properties */
-	UWeaponComponent();
-
 	/** Attaches the actor to a FirstPersonCharacter */
 	UFUNCTION(BlueprintCallable, Category="Weapon")
 	void AttachWeapon(AProtagonistCharacter* TargetCharacter);
@@ -56,4 +57,6 @@ private:
 	AProtagonistCharacter* Character;
 
 	const FName GunSocketName = "GripPoint";
+
+	int32 Damage;
 };

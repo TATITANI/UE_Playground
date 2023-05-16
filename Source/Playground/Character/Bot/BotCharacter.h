@@ -38,6 +38,9 @@ private:
 	UPROPERTY()
 	class UBotAnimInstance* AnimInstance;
 	
+	UPROPERTY()
+	class UStatComponent* StatComponent;
+	
 
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	float attackDistance = 100.f;

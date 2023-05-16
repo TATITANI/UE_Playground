@@ -31,7 +31,10 @@ void ABotCharacter::PostInitializeComponents()
 	ensureMsgf(AnimInstance != nullptr, TEXT("Bot animinstance cast failed"));
 	AnimInstance->OnAttackHit.AddUObject(this, &ABotCharacter::CheckAttack);
 	OnAttackEnd = AnimInstance->OnAttackEnded;
-	ensure( OnAttackEnd != nullptr);
+	ensure(OnAttackEnd != nullptr);
+
+	StatComponent = Cast<UStatComponent>(GetComponentByClass(UStatComponent::StaticClass()));
+	ensure(StatComponent != nullptr);
 
 	BindUI();
 }
@@ -57,9 +60,6 @@ void ABotCharacter::BindUI()
 	ensure(WidgetComponent != nullptr);
 	auto* BotWidget = Cast<UBotWidget>(WidgetComponent->GetWidget());
 	ensureMsgf(BotWidget != nullptr, TEXT("Bot Widget not found"));
-
-	UStatComponent* StatComponent = Cast<UStatComponent>( GetComponentByClass(UStatComponent::StaticClass()));
-	ensure(StatComponent != nullptr);
 	BotWidget->Bind(StatComponent);
 }
 
@@ -93,7 +93,7 @@ void ABotCharacter::CheckAttack()
 	if (IsTrace && ExistsTargetActor)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *ActorHit->GetName());
-		UGameplayStatics::ApplyDamage(ActorHit, 5, this->GetController(),
+		UGameplayStatics::ApplyDamage(ActorHit, StatComponent->GetDamage(), this->GetController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
 	}
 }

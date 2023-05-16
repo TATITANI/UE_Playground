@@ -3,9 +3,9 @@
 #include "ProtagonistProjectile.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 
-AProtagonistProjectile::AProtagonistProjectile() 
-{
+AProtagonistProjectile::AProtagonistProjectile() {
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
@@ -20,7 +20,7 @@ AProtagonistProjectile::AProtagonistProjectile()
 	RootComponent = CollisionComp;
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp2"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
 	ProjectileMovement->InitialSpeed = 2000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
@@ -29,15 +29,18 @@ AProtagonistProjectile::AProtagonistProjectile()
 
 	// Die after 3 seconds by default
 	InitialLifeSpan = 3.0f;
+
 }
 
 void AProtagonistProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// Only add impulse and destroy projectile if we hit a physics
-	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
+	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) /* && OtherComp->IsSimulatingPhysics()*/)
 	{
 		// OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
 
+		UGameplayStatics::ApplyDamage(OtherActor, this->Damage, this->GetInstigatorController(),
+									  this, UDamageType::StaticClass());
 		Destroy();
 	}
 }

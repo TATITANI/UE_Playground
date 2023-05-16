@@ -22,8 +22,14 @@ class AProtagonistProjectile : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UProjectileMovementComponent* ProjectileMovement;
 
+private:
+	int32 Damage = 0;
+
 public:
 	AProtagonistProjectile();
+	virtual void BeginPlay() override;
+	
+public:
 
 	/** called when projectile hits something */
 	UFUNCTION()
@@ -34,6 +40,7 @@ public:
 	/** Returns ProjectileMovement subobject **/
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
-	virtual void BeginPlay() override;
+	void Init(int32 &_Damage){this->Damage = _Damage;}
+
 };
 

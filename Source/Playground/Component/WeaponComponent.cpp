@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "StatComponent.h"
 #include "Components/ArrowComponent.h"
 
 // Sets default values for this component's properties
@@ -26,20 +27,21 @@ void UWeaponComponent::Fire()
 		if (World != nullptr)
 		{
 			const auto Arrow = Cast<USceneComponent>(GetOwner()->FindComponentByClass(UArrowComponent::StaticClass()));
-			APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+			const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
 			if (Arrow != nullptr || PlayerController != nullptr)
 			{
 				//world trf
-				FVector ProjectilePos = Arrow->GetComponentLocation();
-				// auto ProejctileRot = Arrow->GetComponentRotation();
-				const auto ProejctileRot = PlayerController->PlayerCameraManager->GetCameraRotation();
+				const FVector ProjectilePos = Arrow->GetComponentLocation();
+				// auto ProjectileRot = Arrow->GetComponentRotation();
+				const auto ProjectileRot = PlayerController->PlayerCameraManager->GetCameraRotation();
 
 				//Set Spawn Collision Handling Override
 				FActorSpawnParameters ActorSpawnParams;
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// Spawn the projectile at the muzzle
-				auto Projectile = World->SpawnActor<AProtagonistProjectile>(ProjectileClass, ProjectilePos, ProejctileRot, ActorSpawnParams);
+				const auto Projectile = World->SpawnActor<AProtagonistProjectile>(ProjectileClass, ProjectilePos, ProjectileRot, ActorSpawnParams);
+				Projectile->Init(this->Damage);
 			}
 		}
 	}
@@ -65,10 +67,7 @@ void UWeaponComponent::Fire()
 void UWeaponComponent::AttachWeapon(AProtagonistCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
-	if (Character == nullptr)
-	{
-		return;
-	}
+	ensure(Character != nullptr);
 
 	// Attach the weapon to the First Person Character
 	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
@@ -76,6 +75,9 @@ void UWeaponComponent::AttachWeapon(AProtagonistCharacter* TargetCharacter)
 
 	// switch bHasRifle so the animation blueprint can switch to another animation set
 	Character->SetHasRifle(true);
+	const auto StatComp = Cast<UStatComponent>(Character->FindComponentByClass(UStatComponent::StaticClass()));
+	ensure(StatComp);
+	this->Damage = StatComp->GetDamage();
 
 	// Set up action bindings
 	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
