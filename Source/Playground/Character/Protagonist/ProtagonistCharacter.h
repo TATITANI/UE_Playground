@@ -53,13 +53,26 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	bool IsLookingAround = false;
 private:
 	UFUNCTION()
 	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
 	                           uint8 PreviousCustomMode);
 
+	// APawn interface
+	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
+	
 	UFUNCTION()
 	void OnLand(const FHitResult& Hit);
+	/** Called for movement input */
+	void Move(const FInputActionValue& Value);
+	void Stop(const FInputActionValue& Value);
+
+	/** Called for looking input */
+	void Look(const FInputActionValue& Value);
+
+	void StopLookAround(const FInputActionValue& Value);
+	virtual void Jump() override;
 
 
 public:
@@ -78,18 +91,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
 
-private:
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-	void Stop(const FInputActionValue& Value);
-
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
-
-	virtual void Jump() override;
-
-	// APawn interface
-	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 
 public:
 	/** Returns CameraBoom subobject **/

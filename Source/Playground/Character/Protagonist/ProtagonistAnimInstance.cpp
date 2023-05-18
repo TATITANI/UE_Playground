@@ -37,7 +37,6 @@ void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		if (Protagonist)
 		{
 			CharacterCurrentInfo = Protagonist->CharacterCurrentInfo;
-			UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
 		}
 	}
 	// UE_LOG(LogTemp,Log, TEXT("NativeUpdateAnimation"));

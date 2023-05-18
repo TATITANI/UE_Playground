@@ -97,6 +97,7 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProtagonistCharacter::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Completed, this, &AProtagonistCharacter::StopLookAround);
 	}
 }
 
@@ -110,22 +111,26 @@ void AProtagonistCharacter::Move(const FInputActionValue& Value)
 	GetMovementComponent()->IsFalling();
 	// input is a Vector2D
 	CharacterCurrentInfo->Dir = Value.Get<FVector2D>();
-
+	
+	check(Controller != nullptr);
 	if (Controller != nullptr)
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		// 좌우키 입력시 회전하면서 이동. 후진/카메라 회전하는 중에는 제외.
+		if (CharacterCurrentInfo->Dir.X != 0 && CharacterCurrentInfo->Dir.Y != -1 && !IsLookingAround)
+		{
+			const auto SideAdjustedRot = GetControlRotation().Add(0, 0.5f * CharacterCurrentInfo->Dir.X, 0);
+			Controller->SetControlRotation(SideAdjustedRot);
+		}
 
+		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * CharacterCurrentInfo->Dir.Y;
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * CharacterCurrentInfo->Dir.X;
+		FVector Direction = ForwardDirection + RightDirection;
+		Direction.Normalize();
 
-		// add movement 
-		AddMovementInput(ForwardDirection, CharacterCurrentInfo->Dir.Y);
-		AddMovementInput(RightDirection, CharacterCurrentInfo->Dir.X);
+		AddMovementInput(Direction);
 	}
 }
 
@@ -137,6 +142,8 @@ void AProtagonistCharacter::Stop(const FInputActionValue& Value)
 
 void AProtagonistCharacter::Look(const FInputActionValue& Value)
 {
+	IsLookingAround = true;
+
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
@@ -146,6 +153,11 @@ void AProtagonistCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AProtagonistCharacter::StopLookAround(const FInputActionValue& Value)
+{
+	IsLookingAround = false;
 }
 
 
