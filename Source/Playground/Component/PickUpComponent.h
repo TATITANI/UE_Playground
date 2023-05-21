@@ -7,7 +7,7 @@
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "PickUpComponent.generated.h"
 
-class UWeaponComponent;
+class AWeaponActor;
 // Declaration of the delegate that will be called when someone picks this up
 // The character picking this up is the parameter sent with the notification
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickUp, AProtagonistCharacter*, PickUpCharacter);
@@ -22,7 +22,7 @@ private:
 
 public:
 	UPROPERTY()
-	UWeaponComponent* WeaponComponent;
+	AWeaponActor* WeaponActor;
 
 	/** Delegate to whom anyone can subscribe to receive this event */
 	UPROPERTY(EditAnywhere, Category = "Interaction")

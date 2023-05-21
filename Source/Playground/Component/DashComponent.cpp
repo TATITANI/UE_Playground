@@ -34,7 +34,6 @@ void UDashComponent::BeginPlay()
 	DashPowerCurve->GetTimeRange(minTime, DashMaxTime);
 
 	auto PawnOwner = Cast<APawn>(Owner);
-
 	if (const APlayerController* PlayerController = Cast<APlayerController>(PawnOwner->GetController()))
 	{
 		if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent))
@@ -68,7 +67,6 @@ void UDashComponent::StartDash(const FInputActionValue& Value)
 	CanDash = false;
 
 	DashRemainTime = DashMaxTime;
-	// auto TimerMgr = Owner->GetWorldTimerManager();
 	Owner->GetWorldTimerManager().SetTimer(DashTimerHandle, FTimerDelegate::CreateLambda([this]
 	{
 		CanDash = true;

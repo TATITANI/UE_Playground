@@ -27,6 +27,25 @@ public:
 private:
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
+	                           uint8 PreviousCustomMode);
+
+	// APawn interface
+	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
+
+	UFUNCTION()
+	void OnLand(const FHitResult& Hit);
+	/** Called for movement input */
+	void Move(const FInputActionValue& Value);
+	void Stop(const FInputActionValue& Value);
+
+	/** Called for looking input */
+	void Look(const FInputActionValue& Value);
+
+	void StopLookAround(const FInputActionValue& Value);
+	virtual void Jump() override;
+
 private:
 	//** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -35,7 +54,6 @@ private:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
-
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -54,26 +72,15 @@ private:
 	class UInputAction* LookAction;
 
 	bool IsLookingAround = false;
-private:
-	UFUNCTION()
-	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
-	                           uint8 PreviousCustomMode);
 
-	// APawn interface
-	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	
-	UFUNCTION()
-	void OnLand(const FHitResult& Hit);
-	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
-	void Stop(const FInputActionValue& Value);
+	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
+	TSubclassOf<class AWeaponActor> DefaultWeapon;
 
-	/** Called for looking input */
-	void Look(const FInputActionValue& Value);
+	UPROPERTY(VisibleAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
+	class AWeaponActor* CurrentWeaponComponent;
 
-	void StopLookAround(const FInputActionValue& Value);
-	virtual void Jump() override;
-
+	UPROPERTY(VisibleAnywhere, Category=Weapon, meta=(AllowPrivateAccess = true))
+	TArray<class AWeaponActor*> WeaponInventory;
 
 public:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -89,10 +96,8 @@ public:
 
 	/** Getter for the bool */
 	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
+	bool GetHasRifle() { return bHasRifle; }
 
-
-public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/

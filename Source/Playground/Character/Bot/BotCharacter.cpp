@@ -72,8 +72,7 @@ void ABotCharacter::CheckAttack()
 	FCollisionQueryParams params(NAME_None, false, this);
 
 	const FVector TraceRelatviePos = GetActorForwardVector() * attackDistance;
-
-	// SweepSingleByChannel 트레이스 채널을 사용해 충돌 감지
+	// 트레이스 채널을 사용해 충돌 감지
 	bool IsTrace = GetWorld()->SweepSingleByChannel(
 		OUT hitResult,
 		GetActorLocation(),

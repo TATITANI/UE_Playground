@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PickUpComponent.h"
-#include "WeaponComponent.h"
+#include "WeaponActor.h"
 
 UPickUpComponent::UPickUpComponent()
 {
@@ -15,7 +15,8 @@ void UPickUpComponent::BeginPlay()
 
 	// Register our Overlap Event
 	OnComponentBeginOverlap.AddDynamic(this, &UPickUpComponent::OnSphereBeginOverlap);
-	WeaponComponent = Cast<UWeaponComponent>(GetOwner()->GetComponentByClass(WeaponComponent->StaticClass()));
+	WeaponActor = Cast<AWeaponActor>(GetOwner());
+	verify(WeaponActor != nullptr);
 
 }
 
@@ -26,8 +27,8 @@ void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	AProtagonistCharacter* Character = Cast<AProtagonistCharacter>(OtherActor);
 	if (Character != nullptr)
 	{
-		WeaponComponent->AttachWeapon(Character);
-		// Notify that the actor is being picked up
+		WeaponActor->AttachWeapon(Character);
+		// Notify that the actor is being pickekd up
 		OnPickUp.Broadcast(Character);
 		
 		// Unregister from the Overlap Event so it is no longer triggered

@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/CharacterCurrentInfo.h"
+#include "Component/WeaponActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -74,11 +75,14 @@ void AProtagonistCharacter::BeginPlay()
 			CameraManager->ViewPitchMax = 45.0;
 		}
 	}
-	
+
+	// const auto DefaultWeaponActor = Cast<AWeaponActor>(NewObject<AWeaponActor>(this, DefaultWeapon->StaticClass()));
+	const auto DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
+	ensure(DefaultWeaponActor != nullptr);
+	DefaultWeaponActor->AttachWeapon(this);
 
 	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
-
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -111,7 +115,6 @@ void AProtagonistCharacter::Move(const FInputActionValue& Value)
 	GetMovementComponent()->IsFalling();
 	// input is a Vector2D
 	CharacterCurrentInfo->Dir = Value.Get<FVector2D>();
-	
 	check(Controller != nullptr);
 	if (Controller != nullptr)
 	{
@@ -176,19 +179,15 @@ void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMovementMode PrevMovementMode,
                                                   uint8 PreviousCustomMode)
 {
+	ensureMsgf(IsValid(Character), TEXT("OnChangedMovementMode character not valid"));
 	if (!IsValid(Character))
-	{
-		UE_LOG(LogTemp, Error, TEXT("OnChangedMovementMode Character not valid"));
 		return;
-	}
+
+	ensureMsgf(Character == this, TEXT("OnChangedMovementMode character not match"));
 	if (Character != this)
-	{
-		UE_LOG(LogTemp, Error, TEXT("OnChangedMovementMode character not match"));
 		return;
-	}
 
 	CharacterCurrentInfo->CurrentMovementMode = GetCharacterMovement()->MovementMode;
-
 	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
 	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo->CurrentMovementMode));
 }
@@ -198,9 +197,4 @@ void AProtagonistCharacter::SetHasRifle(bool bNewHasRifle)
 {
 	bHasRifle = bNewHasRifle;
 	CharacterCurrentInfo->CurrentWeaponType = GUN;
-}
-
-bool AProtagonistCharacter::GetHasRifle()
-{
-	return bHasRifle;
 }
