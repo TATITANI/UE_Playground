@@ -37,7 +37,6 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		FCollisionShape::MakeSphere(SearchRadius),
 		FCollisionQueryParams(NAME_None, false, CurrentPawn)
 	);
-	UE_LOG(LogTemp, Log, TEXT("IsOverlap : %d"), IsOverlap);
 	
 	if (IsOverlap)
 	{

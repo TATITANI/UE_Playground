@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PickUpComponent.h"
-#include "WeaponActor.h"
+#include "Character/Protagonist/Weapon/WeaponActor.h"
 
 UPickUpComponent::UPickUpComponent()
 {
@@ -12,7 +12,7 @@ UPickUpComponent::UPickUpComponent()
 void UPickUpComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// Register our Overlap Event
 	OnComponentBeginOverlap.AddDynamic(this, &UPickUpComponent::OnSphereBeginOverlap);
 	WeaponActor = Cast<AWeaponActor>(GetOwner());

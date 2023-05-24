@@ -6,7 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Character/CharacterCurrentInfo.h"
-#include "Component/WeaponActor.h"
+#include "Character/Protagonist/Weapon/WeaponActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -14,10 +14,6 @@
 //////////////////////////////////////////////////////////////////////////
 AProtagonistCharacter::AProtagonistCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
-
-	///////////
 	///// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -112,7 +108,9 @@ void AProtagonistCharacter::Tick(float DeltaSeconds)
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
-	GetMovementComponent()->IsFalling();
+	if(!Movable)
+		return;
+	
 	// input is a Vector2D
 	CharacterCurrentInfo->Dir = Value.Get<FVector2D>();
 	check(Controller != nullptr);
@@ -193,8 +191,3 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 }
 
 
-void AProtagonistCharacter::SetHasRifle(bool bNewHasRifle)
-{
-	bHasRifle = bNewHasRifle;
-	CharacterCurrentInfo->CurrentWeaponType = GUN;
-}

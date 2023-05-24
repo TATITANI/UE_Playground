@@ -11,15 +11,16 @@
 UENUM(BlueprintType)
 enum EWeaponType
 {
-	WEAPON_None		UMETA(DisplayName="None"),
-	GUN			UMETA(displayDisplayName = "Gun"),
+	WEAPON_None UMETA(DisplayName="None"),
+	SWORD UMETA(displayDisplayName = "Sword"),
+	GUN UMETA(displayDisplayName = "Gun"),
 };
 
-UCLASS(BlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew )
+UCLASS(BlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew)
 class UCharacterCurrentInfo : public UObject
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	FVector2D Dir = FVector2d::ZeroVector;
@@ -31,8 +32,10 @@ public:
 	TEnumAsByte<enum EMovementMode> CurrentMovementMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON)
-	TEnumAsByte<enum EWeaponType> CurrentWeaponType = WEAPON_None;
+	TEnumAsByte<enum EWeaponType> CurrentWeaponType = EWeaponType::WEAPON_None;
 
 public:
 	FORCEINLINE FVector2D GetDir() const { return Dir; }
+
+	void SetCurrentWeaponType(EWeaponType WeaponType) { this->CurrentWeaponType = WeaponType;}
 };

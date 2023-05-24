@@ -3,7 +3,6 @@
 
 #include "ProtagonistAnimInstance.h"
 
-#include "Component/PickUpComponent.h"
 #include "ProtagonistCharacter.h"
 
 void UProtagonistAnimInstance::PostInitProperties()
@@ -23,9 +22,8 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 	if (Protagonist)
 	{
 		CharacterCurrentInfo = Protagonist->CharacterCurrentInfo;
-		UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
+		// UE_LOG(LogTemp, Log, TEXT("NativeInitializeAnimation"));
 	}
-
 }
 
 void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -39,6 +37,5 @@ void UProtagonistAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 			CharacterCurrentInfo = Protagonist->CharacterCurrentInfo;
 		}
 	}
-	// UE_LOG(LogTemp,Log, TEXT("NativeUpdateAnimation"));
-}
 
+}

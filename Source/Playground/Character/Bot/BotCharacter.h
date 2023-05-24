@@ -6,8 +6,8 @@
 #include "GameFramework/Character.h"
 #include "BotCharacter.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
 
+DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
 
 UCLASS()
 class PLAYGROUND_API ABotCharacter : public ACharacter

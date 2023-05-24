@@ -72,12 +72,11 @@ private:
 	class UInputAction* LookAction;
 
 	bool IsLookingAround = false;
+	bool Movable = true;
 
 	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AWeaponActor> DefaultWeapon;
-
-	UPROPERTY(VisibleAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
-	class AWeaponActor* CurrentWeaponComponent;
+	
 
 	UPROPERTY(VisibleAnywhere, Category=Weapon, meta=(AllowPrivateAccess = true))
 	TArray<class AWeaponActor*> WeaponInventory;
@@ -86,21 +85,12 @@ public:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
-	/** Bool for AnimBP to switch to another animation set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
-
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
-
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle() { return bHasRifle; }
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	virtual void Tick(float DeltaSeconds) override;
+
+	void SetMovable(bool bEnable){this->Movable = bEnable;}
 };
