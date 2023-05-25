@@ -72,10 +72,9 @@ void AProtagonistCharacter::BeginPlay()
 		}
 	}
 
-	// const auto DefaultWeaponActor = Cast<AWeaponActor>(NewObject<AWeaponActor>(this, DefaultWeapon->StaticClass()));
-	const auto DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
+	AWeaponActor* DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
 	ensure(DefaultWeaponActor != nullptr);
-	DefaultWeaponActor->AttachWeapon(this);
+	ObtainWeapon(DefaultWeaponActor);
 
 	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
@@ -106,11 +105,38 @@ void AProtagonistCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
+void AProtagonistCharacter::ObtainWeapon(AWeaponActor* WeaponActor)
+{
+	ensure(WeaponActor);
+	CharacterCurrentInfo->SetCurrentWeaponType(WeaponActor->GetWeaponType());
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	WeaponActor->AttachToComponent(GetMesh(), AttachmentRules, FName(WeaponActor->GetSocketName()));
+
+	WeaponInventory.Add(WeaponActor);
+	ChangeWeapon(WeaponActor);
+}
+
+void AProtagonistCharacter::ChangeWeapon(AWeaponActor* WeaponActor)
+{
+	if (WeaponInventory.Contains(WeaponActor) == false)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s weapon not in inventory"), *WeaponActor->GetName());
+		return;
+	}
+	if (CurrentActor != nullptr)
+	{
+		CurrentActor->UnUse();
+	}
+	
+	CurrentActor = WeaponActor;
+	WeaponActor->Use(this);
+}
+
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
-	if(!Movable)
+	if (!Movable)
 		return;
-	
+
 	// input is a Vector2D
 	CharacterCurrentInfo->Dir = Value.Get<FVector2D>();
 	check(Controller != nullptr);
@@ -189,5 +215,3 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
 	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo->CurrentMovementMode));
 }
-
-

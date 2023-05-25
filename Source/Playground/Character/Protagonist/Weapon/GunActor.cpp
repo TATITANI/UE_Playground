@@ -22,11 +22,9 @@ void AGunActor::Fire()
 			ensure(Arrow!= nullptr);
 			const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
 			ensure(PlayerController != nullptr);
-			UE_LOG(LogTemp, Log, TEXT(" AGunActor::Fire11"));
 
 			if (Arrow != nullptr || PlayerController != nullptr)
 			{
-				UE_LOG(LogTemp, Log, TEXT(" AGunActor::Fire"));
 
 				//world trf
 				const FVector ProjectilePos = Arrow->GetComponentLocation();
@@ -56,24 +54,6 @@ void AGunActor::Fire()
 	}
 }
 
-void AGunActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	if (Character == nullptr)
-	{
-		return;
-	}
-
-	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-			PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->RemoveMappingContext(InputMappingContext);
-		}
-	}
-}
 
 void AGunActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
 {

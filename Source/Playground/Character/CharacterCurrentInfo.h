@@ -29,13 +29,13 @@ public:
 	bool OnJump = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
-	TEnumAsByte<enum EMovementMode> CurrentMovementMode;
+	TEnumAsByte<EMovementMode> CurrentMovementMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON)
-	TEnumAsByte<enum EWeaponType> CurrentWeaponType = EWeaponType::WEAPON_None;
+	TEnumAsByte<EWeaponType> CurrentWeaponType = WEAPON_None;
 
 public:
 	FORCEINLINE FVector2D GetDir() const { return Dir; }
 
-	void SetCurrentWeaponType(EWeaponType WeaponType) { this->CurrentWeaponType = WeaponType;}
+	void SetCurrentWeaponType(EWeaponType WeaponType) { this->CurrentWeaponType = WeaponType; }
 };

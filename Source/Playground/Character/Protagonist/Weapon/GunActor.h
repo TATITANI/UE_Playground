@@ -15,9 +15,6 @@ class PLAYGROUND_API AGunActor : public AWeaponActor
 	GENERATED_BODY()
 
 protected:
-	/** Ends gameplay for this component. */
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;	
 	virtual EWeaponType GetWeaponType() override { return GUN; }
 

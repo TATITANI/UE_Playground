@@ -76,15 +76,15 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AWeaponActor> DefaultWeapon;
-	
+
+	class AWeaponActor*  CurrentActor;
 
 	UPROPERTY(VisibleAnywhere, Category=Weapon, meta=(AllowPrivateAccess = true))
-	TArray<class AWeaponActor*> WeaponInventory;
+	TArray< class AWeaponActor*> WeaponInventory;
 
 public:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
-
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -92,5 +92,9 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	virtual void Tick(float DeltaSeconds) override;
 
-	void SetMovable(bool bEnable){this->Movable = bEnable;}
+	void SetMovable(bool bEnable) { this->Movable = bEnable; }
+
+	void ObtainWeapon(class AWeaponActor* WeaponActor);
+	void ChangeWeapon(class AWeaponActor* WeaponActor);
+
 };

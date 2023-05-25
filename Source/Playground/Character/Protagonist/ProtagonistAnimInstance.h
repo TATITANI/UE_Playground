@@ -25,7 +25,7 @@ public:
 
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly,Transient, BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 };

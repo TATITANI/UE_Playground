@@ -13,11 +13,6 @@ void ASwordActor::BindInputActions(UEnhancedInputComponent* EnhancedInputCompone
 	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Triggered, this, &ASwordActor::Attack);
 }
 
-void ASwordActor::AttachEvent()
-{
-	Super::AttachEvent();
-}
-
 void ASwordActor::Attack()
 {
 	if (AttackMontage != nullptr)

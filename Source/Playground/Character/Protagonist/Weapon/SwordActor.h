@@ -31,7 +31,6 @@ private:
 	
 protected:
 	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;
-	virtual void AttachEvent() override;
 	virtual EWeaponType GetWeaponType() override { return SWORD; }
 
 private:

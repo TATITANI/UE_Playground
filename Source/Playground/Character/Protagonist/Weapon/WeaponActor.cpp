@@ -15,45 +15,63 @@ AWeaponActor::AWeaponActor()
 {
 }
 
-void AWeaponActor::AttachWeapon(AProtagonistCharacter* TargetCharacter)
+void AWeaponActor::BeginPlay()
+{
+	Super::BeginPlay();
+	SetActorTickEnabled(false);
+}
+
+
+void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
 	ensure(Character != nullptr);
-	Character->CharacterCurrentInfo->SetCurrentWeaponType(GetWeaponType());
 	AnimInstance = Cast<UProtagonistAnimInstance>(Character->GetMesh()->GetAnimInstance());
 	ensure(AnimInstance!=nullptr);
 
-	SetupInput();
-	FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	AttachToComponent(Character->GetMesh(), AttachmentRules, FName(SocketName));
 	const auto StatComp = Cast<UStatComponent>(Character->FindComponentByClass(UStatComponent::StaticClass()));
 	ensure(StatComp);
 	this->Damage = StatComp->GetDamage();
 
-	AttachEvent();
+	SetupInput();
+	SetActorHiddenInGame(false);
+}
+
+void AWeaponActor::UnUse()
+{
+	RemoveInputMappingContext();
+	SetActorHiddenInGame(true);
 }
 
 void AWeaponActor::SetupInput()
 {
 	// Set up action bindings
-	if (APlayerController* PlayerController = Cast<APlayerController>(Character->GetController()))
-	{
-		UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
-			PlayerController->GetLocalPlayer());
-		ensure(Subsystem != nullptr);
-		Subsystem->AddMappingContext(InputMappingContext, InputPriority);
+	const APlayerController* const PlayerController = Cast<APlayerController>(Character->GetController());
+	ensure(PlayerController != nullptr);
+	if (PlayerController == nullptr)
+		return;
 
-		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
-		ensure(EnhancedInputComponent != nullptr);
-		BindInputActions(EnhancedInputComponent);
+	AddInputMappingContext(PlayerController);
+	
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+	ensure(EnhancedInputComponent != nullptr);
+	BindInputActions(EnhancedInputComponent);
+}
+
+void AWeaponActor::AddInputMappingContext(const APlayerController* PlayerController)
+{
+	Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	ensure(Subsystem != nullptr);
+	if (Subsystem->HasMappingContext(InputMappingContext) == false)
+	{
+		Subsystem->AddMappingContext(InputMappingContext, InputPriority);
 	}
 }
 
-void AWeaponActor::AttachEvent()
+void AWeaponActor::RemoveInputMappingContext()
 {
-}
-
-
-void AWeaponActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
+	if (Subsystem != nullptr)
+	{
+		Subsystem->RemoveMappingContext(InputMappingContext);
+	}
 }

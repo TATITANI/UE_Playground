@@ -23,11 +23,11 @@ void UPickUpComponent::BeginPlay()
 void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                             int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Checking if it is a First Person Character overlapping
 	AProtagonistCharacter* Character = Cast<AProtagonistCharacter>(OtherActor);
 	if (Character != nullptr)
 	{
-		WeaponActor->AttachWeapon(Character);
+		Character->ObtainWeapon(WeaponActor);
+		
 		// Notify that the actor is being pickekd up
 		OnPickUp.Broadcast(Character);
 		
