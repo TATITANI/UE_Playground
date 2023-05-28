@@ -21,7 +21,7 @@ void UStatComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UStatComponent::HandleTakenDamage);
+	GetOwner()->OnTakeAnyDamage.AddUniqueDynamic(this, &UStatComponent::HandleTakenDamage);
 }
 
 // Called when the game starts

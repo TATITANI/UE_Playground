@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "IngameWidget.generated.h"
 
+enum EWeaponType : int;
 /**
  * 
  */
@@ -18,12 +19,26 @@ private:
 	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true)) // c++ 에서 widget 블루프린트 접근
 	class UProgressBar* PB_HpBar; // 에디터 상 컴포넌트 이름과 같아야 함.
 
+	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true))
+	class UHorizontalBox* HB_Weapon;
+
 	UPROPERTY()
-	class AProtagonistCharacter *ProtagonistCharacter;
-	
+	class AProtagonistCharacter* ProtagonistCharacter;
+
 	UFUNCTION()
 	void UpdateHp(int32 Hp, int32 MaxHp) const;
 
+	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
+	TMap<TEnumAsByte<EWeaponType>, UTexture2D*> WeaponImageTable;
+
+	uint8 NewWeaponIndex = 0;
 protected:
 	virtual void NativeOnInitialized() override;
+
+public:
+	UFUNCTION()
+	void ChangeCurrentWeapon(class AWeaponActor* WeaponActor) const;
+	
+	UFUNCTION()
+	void AddWeapon(class AWeaponActor* WeaponActor);
 };

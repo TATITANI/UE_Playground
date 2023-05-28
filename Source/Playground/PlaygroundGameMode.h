@@ -13,16 +13,5 @@ class APlaygroundGameMode : public AGameModeBase
 
 public:
 	APlaygroundGameMode();
-	virtual void BeginPlay() override;
-private:
-	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess= true))
-	TSubclassOf<UUserWidget> InGameWidget;
 
-public:
-	UPROPERTY()
-	UUserWidget* CurrentWidget;
-
-public:
-	UFUNCTION()
-	void ChangeWidget(TSubclassOf<UUserWidget> NewWidgetClass);
 };

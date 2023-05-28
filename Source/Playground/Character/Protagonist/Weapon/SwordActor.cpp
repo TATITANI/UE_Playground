@@ -24,7 +24,7 @@ void ASwordActor::Attack()
 			SectionID = (SectionID == SectionMaxID) ? 1 : SectionID + 1;
 
 			Character->SetMovable(false);
-			AnimInstance->OnMontageEnded.AddDynamic(this, &ASwordActor::AttackEndEvent);
+			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackEndEvent);
 		}
 	}
 }

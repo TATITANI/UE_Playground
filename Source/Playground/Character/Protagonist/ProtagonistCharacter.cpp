@@ -9,6 +9,7 @@
 #include "Character/Protagonist/Weapon/WeaponActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Inventory/WeaponInventory.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,6 +48,8 @@ AProtagonistCharacter::AProtagonistCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	CharacterCurrentInfo = CreateDefaultSubobject<UCharacterCurrentInfo>(TEXT("Movement"));
+
+	WeaponInventory = MakeShared<FWeaponInventory>();
 }
 
 void AProtagonistCharacter::BeginPlay()
@@ -76,8 +79,8 @@ void AProtagonistCharacter::BeginPlay()
 	ensure(DefaultWeaponActor != nullptr);
 	ObtainWeapon(DefaultWeaponActor);
 
-	MovementModeChangedDelegate.AddDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
-	LandedDelegate.AddDynamic(this, &AProtagonistCharacter::OnLand);
+	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
+	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -112,24 +115,30 @@ void AProtagonistCharacter::ObtainWeapon(AWeaponActor* WeaponActor)
 	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
 	WeaponActor->AttachToComponent(GetMesh(), AttachmentRules, FName(WeaponActor->GetSocketName()));
 
-	WeaponInventory.Add(WeaponActor);
+	WeaponInventory->AddWeapon(WeaponActor);
+	OnObtainWeapon.Broadcast(WeaponActor);
+	
 	ChangeWeapon(WeaponActor);
+	
 }
 
 void AProtagonistCharacter::ChangeWeapon(AWeaponActor* WeaponActor)
 {
-	if (WeaponInventory.Contains(WeaponActor) == false)
+	if (WeaponInventory->HasWeapon(WeaponActor) == false)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s weapon not in inventory"), *WeaponActor->GetName());
 		return;
 	}
-	if (CurrentActor != nullptr)
+	if (CurrentWeapon != nullptr)
 	{
-		CurrentActor->UnUse();
+		CurrentWeapon->UnUse();
 	}
 	
-	CurrentActor = WeaponActor;
+	CurrentWeapon = WeaponActor;
 	WeaponActor->Use(this);
+	
+	OnChangeWeapon.Broadcast(WeaponActor);
+
 }
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)

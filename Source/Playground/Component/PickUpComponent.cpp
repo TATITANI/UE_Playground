@@ -14,7 +14,7 @@ void UPickUpComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	// Register our Overlap Event
-	OnComponentBeginOverlap.AddDynamic(this, &UPickUpComponent::OnSphereBeginOverlap);
+	OnComponentBeginOverlap.AddUniqueDynamic(this, &UPickUpComponent::OnSphereBeginOverlap);
 	WeaponActor = Cast<AWeaponActor>(GetOwner());
 	verify(WeaponActor != nullptr);
 

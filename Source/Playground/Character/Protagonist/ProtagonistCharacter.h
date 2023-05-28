@@ -15,6 +15,8 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnObtainWeapon, class AWeaponActor*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, class AWeaponActor*);
 
 UCLASS(config=Game)
 class AProtagonistCharacter : public ACharacter
@@ -77,10 +79,13 @@ private:
 	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AWeaponActor> DefaultWeapon;
 
-	class AWeaponActor*  CurrentActor;
+	class AWeaponActor* CurrentWeapon;
 
-	UPROPERTY(VisibleAnywhere, Category=Weapon, meta=(AllowPrivateAccess = true))
-	TArray< class AWeaponActor*> WeaponInventory;
+	TSharedPtr<class FWeaponInventory> WeaponInventory;
+
+public:
+	FOnObtainWeapon OnObtainWeapon;
+	FOnChangeWeapon OnChangeWeapon;
 
 public:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -96,5 +101,4 @@ public:
 
 	void ObtainWeapon(class AWeaponActor* WeaponActor);
 	void ChangeWeapon(class AWeaponActor* WeaponActor);
-
 };

@@ -11,7 +11,7 @@ UBotAnimInstance::UBotAnimInstance()
 void UBotAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
-	OnMontageEnded.AddDynamic(this, &UBotAnimInstance::MontageEnd);
+	OnMontageEnded.AddUniqueDynamic(this, &UBotAnimInstance::MontageEnd);
 
 }
 
