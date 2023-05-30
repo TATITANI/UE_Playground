@@ -16,7 +16,6 @@ void UWeaponPanelWidget::Init(UTexture2D* Tex, EWeaponType _WeaponType)
 	MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(MaterialInterface, nullptr);
 	MaterialInstanceDynamic->AddToRoot(); // GC 삭제 방지
 	Img_Panel->SetBrushFromMaterial(MaterialInstanceDynamic);
-	
 }
 
 void UWeaponPanelWidget::ActiveUseEffect(bool bActive) const

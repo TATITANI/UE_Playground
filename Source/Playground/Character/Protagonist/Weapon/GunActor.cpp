@@ -36,7 +36,8 @@ void AGunActor::Fire()
 
 				// Spawn the projectile at the muzzle
 				const auto Projectile = World->SpawnActor<AProtagonistProjectile>(ProjectileClass, ProjectilePos, ProjectileRot, ActorSpawnParams);
-				Projectile->Init(this->Damage);
+				if(Projectile != nullptr) // 충돌지점이기 때문에 생성되지 않는 경우
+					Projectile->Init(this->Damage);
 			}
 		}
 	}
