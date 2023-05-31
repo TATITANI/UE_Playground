@@ -3,12 +3,17 @@
 
 #include "MyGameInstance.h"
 
+UMyGameInstance::UMyGameInstance()
+{
+	WeaponInventory = MakeShared<FWeaponInventory>();
+}
+
 TOptional<FCharacterData> UMyGameInstance::GetCharacterData(ECharacterStatType StatType, FName RowName)
 {
-	UDataTable *DataTable = *StatMap.Find(StatType);
+	UDataTable* DataTable = *StatMap.Find(StatType);
 	ensure(DataTable != nullptr);
 	const FCharacterData* Data = DataTable->FindRow<FCharacterData>(RowName,TEXT(""));
-	
+
 	if (Data != nullptr)
 		return *Data;
 

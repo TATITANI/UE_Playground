@@ -21,6 +21,9 @@ class UCharacterCurrentInfo : public UObject
 {
 	GENERATED_BODY()
 
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON, meta=(AllowPrivateAccess=true))
+	TEnumAsByte<EWeaponType> CurrentWeaponType = WEAPON_None;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	FVector2D Dir = FVector2d::ZeroVector;
@@ -31,8 +34,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	TEnumAsByte<EMovementMode> CurrentMovementMode;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON)
-	TEnumAsByte<EWeaponType> CurrentWeaponType = WEAPON_None;
 
 public:
 	FORCEINLINE FVector2D GetDir() const { return Dir; }

@@ -52,10 +52,14 @@ void AWeaponActor::SetupInput()
 		return;
 
 	AddInputMappingContext(PlayerController);
-	
-	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
-	ensure(EnhancedInputComponent != nullptr);
-	BindInputActions(EnhancedInputComponent);
+
+	if (IsBindInputAction == false)
+	{
+		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+		ensure(EnhancedInputComponent != nullptr);
+		BindInputActions(EnhancedInputComponent);
+		IsBindInputAction = true;
+	}
 }
 
 void AWeaponActor::AddInputMappingContext(const APlayerController* PlayerController)

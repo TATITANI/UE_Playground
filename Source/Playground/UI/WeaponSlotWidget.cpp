@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/WeaponPanelWidget.h"
+#include "UI/WeaponSlotWidget.h"
 #include "Materials/MaterialInstance.h"
 #include "Components/Image.h"
 
-void UWeaponPanelWidget::Init(UTexture2D* Tex, EWeaponType _WeaponType)
+void UWeaponSlotWidget::Init(UTexture2D* Tex, EWeaponType _WeaponType)
 {
 	Img_Weapon->SetBrushFromTexture(Tex);
 	Img_Weapon->SetVisibility(ESlateVisibility::Visible);
@@ -18,7 +18,7 @@ void UWeaponPanelWidget::Init(UTexture2D* Tex, EWeaponType _WeaponType)
 	Img_Panel->SetBrushFromMaterial(MaterialInstanceDynamic);
 }
 
-void UWeaponPanelWidget::ActiveUseEffect(bool bActive) const
+void UWeaponSlotWidget::ActiveUseEffect(bool bActive) const
 {
 	MaterialInstanceDynamic->SetScalarParameterValue(TEXT("IsActive"), bActive);
 }

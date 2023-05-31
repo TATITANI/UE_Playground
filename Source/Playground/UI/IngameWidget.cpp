@@ -3,7 +3,7 @@
 
 #include "IngameWidget.h"
 
-#include "WeaponPanelWidget.h"
+#include "WeaponSlotWidget.h"
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
 #include "Component/StatComponent.h"
@@ -43,9 +43,9 @@ void UIngameWidget::ChangeCurrentWeapon(AWeaponActor* WeaponActor) const
 
 	for (int8 i = 0; i < NewWeaponIndex; i++)
 	{
-		const UWeaponPanelWidget* WeaponPanelWidget = Cast<UWeaponPanelWidget>(HB_Weapon->GetChildAt(i));
-		const bool IsUse = WeaponType == WeaponPanelWidget->GetWeaponType();
-		WeaponPanelWidget->ActiveUseEffect(IsUse);
+		const UWeaponSlotWidget* WeaponSlotWidget = Cast<UWeaponSlotWidget>(HB_Weapon->GetChildAt(i));
+		const bool IsUse = WeaponType == WeaponSlotWidget->GetWeaponType();
+		WeaponSlotWidget->ActiveUseEffect(IsUse);
 	}
 }
 
@@ -57,7 +57,18 @@ void UIngameWidget::AddWeapon(AWeaponActor* WeaponActor)
 		return;
 
 	UTexture2D* Texture = WeaponImageTable[WeaponType];
-	UWeaponPanelWidget* WeaponPanelWidget = Cast<UWeaponPanelWidget>(HB_Weapon->GetChildAt(NewWeaponIndex));
-	WeaponPanelWidget->Init(Texture, WeaponType);
+	UWeaponSlotWidget* WeaponSlotWidget = Cast<UWeaponSlotWidget>(HB_Weapon->GetChildAt(NewWeaponIndex));
+	WeaponSlotWidget->Init(Texture, WeaponType);
 	NewWeaponIndex++;
+}
+
+EWeaponType UIngameWidget::GetSlotWeaponType(int8 SlotID)
+{
+	const auto WeaponSlotWidget = Cast<UWeaponSlotWidget>(HB_Weapon->GetChildAt(SlotID));
+	if(WeaponSlotWidget==nullptr)
+	{
+		UE_LOG(LogTemp,Error, TEXT("weapon slot not found"));
+		return EWeaponType::WEAPON_None;
+	}
+	return WeaponSlotWidget->GetWeaponType();
 }

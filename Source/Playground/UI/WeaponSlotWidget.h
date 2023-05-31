@@ -4,14 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "WeaponPanelWidget.generated.h"
+#include "Character/CharacterCurrentInfo.h"
+#include "WeaponSlotWidget.generated.h"
 
 enum EWeaponType : int;
 /**
  * 
  */
 UCLASS()
-class PLAYGROUND_API UWeaponPanelWidget : public UUserWidget
+class PLAYGROUND_API UWeaponSlotWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -22,7 +23,8 @@ private:
 	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true))
 	class UImage* Img_Weapon;
 
-	EWeaponType WeaponType;
+	UPROPERTY(VisibleAnywhere)
+	TEnumAsByte<EWeaponType> WeaponType = WEAPON_None;
 
 	UMaterialInstanceDynamic* MaterialInstanceDynamic;
 

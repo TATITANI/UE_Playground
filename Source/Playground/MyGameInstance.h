@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/CharacterData.h"
 #include "Engine/GameInstance.h"
+#include "Inventory/WeaponInventory.h"
 #include "MyGameInstance.generated.h"
 
 enum class ECharacterStatType : uint8;
@@ -19,5 +20,9 @@ private:
 	TMap<ECharacterStatType, UDataTable*> StatMap;
 
 public:
+	UMyGameInstance();
+	// todo : 캐릭터 데이터 매니저로 빼기
 	TOptional<FCharacterData> GetCharacterData(ECharacterStatType StatType, FName RowName);
+
+	TSharedPtr<FWeaponInventory> WeaponInventory;
 };

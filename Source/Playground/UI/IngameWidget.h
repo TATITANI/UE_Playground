@@ -41,4 +41,6 @@ public:
 	
 	UFUNCTION()
 	void AddWeapon(class AWeaponActor* WeaponActor);
+
+	EWeaponType GetSlotWeaponType(int8 SlotID);
 };

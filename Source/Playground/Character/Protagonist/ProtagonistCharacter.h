@@ -46,6 +46,7 @@ private:
 	void Look(const FInputActionValue& Value);
 
 	void StopLookAround(const FInputActionValue& Value);
+	void ClickChangeWeapon(const FInputActionValue& Value);
 	virtual void Jump() override;
 
 private:
@@ -72,6 +73,9 @@ private:
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ChangeWeaponAction;
 
 	bool IsLookingAround = false;
 	bool Movable = true;

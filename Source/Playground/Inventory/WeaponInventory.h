@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
 /**
  * 
  */
+
+enum EWeaponType : int;
 
 class PLAYGROUND_API FWeaponInventory
 {
@@ -19,5 +20,7 @@ public:
 	~FWeaponInventory();
 
 	bool HasWeapon(class AWeaponActor * WeaponActor) const;
+	bool HasWeapon(EWeaponType WeaponType) const;
 	void AddWeapon(class AWeaponActor * WeaponActor);
+	AWeaponActor* GetWeapon(EWeaponType WeaponType);
 };
