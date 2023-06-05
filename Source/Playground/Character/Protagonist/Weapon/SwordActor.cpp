@@ -10,7 +10,7 @@
 
 void ASwordActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
 {
-	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Triggered, this, &ASwordActor::Attack);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Started, this, &ASwordActor::Attack);
 }
 
 void ASwordActor::Attack()

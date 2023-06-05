@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class PLAYGROUND_API AMyHUD : public AHUD
 {
 	GENERATED_BODY()
@@ -18,8 +18,9 @@ private:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, Category= Widget, meta=(AllowPrivateAccess=true))
-	TSubclassOf<class UIngameWidget> IngameWidgetSubclassOf;
-	
+	TSubclassOf<class UIngameWidget> IngameWidgetClass;
+
+
 public:
 	class UIngameWidget* IngameWidget;
 	

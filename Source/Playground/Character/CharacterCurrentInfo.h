@@ -14,6 +14,7 @@ enum EWeaponType
 	WEAPON_None UMETA(DisplayName="None"),
 	SWORD UMETA(displayDisplayName = "Sword"),
 	GUN UMETA(displayDisplayName = "Gun"),
+	BOMB UMETA(displayDisplayName = "Bomb"),
 };
 
 UCLASS(BlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew)

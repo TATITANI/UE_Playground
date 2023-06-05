@@ -21,7 +21,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	bool IsBindInputAction = false;
-private:
+	
 private:
 	void SetupInput();
 	void AddInputMappingContext(const APlayerController* PlayerController);

@@ -105,4 +105,5 @@ public:
 
 	void ObtainWeapon(class AWeaponActor* WeaponActor);
 	void ChangeWeapon(class AWeaponActor* WeaponActor);
+	void SetUsingControllerYaw(bool bActive) { bUseControllerRotationYaw = bActive; }
 };

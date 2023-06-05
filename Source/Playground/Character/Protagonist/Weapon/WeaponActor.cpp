@@ -13,6 +13,7 @@
 // Sets default values for this component's properties
 AWeaponActor::AWeaponActor()
 {
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 }
 
 void AWeaponActor::BeginPlay()

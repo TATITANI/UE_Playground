@@ -7,6 +7,6 @@ void AMyHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	IngameWidget = Cast<UIngameWidget>(CreateWidget(GetWorld(), IngameWidgetSubclassOf));
+	IngameWidget = Cast<UIngameWidget>(CreateWidget(GetWorld(), IngameWidgetClass));
 	IngameWidget->AddToViewport();
 }

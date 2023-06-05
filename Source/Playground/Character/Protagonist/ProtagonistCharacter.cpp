@@ -159,6 +159,7 @@ void AProtagonistCharacter::ChangeWeapon(AWeaponActor* WeaponActor)
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
+	CharacterCurrentInfo->Dir = FVector2D::Zero();
 	if (!Movable)
 		return;
 
@@ -205,6 +206,8 @@ void AProtagonistCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+
+		const auto ActorRotation = GetActorRotation();
 	}
 }
 
