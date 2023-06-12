@@ -12,7 +12,7 @@
  * 
  */
 
-UCLASS()
+UCLASS(Blueprintable, BlueprintType)
 class PLAYGROUND_API UProtagonistAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
@@ -21,11 +21,15 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void NativeBeginPlay() override;
 	virtual void NativeInitializeAnimation() override;
-	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 
 private:
+	// class AProtagonistCharacter* Protagonist;
+
 	UPROPERTY(BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
+
+	UPROPERTY(BlueprintReadWrite, Instanced,Transient,  Category = Movement, meta = (AllowPrivateAccess = "true"))
+	class UFootIKComponent* FootIKComponent;
 
 };

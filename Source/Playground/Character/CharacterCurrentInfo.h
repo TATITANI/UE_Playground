@@ -17,7 +17,7 @@ enum EWeaponType
 	BOMB UMETA(displayDisplayName = "Bomb"),
 };
 
-UCLASS(BlueprintType, Blueprintable, DefaultToInstanced, EditInlineNew)
+UCLASS(BlueprintType, Blueprintable)
 class UCharacterCurrentInfo : public UObject
 {
 	GENERATED_BODY()

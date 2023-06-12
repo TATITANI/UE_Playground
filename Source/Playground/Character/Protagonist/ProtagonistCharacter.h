@@ -28,6 +28,7 @@ public:
 
 private:
 	virtual void BeginPlay() override;
+	virtual void PostInitProperties() override;
 
 	UFUNCTION()
 	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
@@ -92,7 +93,7 @@ public:
 	FOnChangeWeapon OnChangeWeapon;
 
 public:
-	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 	/** Returns CameraBoom subobject **/

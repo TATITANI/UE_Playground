@@ -21,9 +21,6 @@ public:
 	virtual void OnUnPossess() override;
 
 private:
-	void RandomMove();
-
-private:
 	FTimerHandle TimerHandle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))

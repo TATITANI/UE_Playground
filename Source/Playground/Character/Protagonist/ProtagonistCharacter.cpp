@@ -51,14 +51,22 @@ AProtagonistCharacter::AProtagonistCharacter()
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	CharacterCurrentInfo = CreateDefaultSubobject<UCharacterCurrentInfo>(TEXT("Movement"));
 }
+
+void AProtagonistCharacter::PostInitProperties()
+{
+	Super::PostInitProperties();
+	CharacterCurrentInfo = NewObject<UCharacterCurrentInfo>();
+
+}
+
+
 
 void AProtagonistCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
+	
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
 	if (PlayerController)
@@ -87,6 +95,7 @@ void AProtagonistCharacter::BeginPlay()
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
 }
 
+
 //////////////////////////////////////////////////////////////////////////// Input
 
 void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -112,6 +121,9 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 void AProtagonistCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	
+	auto BottomLoc = GetMesh()->GetSocketLocation("sd");
+	
 }
 
 void AProtagonistCharacter::ObtainWeapon(AWeaponActor* WeaponActor)
@@ -160,13 +172,13 @@ void AProtagonistCharacter::ChangeWeapon(AWeaponActor* WeaponActor)
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
 	CharacterCurrentInfo->Dir = FVector2D::Zero();
+
 	if (!Movable)
 		return;
 
 	// input is a Vector2D
 	CharacterCurrentInfo->Dir = Value.Get<FVector2D>();
 	check(Controller != nullptr);
-
 	if (Controller != nullptr)
 	{
 		// 좌우키 입력시 회전하면서 이동. 후진/카메라 회전하는 중에는 제외.

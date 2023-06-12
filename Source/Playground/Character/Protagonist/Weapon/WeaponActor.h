@@ -48,6 +48,7 @@ protected:
 	FName SocketName = "GripPoint_Sword";
 
 	int32 Damage = 0;
+	
 
 public:
 	virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::WEAPON_None;);
