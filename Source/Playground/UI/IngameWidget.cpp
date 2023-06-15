@@ -6,6 +6,7 @@
 #include "WeaponSlotWidget.h"
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
+#include "Component/CharacterWeaponComponent.h"
 #include "Component/StatComponent.h"
 #include "Components/HorizontalBox.h"
 #include "Components/ProgressBar.h"
@@ -18,8 +19,8 @@ void UIngameWidget::NativeOnInitialized()
 	const auto PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(PlayerPawn);
 	ensure(ProtagonistCharacter!= nullptr);
-	ProtagonistCharacter->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
-	ProtagonistCharacter->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
+	ProtagonistCharacter->Weapon->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
+	ProtagonistCharacter->Weapon->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
 	UE_LOG(LogTemp, Log, TEXT(" UIngameWidget::NativeOnInitialized"));
 
 	UStatComponent* StatComponent = Cast<UStatComponent>(ProtagonistCharacter->FindComponentByClass(UStatComponent::StaticClass()));

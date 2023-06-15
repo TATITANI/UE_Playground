@@ -2,6 +2,8 @@
 
 #include "PickUpComponent.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
+#include "Component/CharacterWeaponComponent.h"
+
 
 UPickUpComponent::UPickUpComponent()
 {
@@ -23,13 +25,13 @@ void UPickUpComponent::BeginPlay()
 void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                                             int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	AProtagonistCharacter* Character = Cast<AProtagonistCharacter>(OtherActor);
-	if (Character != nullptr)
+	AProtagonistCharacter* ProtagonistCharacter = Cast<AProtagonistCharacter>(OtherActor);
+	if (ProtagonistCharacter != nullptr)
 	{
-		Character->ObtainWeapon(WeaponActor);
+		ProtagonistCharacter->Weapon->ObtainWeapon(WeaponActor);
 		
 		// Notify that the actor is being pickekd up
-		OnPickUp.Broadcast(Character);
+		OnPickUp.Broadcast(ProtagonistCharacter);
 		
 		// Unregister from the Overlap Event so it is no longer triggered
 		OnComponentBeginOverlap.RemoveAll(this);

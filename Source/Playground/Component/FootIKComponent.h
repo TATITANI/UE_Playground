@@ -30,9 +30,6 @@ private:
 	FName RightFootSocketName = "RightFoot";
 	
 	
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
-	float TraceDistance;
-	
 public:	
 	// Sets default values for this component's properties
 	UFootIKComponent();

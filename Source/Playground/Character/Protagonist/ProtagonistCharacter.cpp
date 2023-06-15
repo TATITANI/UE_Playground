@@ -5,15 +5,11 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "MyGameInstance.h"
+
 #include "Character/CharacterCurrentInfo.h"
-#include "Character/Protagonist/Weapon/WeaponActor.h"
+#include "Component/CharacterWeaponComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Inventory/WeaponInventory.h"
-#include "Kismet/GameplayStatics.h"
-#include "UI/MyHUD.h"
-#include "UI/IngameWidget.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,22 +47,21 @@ AProtagonistCharacter::AProtagonistCharacter()
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	Weapon = CreateDefaultSubobject<UCharacterWeaponComponent>(TEXT("Weapon"));
 }
 
 void AProtagonistCharacter::PostInitProperties()
 {
 	Super::PostInitProperties();
 	CharacterCurrentInfo = NewObject<UCharacterCurrentInfo>();
-
 }
-
 
 
 void AProtagonistCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-	
+
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
 	if (PlayerController)
@@ -84,12 +79,7 @@ void AProtagonistCharacter::BeginPlay()
 			CameraManager->ViewPitchMax = 45.0;
 		}
 	}
-	WeaponInventory = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->WeaponInventory;
-	ensure(WeaponInventory != nullptr);
 
-	AWeaponActor* DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
-	ensure(DefaultWeaponActor != nullptr);
-	ObtainWeapon(DefaultWeaponActor);
 
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
@@ -113,61 +103,14 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProtagonistCharacter::Look);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Completed, this, &AProtagonistCharacter::StopLookAround);
-
-		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Started, this, &AProtagonistCharacter::ClickChangeWeapon);
 	}
 }
 
 void AProtagonistCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
-	auto BottomLoc = GetMesh()->GetSocketLocation("sd");
-	
 }
 
-void AProtagonistCharacter::ObtainWeapon(AWeaponActor* WeaponActor)
-{
-	ensure(WeaponActor);
-	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	WeaponActor->AttachToComponent(GetMesh(), AttachmentRules, FName(WeaponActor->GetSocketName()));
-
-	WeaponInventory->AddWeapon(WeaponActor);
-	OnObtainWeapon.Broadcast(WeaponActor);
-
-	ChangeWeapon(WeaponActor);
-}
-
-void AProtagonistCharacter::ClickChangeWeapon(const FInputActionValue& Value)
-{
-	const int8 SlotID = static_cast<int8>(Value.Get<float>()) - 1;;
-	const auto MyHUD = Cast<AMyHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
-	const auto WeaponType = MyHUD->IngameWidget->GetSlotWeaponType(SlotID);
-	// UE_LOG(LogTemp,Log,TEXT("ClickChangeWeapon : %d, %d"), SlotID, WeaponType);
-	if (WeaponType != WEAPON_None)
-	{
-		const auto WeaponActor = WeaponInventory->GetWeapon(WeaponType);
-		ChangeWeapon(WeaponActor);
-	}
-}
-
-void AProtagonistCharacter::ChangeWeapon(AWeaponActor* WeaponActor)
-{
-	if (WeaponInventory->HasWeapon(WeaponActor) == false)
-	{
-		UE_LOG(LogTemp, Error, TEXT("%s weapon not in inventory"), *WeaponActor->GetName());
-		return;
-	}
-	if (CurrentWeapon != nullptr)
-	{
-		CurrentWeapon->UnUse();
-	}
-
-	CurrentWeapon = WeaponActor;
-	WeaponActor->Use(this);
-	CharacterCurrentInfo->SetCurrentWeaponType(WeaponActor->GetWeaponType());
-	OnChangeWeapon.Broadcast(WeaponActor);
-}
 
 void AProtagonistCharacter::Move(const FInputActionValue& Value)
 {
@@ -219,7 +162,6 @@ void AProtagonistCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 
-		const auto ActorRotation = GetActorRotation();
 	}
 }
 

@@ -15,8 +15,6 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnObtainWeapon, class AWeaponActor*);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, class AWeaponActor*);
 
 UCLASS(config=Game)
 class AProtagonistCharacter : public ACharacter
@@ -47,7 +45,6 @@ private:
 	void Look(const FInputActionValue& Value);
 
 	void StopLookAround(const FInputActionValue& Value);
-	void ClickChangeWeapon(const FInputActionValue& Value);
 	virtual void Jump() override;
 
 private:
@@ -59,6 +56,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -75,27 +73,20 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ChangeWeaponAction;
+	
 
 	bool IsLookingAround = false;
 	bool Movable = true;
 
-	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
-	TSubclassOf<class AWeaponActor> DefaultWeapon;
-
-	class AWeaponActor* CurrentWeapon;
-
-	TSharedPtr<class FWeaponInventory> WeaponInventory;
-
-public:
-	FOnObtainWeapon OnObtainWeapon;
-	FOnChangeWeapon OnChangeWeapon;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UCharacterWeaponComponent *Weapon;
+
+	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
@@ -103,8 +94,5 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 
 	void SetMovable(bool bEnable) { this->Movable = bEnable; }
-
-	void ObtainWeapon(class AWeaponActor* WeaponActor);
-	void ChangeWeapon(class AWeaponActor* WeaponActor);
 	void SetUsingControllerYaw(bool bActive) { bUseControllerRotationYaw = bActive; }
 };
