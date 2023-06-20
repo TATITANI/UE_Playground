@@ -17,7 +17,7 @@ enum EWeaponType
 	BOMB UMETA(displayDisplayName = "Bomb"),
 };
 
-UCLASS(BlueprintType, Blueprintable)
+UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class UCharacterCurrentInfo : public UObject
 {
 	GENERATED_BODY()
@@ -27,17 +27,20 @@ private:
 	TEnumAsByte<EWeaponType> CurrentWeaponType = WEAPON_None;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
-	FVector2D Dir = FVector2d::ZeroVector;
+	FVector2D InputDir = FVector2d::ZeroVector;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	bool OnJump = false;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
+	bool OnClimbing = false;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	TEnumAsByte<EMovementMode> CurrentMovementMode;
 
 
 public:
-	FORCEINLINE FVector2D GetDir() const { return Dir; }
+	FORCEINLINE FVector2D GetDir() const { return InputDir; }
 
 	void SetCurrentWeaponType(EWeaponType WeaponType) { this->CurrentWeaponType = WeaponType; }
 };

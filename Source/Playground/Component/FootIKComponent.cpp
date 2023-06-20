@@ -14,7 +14,6 @@ UFootIKComponent::UFootIKComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	
 }
 
 
@@ -38,14 +37,14 @@ void UFootIKComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 	const float CurrentHipDisplacement = FMath::Min(LeftTraceResult.Displacement, RightTraceResult.Displacement);
 	HipDisplacement = FMath::FInterpTo(HipDisplacement, CurrentHipDisplacement, DeltaTime, 10);
-	
+
 	//test
 	OffsetLeft = (-LeftTraceResult.Displacement + HipDisplacement) * -1;
 	OffsetRight = (-RightTraceResult.Displacement + HipDisplacement) * -1;
 	// UE_LOG(LogTemp,Log,TEXT("offset : %f, %f"), OffsetLeft, OffsetRight);
 
 	RotLeft = FMath::RInterpTo(RotLeft, LeftTraceResult.Rot, DeltaTime, 10);
-	RotRight = FMath::RInterpTo(RotRight, FRotator(-RightTraceResult.Rot.Pitch, RightTraceResult.Rot.Yaw, RightTraceResult.Rot.Roll), DeltaTime, 10);
+	RotRight = FMath::RInterpTo(RotRight, RightTraceResult.Rot, DeltaTime, 10);
 }
 
 
@@ -56,7 +55,7 @@ UFootIKComponent::FTraceInfo UFootIKComponent::TraceFromFoot(FName SocketName)
 	//! Set Linetraces startpoint and end point
 	FVector SocketLocation = Character->GetMesh()->GetSocketLocation(SocketName);
 	FVector Line_Start = FVector(SocketLocation.X, SocketLocation.Y, (Character->GetActorLocation().Z));
-	FVector Line_End = Line_Start - FVector(0, 0, HalfHeightCapsule*2 );
+	FVector Line_End = Line_Start - FVector(0, 0, HalfHeightCapsule * 2);
 
 	//! Process Line Trace
 	FHitResult HitResult;
@@ -81,6 +80,6 @@ UFootIKComponent::FTraceInfo UFootIKComponent::TraceFromFoot(FName SocketName)
 	auto DegXZ = UKismetMathLibrary::DegAtan2(HitResult.Normal.X, HitResult.Normal.Z);
 	auto DegYZ = UKismetMathLibrary::DegAtan2(HitResult.Normal.Y, HitResult.Normal.Z);
 	TraceInfo.Rot = FRotator(-DegXZ, 0, DegYZ);
-	
+
 	return TraceInfo;
 }

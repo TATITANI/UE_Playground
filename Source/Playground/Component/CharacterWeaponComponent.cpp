@@ -35,7 +35,7 @@ void UCharacterWeaponComponent::BeginPlay()
 		UE_LOG(LogTemp, Error, TEXT("Owner of UCharacterWeaponComponent was not found"));
 		return;
 	}
-	
+
 	if (UEnhancedInputComponent* EnhancedInputComponent =
 		Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
 	{
@@ -92,4 +92,9 @@ void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 	WeaponActor->Use(ProtagonistCharacter);
 	ProtagonistCharacter->CharacterCurrentInfo->SetCurrentWeaponType(WeaponActor->GetWeaponType());
 	OnChangeWeapon.Broadcast(WeaponActor);
+}
+
+void UCharacterWeaponComponent::SetWeaponHidden(bool IsHidden) const
+{
+	CurrentWeapon->SetActorHiddenInGame(IsHidden);
 }

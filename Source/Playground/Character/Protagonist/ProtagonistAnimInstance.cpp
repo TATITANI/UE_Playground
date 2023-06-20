@@ -5,6 +5,12 @@
 
 #include "ProtagonistCharacter.h"
 #include "Component/FootIKComponent.h"
+#include "Utils/UtilPlayground.h"
+
+UProtagonistAnimInstance::UProtagonistAnimInstance()
+{
+}
+
 
 void UProtagonistAnimInstance::PostInitProperties()
 {

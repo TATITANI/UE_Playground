@@ -22,14 +22,15 @@ public:
 	virtual void NativeBeginPlay() override;
 	virtual void NativeInitializeAnimation() override;
 
-
+	UProtagonistAnimInstance();
 private:
 	// class AProtagonistCharacter* Protagonist;
 
-	UPROPERTY(BlueprintReadWrite, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, Instanced, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 	UPROPERTY(BlueprintReadWrite, Instanced,Transient,  Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class UFootIKComponent* FootIKComponent;
+
 
 };

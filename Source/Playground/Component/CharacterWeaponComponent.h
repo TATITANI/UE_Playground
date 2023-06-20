@@ -26,8 +26,6 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-
 private:
 	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AWeaponActor> DefaultWeapon;
@@ -50,5 +48,7 @@ public:
 
 	void ObtainWeapon(class AWeaponActor* WeaponActor);
 	void ChangeWeapon(class AWeaponActor* WeaponActor);
+	void SetWeaponHidden(bool IsHidden) const;
+	
 	
 };

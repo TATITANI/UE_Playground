@@ -26,9 +26,6 @@ private:
 	UInputAction* ThrowInputAction;
 
 	UPROPERTY(EditDefaultsOnly, Category=Ani, meta=(AllowPrivateAccess=true))
-	UAnimMontage* HoldMontage;
-
-	UPROPERTY(EditDefaultsOnly, Category=Ani, meta=(AllowPrivateAccess=true))
 	UAnimMontage* ThrowMontage;
 
 private: // 궤적

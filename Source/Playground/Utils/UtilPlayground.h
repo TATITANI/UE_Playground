@@ -23,6 +23,7 @@ template <typename T>
 T* UtilPlayground::LoadAsset(FString FileName)
 {
 	static ConstructorHelpers::FObjectFinder<T> MyAsset((TEXT("%s"), *FileName));
+	ensure(MyAsset.Succeeded());
 	return MyAsset.Object;
 }
 
