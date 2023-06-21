@@ -25,21 +25,21 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	AActor* Owner;
-	
+	class AProtagonistCharacter *ProtagonistCharacter;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* DashAction;
 
 	UPROPERTY(EditDefaultsOnly, Category=DASH)
 	UCurveFloat* DashPowerCurve;
 
-	FTimerHandle DashTimerHandle;
-	const float DashPower = 2000.f;
-	const float DashCooltime = 3.f;
-	bool CanDash = true;
-
-	float DashRemainTime = 0;
-	float DashMaxTime;
+	const float DashPower = 2000.0f;
+	const float DashDistanceSquared = 5000.0f;
+	float RemainDistance = 0;
+	
+	bool IsCooltime = false;
+	FTimerHandle CooltimeTimerHandle;
+	const float CoolTime = 2.f;
 
 private:
 	UFUNCTION()
