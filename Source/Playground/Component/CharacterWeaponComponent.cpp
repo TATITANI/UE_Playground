@@ -53,6 +53,10 @@ void UCharacterWeaponComponent::BeginPlay()
 
 void UCharacterWeaponComponent::ClickChangeWeapon(const FInputActionValue& Value)
 {
+	if(CurrentWeapon->IsHidden())
+		return;
+	
+	
 	const int8 SlotID = static_cast<int8>(Value.Get<float>()) - 1;;
 	const auto MyHUD = Cast<AMyHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
 	const auto WeaponType = MyHUD->IngameWidget->GetSlotWeaponType(SlotID);
