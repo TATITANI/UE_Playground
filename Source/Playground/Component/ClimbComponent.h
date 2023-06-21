@@ -83,7 +83,7 @@ private:
 	bool CanLand();
 
 	FHitResult TraceClimbing(FVector StartLoc, float Distance = 400.0f, EDrawDebugTrace::Type DebugTraceType = EDrawDebugTrace::None);
-	void ActiveClimbing(bool bActive);
+	void ActiveClimbing(bool IsActive, bool IsStand = true);
 	void GrabWall();
 	void Jump();
 

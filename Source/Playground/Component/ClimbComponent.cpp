@@ -58,7 +58,7 @@ void UClimbComponent::BeginPlay()
 		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Completed, this, &UClimbComponent::Stop);
 
 		EnhancedInputComponent->BindAction(ClimbJumpAction, ETriggerEvent::Started, this, &UClimbComponent::Jump);
-		EnhancedInputComponent->BindAction(ClimbFallAction, ETriggerEvent::Started, this, &UClimbComponent::ActiveClimbing, false);
+		EnhancedInputComponent->BindAction(ClimbFallAction, ETriggerEvent::Started, this, &UClimbComponent::ActiveClimbing, false, true);
 	}
 }
 
@@ -82,19 +82,25 @@ FHitResult UClimbComponent::TraceClimbing(FVector StartLoc, float Distance, EDra
 	return HitResult;
 }
 
-void UClimbComponent::ActiveClimbing(bool bActive)
+void UClimbComponent::ActiveClimbing(bool IsActive, bool IsStand)
 {
 	RemainJumpDistance = 0;
 	// Set State
-	ProtagonistCharacter->GetCharacterMovement()->SetMovementMode(bActive ? MOVE_Flying : MOVE_Falling);
+	ProtagonistCharacter->GetCharacterMovement()->SetMovementMode(IsActive ? MOVE_Flying : MOVE_Falling);
 	ProtagonistCharacter->GetCharacterMovement()->StopMovementImmediately();
-	ProtagonistCharacter->GetCharacterMovement()->bOrientRotationToMovement = !bActive;
-	ProtagonistCharacter->CharacterCurrentInfo->OnClimbing = bActive;
+	ProtagonistCharacter->GetCharacterMovement()->bOrientRotationToMovement = !IsActive;
+	ProtagonistCharacter->CharacterCurrentInfo->OnClimbing = IsActive;
 
-	ProtagonistCharacter->Weapon->SetWeaponHidden(bActive);
-	CanControlMoving = bActive;
+	ProtagonistCharacter->Weapon->SetWeaponHidden(IsActive);
+	CanControlMoving = IsActive;
 
-	if (bActive)
+	if (IsStand)
+	{
+		const FRotator Rotator(0, ProtagonistCharacter->GetActorRotation().Yaw, 0);
+		ProtagonistCharacter->SetActorRotation(Rotator);
+	}
+
+	if (IsActive)
 	{
 		if (Subsystem->HasMappingContext(ClimbMappingContext) == false)
 			Subsystem->AddMappingContext(ClimbMappingContext, ProtagonistCharacter->InputPriority + 1);
@@ -210,7 +216,7 @@ bool UClimbComponent::CanClimbOver(FVector& ClimbOverLoc)
 	const FVector TraceDir = FVector(ProtagonistCharacter->GetActorForwardVector().X, ProtagonistCharacter->GetActorForwardVector().Y, 0);
 
 	FHitResult HeadHitResult;;
-	auto HeadTraceStartLoc = GetHeadLocation() ;
+	auto HeadTraceStartLoc = GetHeadLocation();
 	auto HeadTraceEndLoc = HeadTraceStartLoc + TraceDir * CapsuleRadius * 4.f;
 	UKismetSystemLibrary::LineTraceSingle(GetWorld(), GetHeadLocation(), HeadTraceEndLoc,
 	                                      WallTraceChannel, true,
@@ -288,8 +294,6 @@ void UClimbComponent::Climb(FVector2D InputDir, float Speed)
 	if (!HitResult.bBlockingHit) // 짚을 벽이 없으면 낙하
 	{
 		ActiveClimbing(false);
-		const FRotator Rotator(0, ProtagonistCharacter->GetActorRotation().Yaw, 0);
-		ProtagonistCharacter->SetActorRotation(Rotator);
 	}
 	else if (FVector ClimbOverLoc; InputDir.Y > 0 && CanClimbOver(ClimbOverLoc))
 	{
@@ -298,14 +302,12 @@ void UClimbComponent::Climb(FVector2D InputDir, float Speed)
 		UKismetSystemLibrary::MoveComponentTo(ProtagonistCharacter->GetCapsuleComponent(), ClimbOverLoc,
 		                                      FRotator(0, ProtagonistCharacter->GetActorRotation().Yaw, 0),
 		                                      true, true, 0.3f, false, EMoveComponentAction::Move, LatentActionInfo);
-		ActiveClimbing(false);
+		ActiveClimbing(false, false);
 		PlayMontage("ClimbOver");
 	}
 	else if (InputDir.Y < 0 && CanLand())
 	{
 		ActiveClimbing(false);
-		const FRotator Rotator(0, ProtagonistCharacter->GetActorRotation().Yaw, 0);
-		ProtagonistCharacter->SetActorRotation(Rotator);
 	}
 }
 
