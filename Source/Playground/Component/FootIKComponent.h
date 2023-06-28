@@ -34,8 +34,6 @@ public:
 	// Sets default values for this component's properties
 	UFootIKComponent();
 
-	FTraceInfo TraceFromFoot(FName SocketName);	
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -58,7 +56,9 @@ private:
 	float HipDisplacement;
 
 	
-public:	
+private:
+	FTraceInfo TraceFromFoot(FName SocketName);	
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	

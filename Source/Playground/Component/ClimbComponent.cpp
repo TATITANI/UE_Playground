@@ -51,7 +51,7 @@ void UClimbComponent::BeginPlay()
 		Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
 	{
 		// none 바인딩 이유 : 키 누르고 있는 상태에서 우선순위 높은 컨텍스트 제거하면, 교체한 컨텍스트의 trigger로는 호출안되기 때문
-		EnhancedInputComponent->BindAction(GrabWallAction, ETriggerEvent::None, this, &UClimbComponent::GrabWall);
+		// EnhancedInputComponent->BindAction(GrabWallAction, ETriggerEvent::None, this, &UClimbComponent::GrabWall);
 		EnhancedInputComponent->BindAction(GrabWallAction, ETriggerEvent::Triggered, this, &UClimbComponent::GrabWall);
 
 		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Triggered, this, &UClimbComponent::Move);
