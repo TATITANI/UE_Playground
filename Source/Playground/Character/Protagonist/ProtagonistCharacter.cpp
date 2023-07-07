@@ -80,8 +80,8 @@ void AProtagonistCharacter::BeginPlay()
 		// clamp camera pitch	
 		if (auto CameraManager = PlayerController->PlayerCameraManager)
 		{
-			CameraManager->ViewPitchMin = -45.0;
-			CameraManager->ViewPitchMax = 45.0;
+			CameraManager->ViewPitchMin = -70.0;
+			CameraManager->ViewPitchMax = 70.0;
 		}
 	}
 
