@@ -3,9 +3,6 @@
 
 #include "Boids/BoidEntity.h"
 
-#include "Kismet/KismetMathLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
-
 // Sets default values
 ABoidEntity::ABoidEntity()
 {
@@ -17,6 +14,7 @@ ABoidEntity::ABoidEntity()
 void ABoidEntity::BeginPlay()
 {
 	Super::BeginPlay();
+	Dir = GetActorForwardVector();
 }
 
 void ABoidEntity::Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius)
@@ -33,21 +31,8 @@ void ABoidEntity::UpdateRandomMovement()
 	RandomVector = FMath::VRand();
 }
 
-FVector ABoidEntity::CalculateDir()
+void ABoidEntity::CalculateDir()
 {
-	FVector Dir;
-	FHitResult HitResult;
-	if (CheckObstacle(HitResult))
-	{
-		Dir = RandomVector = FMath::GetReflectionVector(GetActorForwardVector(), HitResult.Normal);
-		return Dir;
-	}
-	else if (FVector::Distance(GetActorLocation(), Pivot) > MovableRadius)
-	{
-		Dir = RandomVector = (Pivot - GetActorLocation()).GetSafeNormal();
-		return Dir;
-	}
-
 	TArray<FOverlapResult> OverlapResults;
 	const FCollisionObjectQueryParams ObjectParams(TraceCollisionChannel);
 	GetWorld()->OverlapMultiByObjectType(OverlapResults, GetActorLocation(), FQuat::Identity, ObjectParams, FCollisionShape::MakeSphere(500.0f));
@@ -78,9 +63,6 @@ FVector ABoidEntity::CalculateDir()
 
 	Dir = (CohesionVector * WeightCohesion + AlignmentVector * WeightAlignment + SeperationVector * WeightSeperation
 		+ RandomVector * WeightRandomMove + LeaderFollowingVector * WeightLeaderFollowing).GetSafeNormal();
-
-
-	return Dir;
 }
 
 bool ABoidEntity::CheckObstacle(FHitResult& HitResult)
@@ -88,7 +70,7 @@ bool ABoidEntity::CheckObstacle(FHitResult& HitResult)
 	FVector LineStartLoc = GetActorLocation(), LineEndLoc = LineStartLoc + GetActorForwardVector() * 1000;
 	GetWorld()->LineTraceSingleByChannel(HitResult, LineStartLoc, LineEndLoc, ECC_WorldStatic);
 	FColor LineColor = HitResult.bBlockingHit ? FColor::Green : FColor::Red;
-	DrawDebugLine(GetWorld(), LineStartLoc, LineEndLoc, LineColor);
+	// DrawDebugLine(GetWorld(), LineStartLoc, LineEndLoc, LineColor);
 
 
 	return HitResult.bBlockingHit;
@@ -99,15 +81,22 @@ bool ABoidEntity::CheckObstacle(FHitResult& HitResult)
 void ABoidEntity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// FVector Dir = CalculateDir();
+	
+	if (FHitResult HitResult; CheckObstacle(HitResult))
+	{
+		Dir = RandomVector = FMath::GetReflectionVector(GetActorForwardVector(), HitResult.Normal);
+	}
+	if (FVector::Distance(GetActorLocation(), Pivot) > MovableRadius)
+	{
+		Dir = RandomVector = (Pivot - GetActorLocation()).GetSafeNormal();
+	}
 
-
-	FVector Dir = CalculateDir();
-
-	Dir = FMath::VInterpTo(GetActorForwardVector(), Dir, DeltaTime, 5);
-	Velocity = Dir * Speed * DeltaTime;
+	const FVector CurrentDir = FMath::VInterpTo(GetActorForwardVector(), Dir, DeltaTime, 5);
+	Velocity = CurrentDir * Speed * DeltaTime;
 	AddActorWorldOffset(Velocity);
 
 
-	const auto Rot = FRotationMatrix::MakeFromX(Dir).Rotator();
+	const auto Rot = FRotationMatrix::MakeFromX(CurrentDir).Rotator();
 	SetActorRotation(Rot);
 }

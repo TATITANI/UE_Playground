@@ -26,10 +26,11 @@ public:
 	void Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius);
 	
 private:
+	FVector Dir;
+	
 	ABoidEntity* Leader;
 	FVector Pivot;
 	float MovableRadius;
-
 
 	UPROPERTY(EditDefaultsOnly, Category=Move, meta=(AllowPrivateAccess=true))
 	float Speed = 100;
@@ -60,9 +61,14 @@ private:
 	FTimerHandle RandomMovementTimerHandle;
 	void UpdateRandomMovement();
 
-	FVector CalculateDir();
 
 	bool CheckObstacle(FHitResult &HitResult);
+	
 public:
+	void CalculateDir();
 	virtual FVector GetVelocity() const override { return Velocity; }
+
+
 };
+
+
