@@ -1,0 +1,97 @@
+﻿#include "/Engine/Public/Platform.ush"
+
+
+struct FBoidsEntityInfo
+{
+	float3 Position;
+	float3 Velocity;
+	float3 Direction;
+	float3 RandomVector;
+};
+
+Buffer<int> Input;
+
+int EntityCnt;
+float NeighborRadius;
+float WeightCohesion;
+float WeightAlignment;
+float WeightSeperation;
+float WeightRandomMove;
+float WeightLeaderFollowing;
+
+RWStructuredBuffer<FBoidsEntityInfo> BoidsInfos;
+
+float GetDistance(float3 PosA, float3 PosB)
+{
+	const float SquareSum = (PosB[0] - PosA[0]) * (PosB[0] - PosA[0])
+		+ (PosB[1] - PosA[1]) * (PosB[1] - PosA[1])
+		+ (PosB[2] - PosA[2]) * (PosB[2] - PosA[2]);
+
+	if (SquareSum <= 0)
+		return 0;
+
+	return sqrt(SquareSum);
+}
+
+float3 GetSafeNormal(float3 Vec)
+{
+	const float SquareSum = Vec.x * Vec.x + Vec.y * Vec.y + Vec.z * Vec.z;
+	if (SquareSum < 0.001f)
+	{
+		return float3(0, 0, 0);
+	}
+	else
+	{
+		return normalize(Vec);
+	}
+}
+
+#define ThreadCnt 64
+
+[numthreads(ThreadCnt, 1, 1)]
+void BoidsComputeShader(uint3 DispatchThreadId : SV_DispatchThreadID,
+                        uint GroupIndex : SV_GroupIndex)
+{
+	const int ThreadID = DispatchThreadId.x;
+	const int EntityCntPerThread = EntityCnt / ThreadCnt;
+	const int StartEntityIDForThread = ThreadID * EntityCntPerThread;
+	const int LastEntityIDForThread = ThreadID < ThreadCnt - 1 ? StartEntityIDForThread + EntityCntPerThread - 1 : EntityCnt - 1;
+
+	for (int CurrentID = StartEntityIDForThread; CurrentID <= LastEntityIDForThread; CurrentID++)
+	{
+		int NeighborsCnt = 0;
+		float3 SumNeighborsLoc = float3(0, 0, 0);
+		float3 SumNeighborsVelocity = float3(0, 0, 0);
+
+		for (int EntityID = 0; EntityID < EntityCnt; EntityID++)
+		{
+			if (CurrentID == EntityID)
+				continue;
+
+			if (GetDistance(BoidsInfos[CurrentID].Position, BoidsInfos[EntityID].Position) < NeighborRadius)
+			{
+				NeighborsCnt++;
+				SumNeighborsLoc += BoidsInfos[EntityID].Position;
+				SumNeighborsVelocity += BoidsInfos[EntityID].Velocity;
+			}
+		}
+
+		const float3 AverageNeighborsVelocity =
+			NeighborsCnt != 0 ? SumNeighborsVelocity / NeighborsCnt : BoidsInfos[CurrentID].Velocity;
+		const float3 CenterNeighbors = NeighborsCnt != 0 ? SumNeighborsLoc / NeighborsCnt : BoidsInfos[CurrentID].Position;
+
+		const float3 CohesionVector = GetSafeNormal(CenterNeighbors - BoidsInfos[CurrentID].Position);
+		const float3 AlignmentVector = GetSafeNormal(AverageNeighborsVelocity - BoidsInfos[CurrentID].Velocity);
+		const float3 SeperationVector = -GetSafeNormal((SumNeighborsLoc - BoidsInfos[CurrentID].Position * NeighborsCnt));
+		const float3 LeaderFollowingVector = GetSafeNormal(BoidsInfos[0].Position - BoidsInfos[CurrentID].Position);
+
+
+		BoidsInfos[CurrentID].Direction = GetSafeNormal(
+			CohesionVector * WeightCohesion
+			+ AlignmentVector * WeightAlignment
+			+ SeperationVector * WeightSeperation
+			+ BoidsInfos[CurrentID].RandomVector * WeightRandomMove
+			+ LeaderFollowingVector * WeightLeaderFollowing);
+
+	}
+}

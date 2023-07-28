@@ -23,13 +23,8 @@ void ABoidEntity::Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadiu
 	Pivot = _Pivot;
 	MovableRadius = _MovableRadius;
 
-	GetWorldTimerManager().SetTimer(RandomMovementTimerHandle, this, &ABoidEntity::UpdateRandomMovement, 1, true, 0.5f);
 }
 
-void ABoidEntity::UpdateRandomMovement()
-{
-	RandomVector = FMath::VRand();
-}
 
 void ABoidEntity::CalculateDir()
 {
@@ -60,6 +55,7 @@ void ABoidEntity::CalculateDir()
 	const FVector AlignmentVector = (AverageNeighborsVelocity - Velocity).GetSafeNormal();
 	const FVector SeperationVector = -(SumNeighborsLoc - GetActorLocation() * NeighborsCnt).GetSafeNormal();
 	const FVector LeaderFollowingVector = (Leader->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	RandomVector = FMath::VRand();
 
 	Dir = (CohesionVector * WeightCohesion + AlignmentVector * WeightAlignment + SeperationVector * WeightSeperation
 		+ RandomVector * WeightRandomMove + LeaderFollowingVector * WeightLeaderFollowing).GetSafeNormal();
@@ -81,7 +77,6 @@ bool ABoidEntity::CheckObstacle(FHitResult& HitResult)
 void ABoidEntity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// FVector Dir = CalculateDir();
 	
 	if (FHitResult HitResult; CheckObstacle(HitResult))
 	{
@@ -93,8 +88,8 @@ void ABoidEntity::Tick(float DeltaTime)
 	}
 
 	const FVector CurrentDir = FMath::VInterpTo(GetActorForwardVector(), Dir, DeltaTime, 5);
-	Velocity = CurrentDir * Speed * DeltaTime;
-	AddActorWorldOffset(Velocity);
+	Velocity = CurrentDir * Speed * DeltaTime ;
+	AddActorWorldOffset(Velocity );
 
 
 	const auto Rot = FRotationMatrix::MakeFromX(CurrentDir).Rotator();

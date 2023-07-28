@@ -2,8 +2,8 @@
 
 
 #include "BoidsGenerator.h"
-
 #include "BoidEntity.h"
+
 
 // Sets default values
 ABoidsGenerator::ABoidsGenerator()
@@ -11,16 +11,17 @@ ABoidsGenerator::ABoidsGenerator()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+
+	ComputeShaderDispatchParams = FBoidsComputeShaderDispatchParams(FIntVector3(1, 1, 1), EntityCnt);
 }
 
 // Called when the game starts or when spawned
 void ABoidsGenerator::BeginPlay()
 {
 	Super::BeginPlay();
-
 	FActorSpawnParameters ActorSpawnParams;
-
-	for (int i = 0; i < BoidsCnt; i++)
+	for (int i = 0; i < EntityCnt; i++)
 	{
 		double dx = FMath::RandRange(-1500, 1500);
 		double dy = FMath::RandRange(-1500, 1500);
@@ -30,10 +31,11 @@ void ABoidsGenerator::BeginPlay()
 		ListEntity.Add(Entity);
 		Entity->Init(ListEntity[0], GetActorLocation(), MovableRadius);
 		Entity->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+		FBoidsEntityInfo Info;
+		ComputeShaderDispatchParams.ArrEntityStates.Add(Info);
 	}
-	DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Turquoise, true);
 
-	// UpdatingBoidDirThread = MakeUnique<FUpdatingBoidDirThread>(ListEntity);
+	DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Turquoise, true);
 }
 
 void ABoidsGenerator::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -50,17 +52,47 @@ void ABoidsGenerator::Tick(float DeltaTime)
 	if (ElapsedTime > PeriodUpdateDir)
 	{
 		ElapsedTime = 0;
-		const int32 TaskNum = 5;//FPlatformMisc::NumberOfWorkerThreadsToSpawn();
-		ParallelFor(TaskNum, [&](int32 TaskID)
-		{
-			const int32 EntityStartID = TaskID * BoidsCnt / TaskNum;
-			const int32 EntityLastID = TaskID < TaskNum - 1 ? EntityStartID + BoidsCnt / TaskNum - 1 : BoidsCnt - 1;
-			for (int i = EntityStartID; i <= EntityLastID; i++)
-			{
-				ListEntity[i]->CalculateDir();
-			}
-		}, EParallelForFlags::None);
+		// UE_LOG(LogTemp, Log, TEXT("tick"));
 
+		/// GPU
+		for (int32 ID = 0; ID < EntityCnt; ID++)
+		{
+			FVector EntityLoc = ListEntity[ID]->GetActorLocation();
+			FVector EntityVelocity = ListEntity[ID]->GetVelocity();
+		
+			auto RandomVec = FMath::VRand();
+			ListEntity[ID]->SetRandomVec(RandomVec);
+			for (int32 j = 0; j < 3; j++)
+			{
+				ComputeShaderDispatchParams.ArrEntityStates[ID].Position[j] = EntityLoc[j];
+				ComputeShaderDispatchParams.ArrEntityStates[ID].Velocity[j] = EntityVelocity[j];
+				ComputeShaderDispatchParams.ArrEntityStates[ID].RandomVector[j] = RandomVec[j];
+			}
+		}
+		
+		FBoidsComputeShaderInterface::Dispatch(ComputeShaderDispatchParams, [this]()
+		{
+			for (int32 ID = 0; ID < EntityCnt; ID++)
+			{
+				const auto Dir = ComputeShaderDispatchParams.ArrEntityStates[ID].Direction;
+				ListEntity[ID]->SetDir(FVector(Dir[0], Dir[1], Dir[2]));
+				
+			}
+		});
+
+
+		/// CPU 
+		// constexpr int32 TaskCnt = 5; //FPlatformMisc::NumberOfWorkerThreadsToSpawn();
+		// const int32 EntityCntPerTask = EntityCnt/TaskCnt;
+		// ParallelFor(TaskCnt, [&](int32 TaskID)
+		// {
+		// 	const int32 StartEntityID = TaskID * EntityCntPerTask;
+		// 	const int32 LastEntityID = TaskID < TaskCnt - 1 ? StartEntityID + EntityCntPerTask - 1 : EntityCnt - 1;
+		// 	for (int i = StartEntityID; i <= LastEntityID; i++)
+		// 	{
+		// 		ListEntity[i]->CalculateDir();
+		// 	}
+		// }, EParallelForFlags::None);
 	}
 }
 
@@ -105,4 +137,9 @@ void ABoidsGenerator::FUpdatingBoidDirThread::Exit()
 {
 	FRunnable::Exit();
 	UE_LOG(LogTemp, Log, TEXT("FUpdatingBoidDirThread EXIT"));
+}
+
+void ABoidsGenerator::ComputeShaderResult(int Result)
+{
+	UE_LOG(LogTemp, Log, TEXT("ComputeShaderResult : %d"), Result);
 }

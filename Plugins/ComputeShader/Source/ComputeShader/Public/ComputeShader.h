@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FComputeShader : public IModuleInterface
+class FComputeShaderModule : public IModuleInterface
 {
 public:
 

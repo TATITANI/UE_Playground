@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "ShadeupExamplePlugin",
+	"FriendlyName": "ComputeShader",
 	"Description": "",
 	"Category": "Other",
 	"CreatedBy": "",
@@ -11,19 +11,16 @@
 	"MarketplaceURL": "",
 	"SupportURL": "",
 	"CanContainContent": true,
+	"EnabledByDefault": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "ShadeupExamplePlugin",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
 			"Name": "ComputeShader",
 			"Type": "Runtime",
 			"LoadingPhase": "PostConfigInit"
 		}
+	
 	]
 }

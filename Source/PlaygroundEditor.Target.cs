@@ -10,6 +10,7 @@ public class PlaygroundEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("Playground");
+		ExtraModuleNames.AddRange(new string[]{"Playground", "ComputeShader"});
+
 	}
 }

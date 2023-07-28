@@ -10,6 +10,6 @@ public class Playground : ModuleRules
 		PrivateIncludePaths.Add("Playground");
 		PublicDependencyModuleNames.AddRange(new string[]
 			{ "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "UMG" , 
-				"NavigationSystem","AIModule", "GameplayTasks", "Slate", "SlateCore", "Niagara"});
+				"NavigationSystem","AIModule", "GameplayTasks", "Slate", "SlateCore", "Niagara", "ComputeShader"});
 	}
 }

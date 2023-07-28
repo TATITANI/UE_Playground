@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Core/Public/HAL/Runnable.h"
+#include "ComputeShader/Public/BoidsComputeShader.h"
 #include "BoidsGenerator.generated.h"
+
 
 UCLASS()
 class PLAYGROUND_API ABoidsGenerator : public AActor
@@ -35,20 +37,20 @@ private:
 	float MovableRadius = 10000;
 
 	UPROPERTY(EditAnywhere, Category=Boids, meta=(AllowPrivateAccess=true))
-	int32 BoidsCnt = 500;
+	int32 EntityCnt = 64;
 
 	virtual bool ShouldTickIfViewportsOnly() const override;
 
 	const float PeriodUpdateDir = 0.1f;
 	float ElapsedTime = 0;
+
 private:
-	
 	class FUpdatingBoidDirThread : public FRunnable
 	{
 	public:
 		FUpdatingBoidDirThread(TArray<ABoidEntity*> _ListEntity);
 		virtual ~FUpdatingBoidDirThread() override;
-		
+
 	private:
 		TUniquePtr<FRunnableThread> RunningThread;
 		TArray<ABoidEntity*> ListEntity;
@@ -62,4 +64,8 @@ private:
 	};
 
 	TUniquePtr<FUpdatingBoidDirThread> UpdatingBoidDirThread;
+	FBoidsComputeShaderDispatchParams ComputeShaderDispatchParams;
+private:
+	UFUNCTION()
+	void ComputeShaderResult(int Result);
 };

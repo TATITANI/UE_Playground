@@ -24,10 +24,11 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius);
-	
+
 private:
+	UPROPERTY(VisibleAnywhere)
 	FVector Dir;
-	
+
 	ABoidEntity* Leader;
 	FVector Pivot;
 	float MovableRadius;
@@ -62,13 +63,12 @@ private:
 	void UpdateRandomMovement();
 
 
-	bool CheckObstacle(FHitResult &HitResult);
-	
+	bool CheckObstacle(FHitResult& HitResult);
+
 public:
 	void CalculateDir();
 	virtual FVector GetVelocity() const override { return Velocity; }
-
-
+	FVector GetDir() const { return Dir; }
+	void SetDir(FVector _Dir) { Dir = _Dir; }
+	void SetRandomVec(FVector _RandomVec) { RandomVector = _RandomVec; }
 };
-
-
