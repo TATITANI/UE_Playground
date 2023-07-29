@@ -16,34 +16,29 @@
 // SHADER_PARAMETER_STRUCT_ARRAY(FBoidsEntityState, BoidStates, [200])
 // END_UNIFORM_BUFFER_STRUCT()
 
-
 struct FBoidsEntityInfo
 {
 	float Position[3] = {0, 0, 0};
 	float Velocity[3] = {0, 0, 0};
-	float Direction[3] = {0, 0, 0};
 	float RandomVector[3] = {0, 0, 0};
 };
 
-class COMPUTESHADER_API FBoidsComputeShaderDispatchParams 
+
+class COMPUTESHADER_API FBoidsComputeShaderDispatchParams
 {
 public:
-	FIntVector3 GroupCount;
+	FIntVector3 GroupCount = FIntVector3(1, 1, 1);
 	int Input[2]; // test
-	
-	UPROPERTY()
-	TArray<FBoidsEntityInfo> ArrEntityStates;
 
-	int32 EntityCnt;
-	FBoidsComputeShaderDispatchParams()
-	{
-	};
+	TArray<FBoidsEntityInfo> ArrEntityStates;	
 
-	FBoidsComputeShaderDispatchParams(FIntVector3 _GroupCnt, int32 _EntityCnt)
-		: GroupCount(_GroupCnt), EntityCnt(_EntityCnt)
-	{
-		UE_LOG(LogTemp,Log,TEXT("FBoidsComputeShaderDispatchParams : %d"), EntityCnt);
-	}
+	int32 EntityCnt = 64;
+	float NeighborRadius = 500;
+	float WeightAlignment = 1;
+	float WeightSeperation = 1;
+	float WeightCohesion = 1;
+	float WeightRandomMove = 1;
+	float WeightLeaderFollowing = 1;
 };
 
 
@@ -51,18 +46,17 @@ public:
 class COMPUTESHADER_API FBoidsComputeShaderInterface
 {
 public:
-
 	// Executes this shader on the render thread
 	static void DispatchRenderThread(
 		FRHICommandListImmediate& RHICmdList,
-		FBoidsComputeShaderDispatchParams& Params,
-		TFunction<void()> AsyncCallback
+		FBoidsComputeShaderDispatchParams Params,
+		TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback
 	);
 
 	// Executes this shader on the render thread from the game thread via EnqueueRenderThreadCommand
 	static void DispatchGameThread(
-		FBoidsComputeShaderDispatchParams& Params,
-		TFunction<void()> AsyncCallback
+		FBoidsComputeShaderDispatchParams Params,
+		TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback
 	)
 	{
 		ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
@@ -70,7 +64,7 @@ public:
 			{
 				DispatchRenderThread(RHICmdList, Params, AsyncCallback);
 			});
-		
+
 		FRenderCommandFence Fence;
 		Fence.BeginFence();
 		Fence.Wait();
@@ -78,7 +72,7 @@ public:
 
 
 	// Dispatches this shader. Can be called from any thread
-	static void Dispatch(FBoidsComputeShaderDispatchParams& Params, TFunction<void()> AsyncCallback)
+	static void Dispatch(FBoidsComputeShaderDispatchParams Params, TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback)
 	{
 		if (IsInRenderingThread())
 		{
@@ -89,11 +83,9 @@ public:
 			DispatchGameThread(Params, AsyncCallback);
 		}
 	}
-
-	
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBoidsComputeShaderLibrary_AsyncExecutionCompleted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBoidsComputeShaderLibrary_AsyncExecutionCompleted, TArray<FVector3f>, OutputDir);
 
 UCLASS() // Change the _API to match your project
 class COMPUTESHADER_API UComputeShaderLibrary_AsyncExecution : public UBlueprintAsyncActionBase
@@ -106,15 +98,15 @@ public:
 	virtual void Activate() override
 	{
 		// Create a dispatch parameters struct and fill it the input array with our args
-		FBoidsComputeShaderDispatchParams Params(FIntVector3(1, 1, 1), 200);
+		FBoidsComputeShaderDispatchParams Params;
 		Params.Input[0] = Arg1;
 		Params.Input[1] = Arg2;
 
 
 		// Dispatch the compute shader and wait until it completes
-		FBoidsComputeShaderInterface::Dispatch(Params, [this]()
+		FBoidsComputeShaderInterface::Dispatch(Params, [this](TArray<FVector3f> OutputDir)
 		{
-			this->Completed.Broadcast();
+			this->Completed.Broadcast(OutputDir);
 		});
 	}
 
@@ -132,10 +124,4 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnBoidsComputeShaderLibrary_AsyncExecutionCompleted Completed;
-
-
 };
-
-
-
-

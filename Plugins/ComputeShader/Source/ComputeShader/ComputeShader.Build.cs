@@ -12,13 +12,10 @@ public class ComputeShader : ModuleRules
 		
 		PrivateIncludePaths.AddRange(new string[] 
 		{
-			"Runtime/Renderer/Private",
-			"ComputeShader/Private"
 		});
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				"ComputeShader/Public"
 				// ... add public include paths required here ...
 			}
 		);  
@@ -49,19 +46,11 @@ public class ComputeShader : ModuleRules
 
 			PrivateDependencyModuleNames.AddRange(
 				new string[] {
-					"UnrealEd",
-					"MaterialUtilities",
 					"SlateCore",
 					"Slate"
 				}
 			);
-
-			CircularlyReferencedDependentModules.AddRange(
-				new string[] {
-					"UnrealEd",
-					"MaterialUtilities",
-				}
-			);
+		
 		}
 	} 
 

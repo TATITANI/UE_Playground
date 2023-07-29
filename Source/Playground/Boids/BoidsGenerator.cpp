@@ -11,9 +11,6 @@ ABoidsGenerator::ABoidsGenerator()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-
-
-	ComputeShaderDispatchParams = FBoidsComputeShaderDispatchParams(FIntVector3(1, 1, 1), EntityCnt);
 }
 
 // Called when the game starts or when spawned
@@ -29,11 +26,17 @@ void ABoidsGenerator::BeginPlay()
 		auto Entity = GetWorld()->SpawnActor<ABoidEntity>(BoidEntity, GetActorLocation() + FVector(dx, dy, dz),
 		                                                  FRotator::ZeroRotator, ActorSpawnParams);
 		ListEntity.Add(Entity);
-		Entity->Init(ListEntity[0], GetActorLocation(), MovableRadius);
+		Entity->Init(ListEntity[0], GetActorLocation(), MovableRadius, BoidsWeight);
 		Entity->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
-		FBoidsEntityInfo Info;
-		ComputeShaderDispatchParams.ArrEntityStates.Add(Info);
 	}
+
+	ComputeShaderDispatchParams.ArrEntityStates.SetNum(EntityCnt);
+	ComputeShaderDispatchParams.WeightAlignment = BoidsWeight.WeightAlignment;
+	ComputeShaderDispatchParams.WeightCohesion = BoidsWeight.WeightCohesion;
+	ComputeShaderDispatchParams.WeightSeperation = BoidsWeight.WeightSeperation;
+	ComputeShaderDispatchParams.WeightLeaderFollowing = BoidsWeight.WeightLeaderFollowing;
+	ComputeShaderDispatchParams.WeightRandomMove = BoidsWeight.WeightRandomMove;
+
 
 	DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Turquoise, true);
 }
@@ -49,53 +52,60 @@ void ABoidsGenerator::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	ElapsedTime += DeltaTime;
 
-	if (ElapsedTime > PeriodUpdateDir)
+	if (ElapsedTime > PeriodUpdatingDir)
 	{
 		ElapsedTime = 0;
-		// UE_LOG(LogTemp, Log, TEXT("tick"));
 
-		/// GPU
-		for (int32 ID = 0; ID < EntityCnt; ID++)
+		if (ThreadType == EBoidsThreading::CPU)
 		{
-			FVector EntityLoc = ListEntity[ID]->GetActorLocation();
-			FVector EntityVelocity = ListEntity[ID]->GetVelocity();
-		
-			auto RandomVec = FMath::VRand();
-			ListEntity[ID]->SetRandomVec(RandomVec);
-			for (int32 j = 0; j < 3; j++)
-			{
-				ComputeShaderDispatchParams.ArrEntityStates[ID].Position[j] = EntityLoc[j];
-				ComputeShaderDispatchParams.ArrEntityStates[ID].Velocity[j] = EntityVelocity[j];
-				ComputeShaderDispatchParams.ArrEntityStates[ID].RandomVector[j] = RandomVec[j];
-			}
+			UpdateDirByCpu();
 		}
-		
-		FBoidsComputeShaderInterface::Dispatch(ComputeShaderDispatchParams, [this]()
+		else if (ThreadType == EBoidsThreading::ComputeShader)
 		{
-			for (int32 ID = 0; ID < EntityCnt; ID++)
-			{
-				const auto Dir = ComputeShaderDispatchParams.ArrEntityStates[ID].Direction;
-				ListEntity[ID]->SetDir(FVector(Dir[0], Dir[1], Dir[2]));
-				
-			}
-		});
-
-
-		/// CPU 
-		// constexpr int32 TaskCnt = 5; //FPlatformMisc::NumberOfWorkerThreadsToSpawn();
-		// const int32 EntityCntPerTask = EntityCnt/TaskCnt;
-		// ParallelFor(TaskCnt, [&](int32 TaskID)
-		// {
-		// 	const int32 StartEntityID = TaskID * EntityCntPerTask;
-		// 	const int32 LastEntityID = TaskID < TaskCnt - 1 ? StartEntityID + EntityCntPerTask - 1 : EntityCnt - 1;
-		// 	for (int i = StartEntityID; i <= LastEntityID; i++)
-		// 	{
-		// 		ListEntity[i]->CalculateDir();
-		// 	}
-		// }, EParallelForFlags::None);
+			UpdateDirByGPU();
+		}
 	}
 }
 
+void ABoidsGenerator::UpdateDirByCpu()
+{
+	/// CPU 
+	const int32 EntityCntPerTask = EntityCnt / ThreadCnt;
+	ParallelFor(ThreadCnt, [&](int32 TaskID)
+	{
+		const int32 StartEntityID = TaskID * EntityCntPerTask;
+		const int32 LastEntityID = TaskID < ThreadCnt - 1 ? StartEntityID + EntityCntPerTask - 1 : EntityCnt - 1;
+		for (int i = StartEntityID; i <= LastEntityID; i++)
+		{
+			ListEntity[i]->CalculateDir();
+		}
+	}, EParallelForFlags::None);
+}
+
+void ABoidsGenerator::UpdateDirByGPU()
+{
+	for (int32 ID = 0; ID < EntityCnt; ID++)
+	{
+		FVector EntityLoc = ListEntity[ID]->GetActorLocation();
+		FVector EntityVelocity = ListEntity[ID]->GetVelocity();
+
+		auto RandomVec = FMath::VRand();
+		ListEntity[ID]->SetRandomVec(RandomVec);
+		for (int32 j = 0; j < 3; j++)
+		{
+			ComputeShaderDispatchParams.ArrEntityStates[ID].Position[j] = EntityLoc[j];
+			ComputeShaderDispatchParams.ArrEntityStates[ID].Velocity[j] = EntityVelocity[j];
+			ComputeShaderDispatchParams.ArrEntityStates[ID].RandomVector[j] = RandomVec[j];
+		}
+	}
+	FBoidsComputeShaderInterface::Dispatch(ComputeShaderDispatchParams, [this](TArray<FVector3f> OutputDir)
+	{
+		for (int32 ID = 0; ID < EntityCnt; ID++)
+		{
+			ListEntity[ID]->SetDir(FVector(OutputDir[ID]));
+		}
+	});
+}
 
 bool ABoidsGenerator::ShouldTickIfViewportsOnly() const
 {
@@ -110,6 +120,8 @@ bool ABoidsGenerator::ShouldTickIfViewportsOnly() const
 ABoidsGenerator::FUpdatingBoidDirThread::FUpdatingBoidDirThread(TArray<ABoidEntity*> _ListEntity)
 {
 	ListEntity = _ListEntity;
+	// create 생성시 스레드 실행
+	// FRunnableThread::Create -> FRunnable::Init ->(init이 true일 경우) FRunnable::Run -> (Run이 종료될 경우) FRunnable::Exit
 	RunningThread = TUniquePtr<FRunnableThread>(FRunnableThread::Create(this, TEXT("FUpdatingBoidDir")));
 }
 
@@ -137,9 +149,4 @@ void ABoidsGenerator::FUpdatingBoidDirThread::Exit()
 {
 	FRunnable::Exit();
 	UE_LOG(LogTemp, Log, TEXT("FUpdatingBoidDirThread EXIT"));
-}
-
-void ABoidsGenerator::ComputeShaderResult(int Result)
-{
-	UE_LOG(LogTemp, Log, TEXT("ComputeShaderResult : %d"), Result);
 }

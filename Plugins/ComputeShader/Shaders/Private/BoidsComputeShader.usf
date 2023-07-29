@@ -5,11 +5,12 @@ struct FBoidsEntityInfo
 {
 	float3 Position;
 	float3 Velocity;
-	float3 Direction;
 	float3 RandomVector;
 };
 
+
 Buffer<int> Input;
+RWStructuredBuffer<float3> OutputDir;
 
 int EntityCnt;
 float NeighborRadius;
@@ -86,12 +87,11 @@ void BoidsComputeShader(uint3 DispatchThreadId : SV_DispatchThreadID,
 		const float3 LeaderFollowingVector = GetSafeNormal(BoidsInfos[0].Position - BoidsInfos[CurrentID].Position);
 
 
-		BoidsInfos[CurrentID].Direction = GetSafeNormal(
+		OutputDir[CurrentID] = GetSafeNormal(
 			CohesionVector * WeightCohesion
 			+ AlignmentVector * WeightAlignment
 			+ SeperationVector * WeightSeperation
 			+ BoidsInfos[CurrentID].RandomVector * WeightRandomMove
 			+ LeaderFollowingVector * WeightLeaderFollowing);
-
 	}
 }

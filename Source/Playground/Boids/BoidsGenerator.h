@@ -9,6 +9,35 @@
 #include "BoidsGenerator.generated.h"
 
 
+USTRUCT(Atomic, BlueprintType)
+struct FBoidsWeight
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
+	float WeightAlignment = 1;
+
+	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
+	float WeightSeperation = 2;
+
+	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
+	float WeightCohesion = 1;
+
+	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
+	float WeightRandomMove = 1;
+
+	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
+	float WeightLeaderFollowing = 1;
+};
+
+UENUM(BlueprintType)
+enum class EBoidsThreading : uint8
+{
+	CPU,
+	ComputeShader
+};
+
+
 UCLASS()
 class PLAYGROUND_API ABoidsGenerator : public AActor
 {
@@ -39,11 +68,26 @@ private:
 	UPROPERTY(EditAnywhere, Category=Boids, meta=(AllowPrivateAccess=true))
 	int32 EntityCnt = 64;
 
-	virtual bool ShouldTickIfViewportsOnly() const override;
+	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
+	FBoidsWeight BoidsWeight;
 
-	const float PeriodUpdateDir = 0.1f;
+	const float PeriodUpdatingDir = 0.1f;
 	float ElapsedTime = 0;
 
+
+private:
+	FBoidsComputeShaderDispatchParams ComputeShaderDispatchParams;
+
+	UPROPERTY(EditAnywhere, Category=Thread, meta=(AllowPrivateAccess=true))
+	EBoidsThreading ThreadType;
+
+	UPROPERTY(EditAnywhere, Category=Thread,
+		meta=( EditCondition = "ThreadType == EBoidsThreading::CPU", EditConditionHides))
+	uint8 ThreadCnt = 1;
+
+	void UpdateDirByCpu();
+	void UpdateDirByGPU();
+	
 private:
 	class FUpdatingBoidDirThread : public FRunnable
 	{
@@ -64,8 +108,6 @@ private:
 	};
 
 	TUniquePtr<FUpdatingBoidDirThread> UpdatingBoidDirThread;
-	FBoidsComputeShaderDispatchParams ComputeShaderDispatchParams;
 private:
-	UFUNCTION()
-	void ComputeShaderResult(int Result);
+	virtual bool ShouldTickIfViewportsOnly() const override;
 };

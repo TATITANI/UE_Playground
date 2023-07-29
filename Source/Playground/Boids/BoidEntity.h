@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BoidsGenerator.h"
 #include "GameFramework/Actor.h"
 #include "BoidEntity.generated.h"
 
@@ -23,7 +24,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius);
+	void Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius, const FBoidsWeight _BoidsWeight);
 
 private:
 	UPROPERTY(VisibleAnywhere)
@@ -31,6 +32,7 @@ private:
 
 	ABoidEntity* Leader;
 	FVector Pivot;
+	FBoidsWeight BoidsWeight;
 	float MovableRadius;
 
 	UPROPERTY(EditDefaultsOnly, Category=Move, meta=(AllowPrivateAccess=true))
@@ -39,30 +41,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category=Trace, meta=(AllowPrivateAccess=true))
 	TEnumAsByte<ECollisionChannel> TraceCollisionChannel = ECC_WorldDynamic;
-
-
-	UPROPERTY(EditDefaultsOnly, Category=Boid, meta=(AllowPrivateAccess=true))
-	float WeightAlignment = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category=Boid, meta=(AllowPrivateAccess=true))
-	float WeightSeperation = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category=Boid, meta=(AllowPrivateAccess=true))
-	float WeightCohesion = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category=Boid, meta=(AllowPrivateAccess=true))
-	float WeightRandomMove = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category=Boid, meta=(AllowPrivateAccess=true))
-	float WeightLeaderFollowing = 1;
-
+	
 	FVector Velocity = FVector::ZeroVector;
-
 	FVector RandomVector;
-	FTimerHandle RandomMovementTimerHandle;
+
+
 	void UpdateRandomMovement();
-
-
 	bool CheckObstacle(FHitResult& HitResult);
 
 public:

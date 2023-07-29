@@ -16,6 +16,7 @@
 #include "ShaderParameterMacros.h"
 #include "ShaderParameterMacros.h"
 #include "ShaderParameterMacros.h"
+#include "ShaderParameterMacros.h"
 #include "Misc/KeyChainUtilities.h"
 #include "Serialization/MemoryLayout.h"
 
@@ -63,7 +64,9 @@ public:
 		//
 		//
 		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<int>, Input)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<float3>, OutputDir)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<FBoidsEntityInfo>, BoidsInfos)
+
 
 		SHADER_PARAMETER(int, EntityCnt)
 		SHADER_PARAMETER(float, NeighborRadius)
@@ -113,7 +116,8 @@ public:
 IMPLEMENT_SHADER_TYPE(, FBoidsComputeShader, TEXT("/ComputeShaderShaders/BoidsComputeShader.usf"), TEXT("BoidsComputeShader"), SF_Compute)
 
 void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList,
-                                                        FBoidsComputeShaderDispatchParams& Params, TFunction<void()> AsyncCallback)
+                                                        FBoidsComputeShaderDispatchParams Params,
+                                                        TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback)
 {
 	FRDGBuilder GraphBuilder(RHICmdList);
 
@@ -148,16 +152,16 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 
 			///
 			PassParameters->EntityCnt = Params.ArrEntityStates.Num();
-			PassParameters->NeighborRadius = 500;
-			PassParameters->WeightAlignment = 1;
-			PassParameters->WeightCohesion = 1;
-			PassParameters->WeightSeperation = 2;
-			PassParameters->WeightLeaderFollowing = 1;
-			PassParameters->WeightRandomMove = 1;
+			PassParameters->NeighborRadius = Params.NeighborRadius;
+			PassParameters->WeightAlignment = Params.WeightAlignment;
+			PassParameters->WeightCohesion = Params.WeightCohesion;
+			PassParameters->WeightSeperation = Params.WeightSeperation;
+			PassParameters->WeightLeaderFollowing = Params.WeightLeaderFollowing;
+			PassParameters->WeightRandomMove = Params.WeightRandomMove;
 			///
 
 
-			FRDGBufferRef BoidsInfoBuffer = GraphBuilder.CreateBuffer(
+			const FRDGBufferRef BoidsInfoBuffer = GraphBuilder.CreateBuffer(
 				FRDGBufferDesc::CreateStructuredDesc(sizeof(FBoidsEntityInfo), Params.ArrEntityStates.Num()),
 				TEXT("BoidsInfoBuffer"));
 			const FRDGUploadData<FBoidsEntityInfo> UploadInfos(GraphBuilder, Params.ArrEntityStates.Num());
@@ -165,9 +169,15 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 			{
 				UploadInfos[i] = Params.ArrEntityStates[i];
 			}
-
 			GraphBuilder.QueueBufferUpload<FBoidsEntityInfo>(BoidsInfoBuffer, UploadInfos, ERDGInitialDataFlags::NoCopy);
 			PassParameters->BoidsInfos = GraphBuilder.CreateUAV(BoidsInfoBuffer, ERDGUnorderedAccessViewFlags::SkipBarrier);
+
+
+			const FRDGBufferRef OutputBuffer = GraphBuilder.CreateBuffer(
+				FRDGBufferDesc::CreateStructuredDesc(sizeof(FVector3f), Params.ArrEntityStates.Num()),
+				TEXT("BoidOutputBuffer"));
+			PassParameters->OutputDir = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
+
 
 			///
 			SetComputePipelineState(RHICmdList, BoidsComputeShader.GetComputeShader());
@@ -182,25 +192,25 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 				});
 
 			FRHIGPUBufferReadback* GPUBufferReadback = new FRHIGPUBufferReadback(TEXT("ExecuteBoidsComputeShaderOutput"));
-			AddEnqueueCopyPass(GraphBuilder, GPUBufferReadback, BoidsInfoBuffer, 0u);
+			AddEnqueueCopyPass(GraphBuilder, GPUBufferReadback, OutputBuffer, 0u);
 
-			auto RunnerFunc = [GPUBufferReadback, AsyncCallback, &Params](auto&& RunnerFunc) -> void
+			auto RunnerFunc = [GPUBufferReadback, AsyncCallback, Params](auto&& RunnerFunc) -> void
 			{
 				if (GPUBufferReadback->IsReady())
 				{
-					const FBoidsEntityInfo* Infos = static_cast<FBoidsEntityInfo*>(GPUBufferReadback->Lock(1));
+					const FVector3f* ReadbackOutput = static_cast<FVector3f*>(GPUBufferReadback->Lock(1));
+					TArray<FVector3f> OutputDir;
+
 					for (int i = 0; i < Params.ArrEntityStates.Num(); i++)
 					{
-						for (int j = 0; j < 3; j++)
-							Params.ArrEntityStates[i].Direction[j] = Infos[i].Direction[j];
-					
+						OutputDir.Add(ReadbackOutput[i]);
 					}
 
 					GPUBufferReadback->Unlock();
 
-					AsyncTask(ENamedThreads::GameThread, [AsyncCallback]()
+					AsyncTask(ENamedThreads::GameThread, [AsyncCallback, OutputDir]()
 					{
-						AsyncCallback();
+						AsyncCallback(OutputDir);
 					});
 					delete GPUBufferReadback;
 				}
