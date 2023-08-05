@@ -39,6 +39,7 @@ public:
 	float WeightCohesion = 1;
 	float WeightRandomMove = 1;
 	float WeightLeaderFollowing = 1;
+	float Speed = 1;
 };
 
 
@@ -50,13 +51,13 @@ public:
 	static void DispatchRenderThread(
 		FRHICommandListImmediate& RHICmdList,
 		FBoidsComputeShaderDispatchParams Params,
-		TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback
+		TFunction<void(TArray<FVector3f> OutputVelocity)> AsyncCallback
 	);
 
 	// Executes this shader on the render thread from the game thread via EnqueueRenderThreadCommand
 	static void DispatchGameThread(
 		FBoidsComputeShaderDispatchParams Params,
-		TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback
+		TFunction<void(TArray<FVector3f> OutputVelocity)> AsyncCallback
 	)
 	{
 		ENQUEUE_RENDER_COMMAND(SceneDrawCompletion)(
@@ -72,7 +73,7 @@ public:
 
 
 	// Dispatches this shader. Can be called from any thread
-	static void Dispatch(FBoidsComputeShaderDispatchParams Params, TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback)
+	static void Dispatch(FBoidsComputeShaderDispatchParams Params, TFunction<void(TArray<FVector3f> OutputVelocity)> AsyncCallback)
 	{
 		if (IsInRenderingThread())
 		{
@@ -85,7 +86,7 @@ public:
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBoidsComputeShaderLibrary_AsyncExecutionCompleted, TArray<FVector3f>, OutputDir);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBoidsComputeShaderLibrary_AsyncExecutionCompleted, TArray<FVector3f>, Output);
 
 UCLASS() // Change the _API to match your project
 class COMPUTESHADER_API UComputeShaderLibrary_AsyncExecution : public UBlueprintAsyncActionBase
@@ -104,9 +105,9 @@ public:
 
 
 		// Dispatch the compute shader and wait until it completes
-		FBoidsComputeShaderInterface::Dispatch(Params, [this](TArray<FVector3f> OutputDir)
+		FBoidsComputeShaderInterface::Dispatch(Params, [this](TArray<FVector3f> OutputVelocity)
 		{
-			this->Completed.Broadcast(OutputDir);
+			this->Completed.Broadcast(OutputVelocity);
 		});
 	}
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/SplineComponent.h"
 #include "GameFramework/Actor.h"
 #include "Core/Public/HAL/Runnable.h"
 #include "ComputeShader/Public/BoidsComputeShader.h"
@@ -51,6 +52,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void PostInitializeComponents() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 public:
 	// Called every frame
@@ -62,8 +65,13 @@ private:
 
 	TArray<ABoidEntity*> ListEntity;
 
+	ABoidEntity* LeaderEntity;
+
 	UPROPERTY(EditAnywhere, Category=Boids, meta=(AllowPrivateAccess=true))
 	float MovableRadius = 10000;
+
+	UPROPERTY(EditAnywhere, Category=Boids, meta=(AllowPrivateAccess=true))
+	FBox SpawnBox = FBox(FVector(-200, -200, -200), FVector(200, 200, 200));
 
 	UPROPERTY(EditAnywhere, Category=Boids, meta=(AllowPrivateAccess=true))
 	int32 EntityCnt = 64;
@@ -71,9 +79,10 @@ private:
 	UPROPERTY(EditAnywhere, Category=Boid, meta=(AllowPrivateAccess=true))
 	FBoidsWeight BoidsWeight;
 
+	UPROPERTY(EditAnywhere, Category=Boids, meta=(AllowPrivateAccess=true))
+	float Speed = 100;
 	const float PeriodUpdatingDir = 0.1f;
 	float ElapsedTime = 0;
-
 
 private:
 	FBoidsComputeShaderDispatchParams ComputeShaderDispatchParams;
@@ -87,7 +96,7 @@ private:
 
 	void UpdateDirByCpu();
 	void UpdateDirByGPU();
-	
+
 private:
 	class FUpdatingBoidDirThread : public FRunnable
 	{
@@ -108,6 +117,32 @@ private:
 	};
 
 	TUniquePtr<FUpdatingBoidDirThread> UpdatingBoidDirThread;
+
+private: // PSO 
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess, MakeEditWidget), Category= PSO)
+	TArray<FVector> ArrFoodLocalLoc;
+
+	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess))
+	int8 TargetFoodID = 0;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess), Category= PSO)
+	float GBestWeight = 2;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess), Category= PSO)
+	float PBestWeight = 2;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess), Category= PSO)
+	float Inertia = 0.1f;
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess), Category= PSO)
+	float NeighborRadiusPSO = 500;
+	
+	TPair<FVector, double> GBestInfo, PBestInfo; // GBest, fitness
+
+	void ResetBestPSO();
+	FVector GetVelocityPSO();
+	double GetFitnessPSO(FVector EntityLoc, FVector FoodLoc);
+
 private:
 	virtual bool ShouldTickIfViewportsOnly() const override;
 };

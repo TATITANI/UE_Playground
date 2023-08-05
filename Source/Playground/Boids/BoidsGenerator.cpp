@@ -3,6 +3,7 @@
 
 #include "BoidsGenerator.h"
 #include "BoidEntity.h"
+#include "Selection.h"
 
 
 // Sets default values
@@ -13,6 +14,19 @@ ABoidsGenerator::ABoidsGenerator()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
+void ABoidsGenerator::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+}
+
+
+void ABoidsGenerator::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	// UE_LOG(LogTemp, Log, TEXT(" ABoidsGenerator::PostEditChangeProperty() "));
+}
+
+
 // Called when the game starts or when spawned
 void ABoidsGenerator::BeginPlay()
 {
@@ -20,31 +34,38 @@ void ABoidsGenerator::BeginPlay()
 	FActorSpawnParameters ActorSpawnParams;
 	for (int i = 0; i < EntityCnt; i++)
 	{
-		double dx = FMath::RandRange(-1500, 1500);
-		double dy = FMath::RandRange(-1500, 1500);
-		double dz = FMath::RandRange(-1500, 1500);
-		auto Entity = GetWorld()->SpawnActor<ABoidEntity>(BoidEntity, GetActorLocation() + FVector(dx, dy, dz),
+		FVector EntityLocalLoc = FMath::RandPointInBox(SpawnBox);
+		auto Entity = GetWorld()->SpawnActor<ABoidEntity>(BoidEntity, GetActorLocation() + EntityLocalLoc,
 		                                                  FRotator::ZeroRotator, ActorSpawnParams);
+
 		ListEntity.Add(Entity);
-		Entity->Init(ListEntity[0], GetActorLocation(), MovableRadius, BoidsWeight);
+		Entity->Init(ListEntity[0], GetActorLocation(), MovableRadius, Speed, BoidsWeight);
 		Entity->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+		if (i == 0)
+		{
+			LeaderEntity = Entity;
+		}
 	}
 
-	ComputeShaderDispatchParams.ArrEntityStates.SetNum(EntityCnt);
-	ComputeShaderDispatchParams.WeightAlignment = BoidsWeight.WeightAlignment;
-	ComputeShaderDispatchParams.WeightCohesion = BoidsWeight.WeightCohesion;
-	ComputeShaderDispatchParams.WeightSeperation = BoidsWeight.WeightSeperation;
-	ComputeShaderDispatchParams.WeightLeaderFollowing = BoidsWeight.WeightLeaderFollowing;
-	ComputeShaderDispatchParams.WeightRandomMove = BoidsWeight.WeightRandomMove;
+	ResetBestPSO();
 
-
-	DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Turquoise, true);
+	{
+		ComputeShaderDispatchParams.ArrEntityStates.SetNum(EntityCnt);
+		ComputeShaderDispatchParams.WeightAlignment = BoidsWeight.WeightAlignment;
+		ComputeShaderDispatchParams.WeightCohesion = BoidsWeight.WeightCohesion;
+		ComputeShaderDispatchParams.WeightSeperation = BoidsWeight.WeightSeperation;
+		ComputeShaderDispatchParams.WeightLeaderFollowing = BoidsWeight.WeightLeaderFollowing;
+		ComputeShaderDispatchParams.WeightRandomMove = BoidsWeight.WeightRandomMove;
+		ComputeShaderDispatchParams.Speed = Speed;
+	}
 }
+
 
 void ABoidsGenerator::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 }
+
 
 // Called every frame
 void ABoidsGenerator::Tick(float DeltaTime)
@@ -65,6 +86,7 @@ void ABoidsGenerator::Tick(float DeltaTime)
 			UpdateDirByGPU();
 		}
 	}
+	// UE_LOG(LogTemp,Log, TEXT("VEL : %s"), *ListEntity[0]->GetVelocity().ToString());
 }
 
 void ABoidsGenerator::UpdateDirByCpu()
@@ -77,7 +99,14 @@ void ABoidsGenerator::UpdateDirByCpu()
 		const int32 LastEntityID = TaskID < ThreadCnt - 1 ? StartEntityID + EntityCntPerTask - 1 : EntityCnt - 1;
 		for (int i = StartEntityID; i <= LastEntityID; i++)
 		{
-			ListEntity[i]->CalculateDir();
+			if (ListEntity[i] == LeaderEntity)
+			{
+				ListEntity[i]->SetTargetVelocity(GetVelocityPSO());
+			}
+			else
+			{
+				ListEntity[i]->CalculateDir();
+			}
 		}
 	}, EParallelForFlags::None);
 }
@@ -98,18 +127,85 @@ void ABoidsGenerator::UpdateDirByGPU()
 			ComputeShaderDispatchParams.ArrEntityStates[ID].RandomVector[j] = RandomVec[j];
 		}
 	}
-	FBoidsComputeShaderInterface::Dispatch(ComputeShaderDispatchParams, [this](TArray<FVector3f> OutputDir)
+	FBoidsComputeShaderInterface::Dispatch(ComputeShaderDispatchParams, [this](TArray<FVector3f> OutputVelocity)
 	{
 		for (int32 ID = 0; ID < EntityCnt; ID++)
 		{
-			ListEntity[ID]->SetDir(FVector(OutputDir[ID]));
+			const auto Velocity = ListEntity[ID] == LeaderEntity ? GetVelocityPSO() : FVector(OutputVelocity[ID]);
+			ListEntity[ID]->SetTargetVelocity(Velocity);
 		}
 	});
 }
 
+void ABoidsGenerator::ResetBestPSO()
+{
+	GBestInfo = PBestInfo = {
+		LeaderEntity->GetActorLocation(), GetFitnessPSO(LeaderEntity->GetActorLocation(), GetActorLocation() + ArrFoodLocalLoc[TargetFoodID])
+	};
+}
+
+FVector ABoidsGenerator::GetVelocityPSO()
+{
+	const auto LeaderLoc = LeaderEntity->GetActorLocation();
+
+	// 목적지 도착시 새로운 걸로 변경
+	{
+		if (FVector::DistSquared(LeaderLoc, GetActorLocation() + ArrFoodLocalLoc[TargetFoodID]) < FMath::Pow(500.f, 2))
+		{
+			TargetFoodID = (TargetFoodID + FMath::RandRange(1, ArrFoodLocalLoc.Num() - 1)) % ArrFoodLocalLoc.Num();
+			ResetBestPSO();
+			// UE_LOG(LogTemp, Log, TEXT("Change Food %d"), TargetFoodID);
+		}
+	}
+
+	// update best
+	TArray<FOverlapResult> OverlapResults;
+	GetWorld()->OverlapMultiByChannel(OverlapResults, LeaderLoc, FQuat::Identity, ECollisionChannel::ECC_WorldDynamic,
+	                                  FCollisionShape::MakeSphere(NeighborRadiusPSO));
+	// DrawDebugSphere(GetWorld(), LeaderLoc, NeighborRadiusPSO, 16, FColor::Magenta, false, 0.1f);
+	for (auto& OverlapResult : OverlapResults)
+	{
+		const AActor* Neighbor = OverlapResult.GetActor();
+		if (Neighbor->IsA(ABoidEntity::StaticClass()))
+		{
+			const auto EntityLoc = Neighbor->GetActorLocation();
+			const double BestFitness = GetFitnessPSO(EntityLoc, GetActorLocation() + ArrFoodLocalLoc[TargetFoodID]);
+
+			if (Neighbor == LeaderEntity)
+			{
+				if (BestFitness < PBestInfo.Value)
+				{
+					PBestInfo = {EntityLoc, BestFitness};
+				}
+			}
+			else if (BestFitness < GBestInfo.Value)
+			{
+				GBestInfo = {EntityLoc, BestFitness};
+			}
+			
+		}
+	}
+
+	const FVector LeaderVelocity = Inertia * LeaderEntity->GetVelocity()
+		+ GBestWeight * (GBestInfo.Key - LeaderLoc)
+		+ PBestWeight * (PBestInfo.Key - LeaderLoc);
+	return LeaderVelocity;
+}
+
+
+double ABoidsGenerator::GetFitnessPSO(FVector EntityLoc, FVector FoodLoc)
+{
+	return FVector::DistSquared(EntityLoc, FoodLoc);
+}
+
 bool ABoidsGenerator::ShouldTickIfViewportsOnly() const
 {
-	DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Turquoise, false);
+	if (IsSelected())
+	{
+		DrawDebugBox(GetWorld(), GetActorLocation(), SpawnBox.GetExtent(), FColor::Green, false);
+		// DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Orange, false);
+	}
+
 	return Super::ShouldTickIfViewportsOnly();
 }
 

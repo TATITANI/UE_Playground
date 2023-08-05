@@ -40,31 +40,31 @@ public:
 	>;
 	//
 	BEGIN_SHADER_PARAMETER_STRUCT(FParameters,)
-		// 		/*
-		// 		* Here's where you define one or more of the input parameters for your shader.
-		// 		* Some examples:
-		// 		*/
-		// 		// SHADER_PARAMETER(uint32, MyUint32) // On the shader side: uint32 MyUint32;
-		// 		// SHADER_PARAMETER(FVector3f, MyVector) // On the shader side: float3 MyVector;
-		//
-		// 		// SHADER_PARAMETER_TEXTURE(Texture2D, MyTexture) // On the shader side: Texture2D<float4> MyTexture; (float4 should be whatever you expect each pixel in the texture to be, in this case float4(R,G,B,A) for 4 channels)
-		// 		// SHADER_PARAMETER_SAMPLER(SamplerState, MyTextureSampler) // On the shader side: SamplerState MySampler; // CPP side: TStaticSamplerState<ESamplerFilter::SF_Bilinear>::GetRHI();
-		//
-		// 		// SHADER_PARAMETER_ARRAY(float, MyFloatArray, [3]) // On the shader side: float MyFloatArray[3];
-		//
-		// 		// SHADER_PARAMETER_UAV(RWTexture2D<FVector4f>, MyTextureUAV) // On the shader side: RWTexture2D<float4> MyTextureUAV;
-		// 		// SHADER_PARAMETER_UAV(RWStructuredBuffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: RWStructuredBuffer<FMyCustomStruct> MyCustomStructs;
-		// 		// SHADER_PARAMETER_UAV(RWBuffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: RWBuffer<FMyCustomStruct> MyCustomStructs;
-		//
-		// 		// SHADER_PARAMETER_SRV(StructuredBuffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: StructuredBuffer<FMyCustomStruct> MyCustomStructs;
-		// 		// SHADER_PARAMETER_SRV(Buffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: Buffer<FMyCustomStruct> MyCustomStructs;
-		// 		// SHADER_PARAMETER_SRV(Texture2D<FVector4f>, MyReadOnlyTexture) // On the shader side: Texture2D<float4> MyReadOnlyTexture;
-		//
-		// 		// SHADER_PARAMETER_STRUCT_REF(FMyCustomStruct, MyCustomStruct)
-		//
-		//
+		/*
+		* Here's where you define one or more of the input parameters for your shader.
+		* Some examples:
+		*/
+		// SHADER_PARAMETER(uint32, MyUint32) // On the shader side: uint32 MyUint32;
+		// SHADER_PARAMETER(FVector3f, MyVector) // On the shader side: float3 MyVector;
+
+		// SHADER_PARAMETER_TEXTURE(Texture2D, MyTexture) // On the shader side: Texture2D<float4> MyTexture; (float4 should be whatever you expect each pixel in the texture to be, in this case float4(R,G,B,A) for 4 channels)
+		// SHADER_PARAMETER_SAMPLER(SamplerState, MyTextureSampler) // On the shader side: SamplerState MySampler; // CPP side: TStaticSamplerState<ESamplerFilter::SF_Bilinear>::GetRHI();
+
+		// SHADER_PARAMETER_ARRAY(float, MyFloatArray, [3]) // On the shader side: float MyFloatArray[3];
+
+		// SHADER_PARAMETER_UAV(RWTexture2D<FVector4f>, MyTextureUAV) // On the shader side: RWTexture2D<float4> MyTextureUAV;
+		// SHADER_PARAMETER_UAV(RWStructuredBuffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: RWStructuredBuffer<FMyCustomStruct> MyCustomStructs;
+		// SHADER_PARAMETER_UAV(RWBuffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: RWBuffer<FMyCustomStruct> MyCustomStructs;
+
+		// SHADER_PARAMETER_SRV(StructuredBuffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: StructuredBuffer<FMyCustomStruct> MyCustomStructs;
+		// SHADER_PARAMETER_SRV(Buffer<FMyCustomStruct>, MyCustomStructs) // On the shader side: Buffer<FMyCustomStruct> MyCustomStructs;
+		// SHADER_PARAMETER_SRV(Texture2D<FVector4f>, MyReadOnlyTexture) // On the shader side: Texture2D<float4> MyReadOnlyTexture;
+
+		// SHADER_PARAMETER_STRUCT_REF(FMyCustomStruct, MyCustomStruct)
+
+
 		SHADER_PARAMETER_RDG_BUFFER_SRV(Buffer<int>, Input)
-		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<float3>, OutputDir)
+		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<float3>, OutputVelocity)
 		SHADER_PARAMETER_RDG_BUFFER_UAV(RWStructuredBuffer<FBoidsEntityInfo>, BoidsInfos)
 
 
@@ -75,6 +75,7 @@ public:
 		SHADER_PARAMETER(float, WeightSeperation)
 		SHADER_PARAMETER(float, WeightRandomMove)
 		SHADER_PARAMETER(float, WeightLeaderFollowing)
+		SHADER_PARAMETER(float, Speed)
 		//
 		END_SHADER_PARAMETER_STRUCT()
 
@@ -117,7 +118,7 @@ IMPLEMENT_SHADER_TYPE(, FBoidsComputeShader, TEXT("/ComputeShaderShaders/BoidsCo
 
 void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate& RHICmdList,
                                                         FBoidsComputeShaderDispatchParams Params,
-                                                        TFunction<void(TArray<FVector3f> OutputDir)> AsyncCallback)
+                                                        TFunction<void(TArray<FVector3f> OutputVelocity)> AsyncCallback)
 {
 	FRDGBuilder GraphBuilder(RHICmdList);
 
@@ -158,6 +159,7 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 			PassParameters->WeightSeperation = Params.WeightSeperation;
 			PassParameters->WeightLeaderFollowing = Params.WeightLeaderFollowing;
 			PassParameters->WeightRandomMove = Params.WeightRandomMove;
+			PassParameters->Speed = Params.Speed;
 			///
 
 
@@ -176,7 +178,7 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 			const FRDGBufferRef OutputBuffer = GraphBuilder.CreateBuffer(
 				FRDGBufferDesc::CreateStructuredDesc(sizeof(FVector3f), Params.ArrEntityStates.Num()),
 				TEXT("BoidOutputBuffer"));
-			PassParameters->OutputDir = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
+			PassParameters->OutputVelocity = GraphBuilder.CreateUAV(FRDGBufferUAVDesc(OutputBuffer, PF_R32_SINT));
 
 
 			///
@@ -199,18 +201,18 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 				if (GPUBufferReadback->IsReady())
 				{
 					const FVector3f* ReadbackOutput = static_cast<FVector3f*>(GPUBufferReadback->Lock(1));
-					TArray<FVector3f> OutputDir;
+					TArray<FVector3f> OutputVelocity;
 
 					for (int i = 0; i < Params.ArrEntityStates.Num(); i++)
 					{
-						OutputDir.Add(ReadbackOutput[i]);
+						OutputVelocity.Add(ReadbackOutput[i]);
 					}
 
 					GPUBufferReadback->Unlock();
 
-					AsyncTask(ENamedThreads::GameThread, [AsyncCallback, OutputDir]()
+					AsyncTask(ENamedThreads::GameThread, [AsyncCallback, OutputVelocity]()
 					{
-						AsyncCallback(OutputDir);
+						AsyncCallback(OutputVelocity);
 					});
 					delete GPUBufferReadback;
 				}
