@@ -94,8 +94,8 @@ private:
 		meta=( EditCondition = "ThreadType == EBoidsThreading::CPU", EditConditionHides))
 	uint8 ThreadCnt = 1;
 
-	void UpdateDirByCpu();
-	void UpdateDirByGPU();
+	void UpdateVelocityByCpu();
+	void UpdateVelocityByGPU();
 
 private:
 	class FUpdatingBoidDirThread : public FRunnable

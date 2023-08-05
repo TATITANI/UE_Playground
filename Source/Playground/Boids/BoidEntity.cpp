@@ -27,7 +27,7 @@ void ABoidEntity::Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadiu
 }
 
 
-void ABoidEntity::CalculateDir()
+void ABoidEntity::CalculateVelocity()
 {
 	TArray<FOverlapResult> OverlapResults;
 	const FCollisionObjectQueryParams ObjectParams(TraceCollisionChannel);

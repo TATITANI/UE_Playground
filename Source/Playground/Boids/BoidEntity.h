@@ -48,7 +48,7 @@ private:
 	bool CheckObstacle(FHitResult& HitResult);
 
 public:
-	void CalculateDir();
+	void CalculateVelocity();
 	void SetTargetVelocity(FVector _Velocity) { TargetVelocity = _Velocity; }
 	virtual FVector GetVelocity() const override { return CurrentVelocity; }
 

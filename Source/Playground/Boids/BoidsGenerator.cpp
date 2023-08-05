@@ -79,17 +79,16 @@ void ABoidsGenerator::Tick(float DeltaTime)
 
 		if (ThreadType == EBoidsThreading::CPU)
 		{
-			UpdateDirByCpu();
+			UpdateVelocityByCpu();
 		}
 		else if (ThreadType == EBoidsThreading::ComputeShader)
 		{
-			UpdateDirByGPU();
+			UpdateVelocityByGPU();
 		}
 	}
-	// UE_LOG(LogTemp,Log, TEXT("VEL : %s"), *ListEntity[0]->GetVelocity().ToString());
 }
 
-void ABoidsGenerator::UpdateDirByCpu()
+void ABoidsGenerator::UpdateVelocityByCpu()
 {
 	/// CPU 
 	const int32 EntityCntPerTask = EntityCnt / ThreadCnt;
@@ -105,13 +104,13 @@ void ABoidsGenerator::UpdateDirByCpu()
 			}
 			else
 			{
-				ListEntity[i]->CalculateDir();
+				ListEntity[i]->CalculateVelocity();
 			}
 		}
 	}, EParallelForFlags::None);
 }
 
-void ABoidsGenerator::UpdateDirByGPU()
+void ABoidsGenerator::UpdateVelocityByGPU()
 {
 	for (int32 ID = 0; ID < EntityCnt; ID++)
 	{
@@ -170,7 +169,7 @@ FVector ABoidsGenerator::GetVelocityPSO()
 		{
 			const auto EntityLoc = Neighbor->GetActorLocation();
 			const double BestFitness = GetFitnessPSO(EntityLoc, GetActorLocation() + ArrFoodLocalLoc[TargetFoodID]);
-
+	
 			if (Neighbor == LeaderEntity)
 			{
 				if (BestFitness < PBestInfo.Value)
@@ -182,14 +181,14 @@ FVector ABoidsGenerator::GetVelocityPSO()
 			{
 				GBestInfo = {EntityLoc, BestFitness};
 			}
-			
 		}
 	}
 
 	const FVector LeaderVelocity = Inertia * LeaderEntity->GetVelocity()
-		+ GBestWeight * (GBestInfo.Key - LeaderLoc)
-		+ PBestWeight * (PBestInfo.Key - LeaderLoc);
-	return LeaderVelocity;
+		+ GBestWeight * FMath::FRand() * (GBestInfo.Key - LeaderLoc)
+		+ PBestWeight * FMath::FRand() * (PBestInfo.Key - LeaderLoc);
+	return
+		LeaderVelocity;
 }
 
 
@@ -234,7 +233,7 @@ uint32 ABoidsGenerator::FUpdatingBoidDirThread::Run()
 	{
 		for (auto& Entity : ListEntity)
 		{
-			Entity->CalculateDir();
+			Entity->CalculateVelocity();
 		}
 		FPlatformProcess::Sleep(0.1f);
 	}
