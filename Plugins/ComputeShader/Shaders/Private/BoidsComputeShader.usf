@@ -10,7 +10,7 @@ struct FBoidsEntityInfo
 
 
 Buffer<int> Input;
-RWStructuredBuffer<float3> OutputDir;
+RWStructuredBuffer<float3> OutputVelocity;
 
 int EntityCnt;
 float NeighborRadius;
@@ -19,6 +19,7 @@ float WeightAlignment;
 float WeightSeperation;
 float WeightRandomMove;
 float WeightLeaderFollowing;
+float Speed;
 
 RWStructuredBuffer<FBoidsEntityInfo> BoidsInfos;
 
@@ -87,7 +88,7 @@ void BoidsComputeShader(uint3 DispatchThreadId : SV_DispatchThreadID,
 		const float3 LeaderFollowingVector = GetSafeNormal(BoidsInfos[0].Position - BoidsInfos[CurrentID].Position);
 
 
-		OutputDir[CurrentID] = GetSafeNormal(
+		OutputVelocity[CurrentID] = Speed * (
 			CohesionVector * WeightCohesion
 			+ AlignmentVector * WeightAlignment
 			+ SeperationVector * WeightSeperation

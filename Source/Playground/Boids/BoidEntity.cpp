@@ -15,15 +15,15 @@ ABoidEntity::ABoidEntity()
 void ABoidEntity::BeginPlay()
 {
 	Super::BeginPlay();
-	Dir = GetActorForwardVector();
 }
 
-void ABoidEntity::Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius, const FBoidsWeight _BoidsWeight)
+void ABoidEntity::Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius, float _Speed, const FBoidsWeight _BoidsWeight)
 {
 	Leader = _Leader;
 	Pivot = _Pivot;
 	MovableRadius = _MovableRadius;
 	BoidsWeight = _BoidsWeight;
+	Speed = _Speed;
 }
 
 
@@ -49,21 +49,20 @@ void ABoidEntity::CalculateDir()
 	}
 
 	const FVector AverageNeighborsVelocity =
-		NeighborsCnt != 0 ? SumNeighborsVelocity / NeighborsCnt : Velocity;
+		NeighborsCnt != 0 ? SumNeighborsVelocity / NeighborsCnt : CurrentVelocity;
 	const FVector CenterNeighbors = NeighborsCnt != 0 ? SumNeighborsLoc / NeighborsCnt : GetActorLocation();
 
 	const FVector CohesionVector = (CenterNeighbors - GetActorLocation()).GetSafeNormal();
-	const FVector AlignmentVector = (AverageNeighborsVelocity - Velocity).GetSafeNormal();
+	const FVector AlignmentVector = (AverageNeighborsVelocity - CurrentVelocity).GetSafeNormal();
 	const FVector SeperationVector = -(SumNeighborsLoc - GetActorLocation() * NeighborsCnt).GetSafeNormal();
 	const FVector LeaderFollowingVector = (Leader->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	RandomVector = FMath::VRand();
 
-	Dir = (CohesionVector * BoidsWeight.WeightCohesion
-			+ AlignmentVector * BoidsWeight.WeightAlignment
-			+ SeperationVector * BoidsWeight.WeightSeperation
-			+ RandomVector * BoidsWeight.WeightRandomMove
-			+ LeaderFollowingVector * BoidsWeight.WeightLeaderFollowing)
-		.GetSafeNormal();
+	TargetVelocity = Speed * (CohesionVector * BoidsWeight.WeightCohesion
+		+ AlignmentVector * BoidsWeight.WeightAlignment
+		+ SeperationVector * BoidsWeight.WeightSeperation
+		+ RandomVector * BoidsWeight.WeightRandomMove
+		+ LeaderFollowingVector * BoidsWeight.WeightLeaderFollowing);
 }
 
 bool ABoidEntity::CheckObstacle(FHitResult& HitResult)
@@ -85,18 +84,17 @@ void ABoidEntity::Tick(float DeltaTime)
 
 	if (FHitResult HitResult; CheckObstacle(HitResult))
 	{
-		Dir = RandomVector = FMath::GetReflectionVector(GetActorForwardVector(), HitResult.Normal);
-	}
-	if (FVector::Distance(GetActorLocation(), Pivot) > MovableRadius)
-	{
-		Dir = RandomVector = (Pivot - GetActorLocation()).GetSafeNormal();
+		CurrentVelocity = TargetVelocity = FMath::GetReflectionVector(CurrentVelocity, HitResult.Normal);
 	}
 
-	const FVector CurrentDir = FMath::VInterpTo(GetActorForwardVector(), Dir, DeltaTime, 5);
-	Velocity = CurrentDir * Speed * DeltaTime;
-	AddActorWorldOffset(Velocity);
+	// if ( FVector::Distance(GetActorLocation(), Pivot) > MovableRadius)
+	// {
+	// 	CurrentVelocity = TargetVelocity = FVector((Pivot - GetActorLocation()).GetSafeNormal()) * Speed * 2;
+	// }
 
+	CurrentVelocity = FMath::VInterpTo(CurrentVelocity, TargetVelocity, DeltaTime, 5);
+	AddActorWorldOffset(CurrentVelocity * DeltaTime);
 
-	const auto Rot = FRotationMatrix::MakeFromX(CurrentDir).Rotator();
+	const auto Rot = FRotationMatrix::MakeFromX(CurrentVelocity).Rotator();
 	SetActorRotation(Rot);
 }

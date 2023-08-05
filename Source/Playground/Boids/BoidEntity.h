@@ -24,25 +24,23 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius, const FBoidsWeight _BoidsWeight);
+	void Init(ABoidEntity* _Leader, FVector _Pivot, float _MovableRadius, float _Speed, const FBoidsWeight _BoidsWeight);
 
 private:
-	UPROPERTY(VisibleAnywhere)
-	FVector Dir;
 
 	ABoidEntity* Leader;
 	FVector Pivot;
 	FBoidsWeight BoidsWeight;
 	float MovableRadius;
 
-	UPROPERTY(EditDefaultsOnly, Category=Move, meta=(AllowPrivateAccess=true))
-	float Speed = 100;
-
+	float Speed;
 
 	UPROPERTY(EditDefaultsOnly, Category=Trace, meta=(AllowPrivateAccess=true))
 	TEnumAsByte<ECollisionChannel> TraceCollisionChannel = ECC_WorldDynamic;
-	
-	FVector Velocity = FVector::ZeroVector;
+
+	FVector TargetVelocity;
+	UPROPERTY(VisibleAnywhere, Category=Moving, meta=(AllowPrivateAccess= true))
+	FVector CurrentVelocity = FVector::ZeroVector;
 	FVector RandomVector;
 
 
@@ -51,8 +49,8 @@ private:
 
 public:
 	void CalculateDir();
-	virtual FVector GetVelocity() const override { return Velocity; }
-	FVector GetDir() const { return Dir; }
-	void SetDir(FVector _Dir) { Dir = _Dir; }
+	void SetTargetVelocity(FVector _Velocity) { TargetVelocity = _Velocity; }
+	virtual FVector GetVelocity() const override { return CurrentVelocity; }
+
 	void SetRandomVec(FVector _RandomVec) { RandomVector = _RandomVec; }
 };
