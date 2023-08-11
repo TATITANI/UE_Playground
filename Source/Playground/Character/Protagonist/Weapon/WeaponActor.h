@@ -33,6 +33,7 @@ protected:
 	UProtagonistAnimInstance* AnimInstance;
 	class UEnhancedInputLocalPlayerSubsystem* Subsystem;
 
+	UMeshComponent *MeshComponent;
 protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))

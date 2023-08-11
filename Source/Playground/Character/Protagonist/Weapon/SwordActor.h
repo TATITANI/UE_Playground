@@ -46,5 +46,19 @@ private:
 	void AttackCheck() const;
 
 	UFUNCTION()
-	void AttackEndEvent(UAnimMontage* Montage, bool bInterrupted);	
+	void AttackEndEvent(UAnimMontage* Montage, bool bInterrupted);
+
+	UPROPERTY(EditDefaultsOnly, Category="Trail")
+	class UNiagaraSystem* TrailSystem;
+
+	UPROPERTY(EditDefaultsOnly, Category= "Trail", meta=(AllowPrivateAccess))
+	FName TrailSocketTopName = "Top";
+
+	UPROPERTY(EditDefaultsOnly, Category= "Trail", meta=(AllowPrivateAccess))
+	FName TrailSocketBotName = "Bot";
+
+	class UNiagaraComponent* TrailComponent;
+public:
+	virtual void Use(AProtagonistCharacter* TargetCharacter) override;
+	virtual void BeginPlay() override;
 };

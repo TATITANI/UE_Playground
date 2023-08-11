@@ -43,7 +43,7 @@ void UBotAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
 	if(Montage == AttackMontage)
 	{
-		OnAttackEnded->Broadcast();		
+		OnAttackEnded->Broadcast();
 	}
 }
 

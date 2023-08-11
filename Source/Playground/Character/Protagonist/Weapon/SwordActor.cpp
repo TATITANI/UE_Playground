@@ -6,6 +6,26 @@
 #include "EnhancedInputComponent.h"
 #include "Character/Protagonist/ProtagonistAnimInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
+
+void ASwordActor::BeginPlay()
+{
+	Super::BeginPlay();
+	const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->GetSocketLocation(TrailSocketBotName));
+	const FRotator TrailRot = FRotationMatrix::MakeFromZ(
+		MeshComponent->GetSocketLocation(TrailSocketTopName) - MeshComponent->GetSocketLocation(TrailSocketBotName)).Rotator();
+
+	ensure(TrailSystem != nullptr);
+	TrailComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailSystem, MeshComponent, TrailSocketBotName, TrailPos, TrailRot,
+	                                                              EAttachLocation::KeepWorldPosition, false);
+	TrailComponent->SetRenderCustomDepth(true);
+	TrailComponent->SetCustomDepthStencilValue(1 << 1);
+	if (TrailComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Log, TEXT("TrailComponent nullptr"));
+	}
+}
 
 
 void ASwordActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
@@ -25,6 +45,7 @@ void ASwordActor::Attack()
 
 			Character->SetMovable(false);
 			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackEndEvent);
+			TrailComponent->Activate();
 		}
 	}
 }
@@ -46,12 +67,12 @@ void ASwordActor::AttackCheck() const
 		ECC_GameTraceChannel3,
 		FCollisionShape::MakeBox(BoxExtent),
 		params);
-	
+
 	AActor* ActorHit = nullptr;
 	bool IsTrace = false;
-	for(auto HitResult : HitResults)
+	for (auto HitResult : HitResults)
 	{
-		if(HitResult.GetActor() != Character)
+		if (HitResult.GetActor() != Character)
 		{
 			ActorHit = HitResult.GetActor();
 			IsTrace = true;
@@ -60,8 +81,8 @@ void ASwordActor::AttackCheck() const
 
 	FColor ColorDebugBox = IsTrace ? FColor::Orange : FColor::Green;
 	DrawDebugBox(GetWorld(), Character->GetActorLocation() + TracingRelativePos * 0.5f,
-				 BoxExtent, QuatBox, ColorDebugBox, false, 2.f);
-	
+	             BoxExtent, QuatBox, ColorDebugBox, false, 2.f);
+
 	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)
 	{
@@ -79,11 +100,17 @@ FName ASwordActor::GetSectionName() const
 
 void ASwordActor::AttackEndEvent(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == AttackMontage&& !bInterrupted)
+	if (Montage == AttackMontage && !bInterrupted)
 	{
 		AttackCheck();
-		
+
 		Character->SetMovable(true);
 		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackEndEvent);
+		TrailComponent->DeactivateImmediate();
 	}
+}
+
+void ASwordActor::Use(AProtagonistCharacter* TargetCharacter)
+{
+	Super::Use(TargetCharacter);
 }

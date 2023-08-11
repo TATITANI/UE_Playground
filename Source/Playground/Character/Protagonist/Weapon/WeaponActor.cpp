@@ -20,7 +20,7 @@ void AWeaponActor::BeginPlay()
 {
 	Super::BeginPlay();
 	SetActorTickEnabled(false);
-	const auto MeshComponent = Cast<UMeshComponent>(FindComponentByClass(UMeshComponent::StaticClass()));
+	MeshComponent = Cast<UMeshComponent>(FindComponentByClass(UMeshComponent::StaticClass()));
 	MeshComponent->SetRenderCustomDepth(true);
 	
 }
@@ -39,6 +39,7 @@ void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
 
 	SetupInput();
 	SetActorHiddenInGame(false);
+	
 }
 
 void AWeaponActor::UnUse()

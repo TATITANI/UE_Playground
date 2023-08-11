@@ -26,6 +26,8 @@ void UProtagonistAnimInstance::NativeBeginPlay()
 		FootIKComponent = Cast<UFootIKComponent>(Protagonist->GetComponentByClass(UFootIKComponent::StaticClass()));
 		CharacterCurrentInfo = Protagonist->CharacterCurrentInfo;
 	}
+
+
 }
 
 void UProtagonistAnimInstance::NativeInitializeAnimation()
@@ -38,3 +40,6 @@ void UProtagonistAnimInstance::NativeInitializeAnimation()
 
 	// UE_LOG(LogTemp, Log, TEXT("UProtagonistAnimInstance::NativeInitializeAnimation"));
 }
+
+
+
