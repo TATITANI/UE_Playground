@@ -3,40 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/CharacterData.h"
+#include "Data/CharacterStat.h"
 #include "Components/ActorComponent.h"
-#include "StatComponent.generated.h"
+#include "HealthComponent.generated.h"
 
-UENUM(BlueprintType)
-enum class ECharacterStatType : uint8
-{
-	Protagonist UMETA(DisplayName="Protagonist") ,
-	Bot UMETA(displayDisplayName = "Bot"),
-};
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHpChanged, int32 /*Hp*/ , int32 /*maxHP*/);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PLAYGROUND_API UStatComponent : public UActorComponent
+class PLAYGROUND_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UStatComponent();
+	UHealthComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
+	virtual void PostInitProperties() override;
 	virtual void InitializeComponent() override;
 
 private:
 	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	ECharacterStatType StatType;
 
-	UPROPERTY(VisibleAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
-	FCharacterData CharacterData;
-
+	int32 MaxHp = 0;
 	int32 CurrentHp = 0;
 
 private:
@@ -47,8 +39,7 @@ private:
 public:
 	FOnHpChanged OnHpChanged;
 
+	void Init(int32 _MaxHp);
 	int32 GetCurrentHP() const { return CurrentHp; }
-	int32 GetMaxHP() const { return CharacterData.MaxHp; }
-	int32 GetDamage() const { return CharacterData.Damage; }
-	
+	int32 GetMaxHP() const { return 50; }
 };

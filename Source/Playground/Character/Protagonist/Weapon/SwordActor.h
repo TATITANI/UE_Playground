@@ -22,7 +22,8 @@ private:
 	const int SectionMaxID = 6;
 
 	FName GetSectionName() const;
-	
+
+	float Damage;
 	UPROPERTY(EditAnywhere, Category=Attack, meta=(AllowPrivateAccess=true))
 	float AttackDistance = 100.f;
 
@@ -31,7 +32,7 @@ private:
 	
 protected:
 	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;
-	virtual EWeaponType GetWeaponType() override { return SWORD; }
+	virtual EWeaponType GetWeaponType() override { return EWeaponType::SWORD; }
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta=(AllowPrivateAccess = "true"))

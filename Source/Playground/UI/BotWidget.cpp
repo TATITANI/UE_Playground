@@ -2,14 +2,14 @@
 
 
 #include "BotWidget.h"
-#include "Component/StatComponent.h"
+#include "Component/HealthComponent.h"
 #include "Components/ProgressBar.h"
 
-void UBotWidget::Bind(UStatComponent* StatComponent)
+void UBotWidget::Bind(UHealthComponent* HealthComponent)
 {
-	if (ensure(StatComponent != nullptr))
+	if (ensure(HealthComponent != nullptr))
 	{
-		StatComponent->OnHpChanged.AddUObject(this, &UBotWidget::UpdateHp);
+		HealthComponent->OnHpChanged.AddUObject(this, &UBotWidget::UpdateHp);
 	}
 }
 

@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "IngameWidget.generated.h"
 
-enum EWeaponType : int;
+enum class EWeaponType : uint8;
 /**
  * 
  */
@@ -29,7 +29,7 @@ private:
 	void UpdateHp(int32 Hp, int32 MaxHp) const;
 
 	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
-	TMap<TEnumAsByte<EWeaponType>, UTexture2D*> WeaponImageTable;
+	TMap<EWeaponType, UTexture2D*> WeaponImageTable;
 
 	uint8 NewWeaponIndex = 0;
 protected:

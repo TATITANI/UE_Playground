@@ -16,7 +16,7 @@ class PLAYGROUND_API UBotWidget : public UUserWidget
 
 public:
 	UFUNCTION()
-	void Bind(class UStatComponent* StatComponent);
+	void Bind(class UHealthComponent* HealthComponent);
 
 private:
 	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true))

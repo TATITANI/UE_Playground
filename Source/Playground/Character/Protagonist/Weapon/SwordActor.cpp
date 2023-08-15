@@ -2,8 +2,8 @@
 
 
 #include "Character/Protagonist/Weapon/SwordActor.h"
-
 #include "EnhancedInputComponent.h"
+#include "MyGameInstance.h"
 #include "Character/Protagonist/ProtagonistAnimInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
@@ -12,19 +12,29 @@
 void ASwordActor::BeginPlay()
 {
 	Super::BeginPlay();
-	const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->GetSocketLocation(TrailSocketBotName));
-	const FRotator TrailRot = FRotationMatrix::MakeFromZ(
-		MeshComponent->GetSocketLocation(TrailSocketTopName) - MeshComponent->GetSocketLocation(TrailSocketBotName)).Rotator();
 
-	ensure(TrailSystem != nullptr);
-	TrailComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailSystem, MeshComponent, TrailSocketBotName, TrailPos, TrailRot,
-	                                                              EAttachLocation::KeepWorldPosition, false);
-	TrailComponent->SetRenderCustomDepth(true);
-	TrailComponent->SetCustomDepthStencilValue(1 << 1);
-	if (TrailComponent == nullptr)
-	{
-		UE_LOG(LogTemp, Log, TEXT("TrailComponent nullptr"));
+	// trail
+	{ 
+		const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->GetSocketLocation(TrailSocketBotName));
+		const FRotator TrailRot = FRotationMatrix::MakeFromZ(
+			MeshComponent->GetSocketLocation(TrailSocketTopName) - MeshComponent->GetSocketLocation(TrailSocketBotName)).Rotator();
+
+		ensure(TrailSystem != nullptr);
+		TrailComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailSystem, MeshComponent, TrailSocketBotName, TrailPos, TrailRot,
+																	  EAttachLocation::KeepWorldPosition, false);
+
+		ensure(TrailComponent != nullptr);
+		TrailComponent->SetRenderCustomDepth(true);
+		TrailComponent->SetCustomDepthStencilValue(1 << 1);
+		TrailComponent->Deactivate();
 	}
+
+	// stat
+	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ensure(GameInstance != nullptr);
+	auto SwordStat = GameInstance->GetWeaponStat<FSwordStat>(GetWeaponType(), FName("1"));
+	this->Damage = SwordStat->Damage;
+	
 }
 
 
@@ -86,8 +96,7 @@ void ASwordActor::AttackCheck() const
 	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Attack Bot : %s"), *ActorHit->GetName());
-		UGameplayStatics::ApplyDamage(ActorHit, Damage, Character->Controller,
+		UGameplayStatics::ApplyDamage(ActorHit, Damage, GetInstigatorController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
 	}
 }
@@ -113,4 +122,5 @@ void ASwordActor::AttackEndEvent(UAnimMontage* Montage, bool bInterrupted)
 void ASwordActor::Use(AProtagonistCharacter* TargetCharacter)
 {
 	Super::Use(TargetCharacter);
+
 }

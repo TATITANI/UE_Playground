@@ -7,7 +7,6 @@
 #include "Character/CharacterCurrentInfo.h"
 #include "WeaponSlotWidget.generated.h"
 
-enum EWeaponType : int;
 /**
  * 
  */
@@ -24,7 +23,7 @@ private:
 	class UImage* Img_Weapon;
 
 	UPROPERTY(VisibleAnywhere)
-	TEnumAsByte<EWeaponType> WeaponType = WEAPON_None;
+	EWeaponType WeaponType = EWeaponType::WEAPON_None;
 
 	UMaterialInstanceDynamic* MaterialInstanceDynamic;
 

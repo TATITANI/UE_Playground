@@ -31,7 +31,6 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	{
 		IsAttacking = false;
 		Bot->OnAttackEnd->Remove(AttackEndHandle);
-		UE_LOG(LogTemp, Log, TEXT("OnAttackEnd"));
 	});
 	
 	IsAttacking = true;

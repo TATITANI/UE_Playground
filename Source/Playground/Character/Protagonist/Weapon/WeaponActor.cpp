@@ -5,9 +5,11 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "MyGameInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
-#include "Component/StatComponent.h"
+#include "Component/HealthComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values for this component's properties
@@ -22,7 +24,7 @@ void AWeaponActor::BeginPlay()
 	SetActorTickEnabled(false);
 	MeshComponent = Cast<UMeshComponent>(FindComponentByClass(UMeshComponent::StaticClass()));
 	MeshComponent->SetRenderCustomDepth(true);
-	
+		
 }
 
 
@@ -33,13 +35,9 @@ void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
 	AnimInstance = Cast<UProtagonistAnimInstance>(Character->GetMesh()->GetAnimInstance());
 	ensure(AnimInstance!=nullptr);
 
-	const auto StatComp = Cast<UStatComponent>(Character->FindComponentByClass(UStatComponent::StaticClass()));
-	ensure(StatComp);
-	this->Damage = StatComp->GetDamage();
-
+	
 	SetupInput();
 	SetActorHiddenInGame(false);
-	
 }
 
 void AWeaponActor::UnUse()

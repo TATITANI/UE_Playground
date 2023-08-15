@@ -56,12 +56,11 @@ void UCharacterWeaponComponent::ClickChangeWeapon(const FInputActionValue& Value
 	if(CurrentWeapon->IsHidden())
 		return;
 	
-	
 	const int8 SlotID = static_cast<int8>(Value.Get<float>()) - 1;;
 	const auto MyHUD = Cast<AMyHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
 	const auto WeaponType = MyHUD->IngameWidget->GetSlotWeaponType(SlotID);
 	// UE_LOG(LogTemp,Log,TEXT("ClickChangeWeapon : %d, %d"), SlotID, WeaponType);
-	if (WeaponType != WEAPON_None)
+	if (WeaponType != EWeaponType::WEAPON_None)
 	{
 		const auto WeaponActor = WeaponInventory->GetWeapon(WeaponType);
 		ChangeWeapon(WeaponActor);

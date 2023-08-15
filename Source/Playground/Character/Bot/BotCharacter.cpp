@@ -4,8 +4,9 @@
 #include "BotCharacter.h"
 
 #include "BotAnimInstance.h"
+#include "MyGameInstance.h"
 #include "UI/BotWidget.h"
-#include "Component/StatComponent.h"
+#include "Component/HealthComponent.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Logging/LogMacros.h"
@@ -15,12 +16,22 @@ ABotCharacter::ABotCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 }
 
 // Called when the game starts or when spawned
 void ABotCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ensure(GameInstance != nullptr);
+	auto BotStat = GameInstance->GetCharacterStat<FBotStat>
+		(ECharacterStatType::Bot, "1");
+	HealthComponent->Init(BotStat->MaxHp);
+	Damage = BotStat->Damage;
+	
 }
 
 void ABotCharacter::PostInitializeComponents()
@@ -32,9 +43,6 @@ void ABotCharacter::PostInitializeComponents()
 	AnimInstance->OnAttackHit.AddUObject(this, &ABotCharacter::CheckAttack);
 	OnAttackEnd = AnimInstance->OnAttackEnded;
 	ensure(OnAttackEnd != nullptr);
-
-	StatComponent = Cast<UStatComponent>(GetComponentByClass(UStatComponent::StaticClass()));
-	ensure(StatComponent != nullptr);
 
 	BindUI();
 }
@@ -60,7 +68,7 @@ void ABotCharacter::BindUI()
 	ensure(WidgetComponent != nullptr);
 	auto* BotWidget = Cast<UBotWidget>(WidgetComponent->GetWidget());
 	ensureMsgf(BotWidget != nullptr, TEXT("Bot Widget not found"));
-	BotWidget->Bind(StatComponent);
+	BotWidget->Bind(HealthComponent);
 }
 
 /**
@@ -91,8 +99,7 @@ void ABotCharacter::CheckAttack()
 	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Hit Actor : %s"), *ActorHit->GetName());
-		UGameplayStatics::ApplyDamage(ActorHit, StatComponent->GetDamage(), this->GetController(),
+		UGameplayStatics::ApplyDamage(ActorHit, Damage, this->GetController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
 	}
 }

@@ -23,7 +23,7 @@ class AProtagonistProjectile : public AActor
 	UProjectileMovementComponent* ProjectileMovement;
 
 private:
-	int32 Damage = 0;
+	float Damage = 0;
 
 public:
 	AProtagonistProjectile();
@@ -40,7 +40,7 @@ public:
 	/** Returns ProjectileMovement subobject **/
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
-	void Init(int32 &_Damage){this->Damage = _Damage;}
+	void Init(float &_Damage){this->Damage = _Damage;}
 
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Data/WeaponStat.h"
 #include "UObject/Object.h"
 #include "CharacterCurrentInfo.generated.h"
 
@@ -8,14 +9,7 @@
  * 
  */
 
-UENUM(BlueprintType)
-enum EWeaponType
-{
-	WEAPON_None UMETA(DisplayName="None"),
-	SWORD UMETA(displayDisplayName = "Sword"),
-	GUN UMETA(displayDisplayName = "Gun"),
-	BOMB UMETA(displayDisplayName = "Bomb"),
-};
+
 
 UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
 class UCharacterCurrentInfo : public UObject
@@ -24,7 +18,7 @@ class UCharacterCurrentInfo : public UObject
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON, meta=(AllowPrivateAccess=true))
-	TEnumAsByte<EWeaponType> CurrentWeaponType = WEAPON_None;
+	EWeaponType CurrentWeaponType = EWeaponType::WEAPON_None;
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	FVector2D InputDir = FVector2d::ZeroVector;
@@ -40,7 +34,9 @@ public:
 
 
 public:
+	UFUNCTION()
 	FORCEINLINE FVector2D GetDir() const { return InputDir; }
 
+	UFUNCTION()
 	void SetCurrentWeaponType(EWeaponType WeaponType) { this->CurrentWeaponType = WeaponType; }
 };

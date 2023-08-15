@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "StatComponent.h"
+#include "HealthComponent.h"
 
 #include "Character/Bot/BotCharacter.h"
 #include "MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
-UStatComponent::UStatComponent()
+UHealthComponent::UHealthComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
@@ -17,31 +17,37 @@ UStatComponent::UStatComponent()
 }
 
 
-void UStatComponent::InitializeComponent()
+void UHealthComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	GetOwner()->OnTakeAnyDamage.AddUniqueDynamic(this, &UStatComponent::HandleTakenDamage);
+	GetOwner()->OnTakeAnyDamage.AddUniqueDynamic(this, &UHealthComponent::HandleTakenDamage);
 }
 
 // Called when the game starts
-void UStatComponent::BeginPlay()
+void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// init data
-	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	ensure(GameInstance != nullptr);
-	CharacterData = GameInstance->GetCharacterData(StatType, "Default").Get(CharacterData);
-	CurrentHp = CharacterData.MaxHp;
-	OnHpChanged.Broadcast(CurrentHp, CharacterData.MaxHp);
+	
 }
 
-void UStatComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
-                                       AActor* DamageCauser)
+void UHealthComponent::Init(int32 _MaxHp)
+{
+	CurrentHp = MaxHp = _MaxHp;
+	OnHpChanged.Broadcast(CurrentHp, MaxHp);
+}
+
+
+void UHealthComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+}
+
+void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
+                                         AActor* DamageCauser)
 {
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
-	OnHpChanged.Broadcast(CurrentHp, CharacterData.MaxHp);
+	OnHpChanged.Broadcast(CurrentHp, MaxHp);
 
 	if (DamagedActor != nullptr && DamageCauser != nullptr)
 	{
@@ -49,3 +55,4 @@ void UStatComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const
 		       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
 	}
 }
+

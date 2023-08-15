@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
+#include "Data/WeaponStat.h"
 #include "Kismet/GameplayStaticsTypes.h"
 #include "BombActor.generated.h"
 
@@ -53,8 +54,8 @@ private:
 
 	void SetAimMovement(bool IsAim) const;
 
-	UPROPERTY(EditDefaultsOnly, Category=Gameplay, meta=(AllowPrivateAccess=true))
-	float Speed = 2000;
+	float Damage;
+	float Speed;
 
 	FVector GetThrowingVelocity() const;	
 	void InitSplineMeshes();
@@ -66,6 +67,6 @@ protected:
 
 	virtual void UnUse() override;
 	void SetVisibleTrajectory(bool bVisible);
-	virtual EWeaponType GetWeaponType() override { return BOMB; };
+	virtual EWeaponType GetWeaponType() override { return EWeaponType::BOMB; };
 
 };

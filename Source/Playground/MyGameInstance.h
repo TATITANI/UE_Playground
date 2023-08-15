@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/CharacterData.h"
+#include "Data/CharacterStat.h"
 #include "Engine/GameInstance.h"
 #include "Inventory/WeaponInventory.h"
 #include "MyGameInstance.generated.h"
@@ -17,12 +17,52 @@ class PLAYGROUND_API UMyGameInstance : public UGameInstance
 
 private:
 	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
-	TMap<ECharacterStatType, UDataTable*> StatMap;
+	TMap<ECharacterStatType, UDataTable*> CharacterStatMap;
+
+	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
+	TMap<EWeaponType, UDataTable*> WeaponStatMap;
 
 public:
 	UMyGameInstance();
-	// todo : 캐릭터 데이터 매니저로 빼기
-	TOptional<FCharacterData> GetCharacterData(ECharacterStatType StatType, FName RowName);
+	virtual void Init() override;
+	template <class T>
+	TOptional<T> GetCharacterStat(ECharacterStatType StatType, FName RowName);
+
+	template <class T>
+	TOptional<T> GetWeaponStat(EWeaponType StatType, FName RowName);
+
 
 	TSharedPtr<FWeaponInventory> WeaponInventory;
 };
+
+template <class T>
+TOptional<T> UMyGameInstance::GetCharacterStat(ECharacterStatType StatType, FName RowName)
+{
+	UDataTable* DataTable = *CharacterStatMap.Find(StatType);
+	ensureMsgf(DataTable != nullptr, TEXT("Data Table not exist : %s"), *UEnum::GetValueAsString(StatType));
+
+	const T* Data = DataTable->FindRow<T>(RowName,TEXT(""));
+	if (Data == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DataTable type not match : %s"), *UEnum::GetValueAsString(StatType));
+		return NullOpt;
+	}
+
+	return *Data;
+}
+
+template <class T>
+TOptional<T> UMyGameInstance::GetWeaponStat(EWeaponType StatType, FName RowName)
+{
+	UDataTable* DataTable = *WeaponStatMap.Find(StatType);
+	ensureMsgf(DataTable != nullptr, TEXT("Data Table not exist : %s"), *UEnum::GetValueAsString(StatType));
+
+	const T* Data = DataTable->FindRow<T>(RowName,TEXT(""));
+	if (Data == nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("DataTable type not match : %s"), *UEnum::GetValueAsString(StatType));
+		return NullOpt;
+	}
+
+	return *Data;
+}

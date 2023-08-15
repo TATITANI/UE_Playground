@@ -24,9 +24,7 @@ public:
 
 	UProtagonistAnimInstance();
 private:
-	// class AProtagonistCharacter* Protagonist;
-
-	UPROPERTY(BlueprintReadWrite, Instanced, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadWrite, Instanced,Transient, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 	UPROPERTY(BlueprintReadWrite, Instanced,Transient,  Category = Movement, meta = (AllowPrivateAccess = "true"))

@@ -7,7 +7,7 @@
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
 #include "Component/CharacterWeaponComponent.h"
-#include "Component/StatComponent.h"
+#include "Component/HealthComponent.h"
 #include "Components/HorizontalBox.h"
 #include "Components/ProgressBar.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,9 +23,9 @@ void UIngameWidget::NativeOnInitialized()
 	ProtagonistCharacter->Weapon->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
 	UE_LOG(LogTemp, Log, TEXT(" UIngameWidget::NativeOnInitialized"));
 
-	UStatComponent* StatComponent = Cast<UStatComponent>(ProtagonistCharacter->FindComponentByClass(UStatComponent::StaticClass()));
-	ensure(StatComponent!= nullptr);
-	StatComponent->OnHpChanged.AddUObject(this, &UIngameWidget::UpdateHp);
+	UHealthComponent* HealthComponent = Cast<UHealthComponent>(ProtagonistCharacter->FindComponentByClass(UHealthComponent::StaticClass()));
+	ensure(HealthComponent!= nullptr);
+	HealthComponent->OnHpChanged.AddUObject(this, &UIngameWidget::UpdateHp);
 }
 
 void UIngameWidget::UpdateHp(int32 Hp, int32 MaxHp) const

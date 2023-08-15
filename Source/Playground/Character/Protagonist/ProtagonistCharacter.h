@@ -33,14 +33,14 @@ public:
 private:
 	virtual void BeginPlay() override;
 	virtual void PostInitProperties() override;
-
+	virtual void PostInitializeComponents() override;
 	UFUNCTION()
 	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
 	                           uint8 PreviousCustomMode);
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-
+	
 	UFUNCTION()
 	void OnLand(const FHitResult& Hit);
 	/** Called for movement input */
@@ -96,6 +96,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UClimbComponent *Climbing;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	class UHealthComponent *HealthComponent;
 	
 	void SetMovable(bool bEnable) { this->Movable = bEnable; }
 	bool GetMovable() { return this->Movable; }

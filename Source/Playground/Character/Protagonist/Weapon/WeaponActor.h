@@ -8,6 +8,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "WeaponActor.generated.h"
 
+
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLAYGROUND_API AWeaponActor : public AActor
 {
@@ -48,15 +49,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category= Socket, meta=(AllowPrivateAccess=true))
 	FName SocketName = "GripPoint_Sword";
 
-	int32 Damage = 0;
-	
 
 public:
 	virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::WEAPON_None;);
 
 	virtual void Use(AProtagonistCharacter* TargetCharacter);
 	virtual void UnUse();
-
 
 	FName GetSocketName() const { return SocketName; }
 };

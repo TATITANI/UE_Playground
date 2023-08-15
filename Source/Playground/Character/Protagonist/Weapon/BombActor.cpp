@@ -6,6 +6,7 @@
 #include "FlyingBomb.h"
 #include "EnhancedInput/Public/EnhancedInputComponent.h"
 #include "InputTriggers.h"
+#include "MyGameInstance.h"
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,6 +22,14 @@ void ABombActor::BeginPlay()
 {
 	Super::BeginPlay();
 	InitSplineMeshes();
+
+	// stat
+	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ensure(GameInstance != nullptr);
+	auto BombStat = GameInstance->GetWeaponStat<FBombStat>(GetWeaponType(), FName("1"));
+	this->Damage = BombStat->Damage;
+	this->Speed = BombStat->Speed;
+	
 }
 
 void ABombActor::InitSplineMeshes()

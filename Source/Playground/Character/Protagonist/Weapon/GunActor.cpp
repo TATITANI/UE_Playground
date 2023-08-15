@@ -6,8 +6,21 @@
 #include "EnhancedInputSubsystems.h"
 #include "Character/Protagonist/ProtagonistProjectile.h"
 #include "EnhancedInputComponent.h"
+#include "MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/ArrowComponent.h"
+
+void AGunActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// stat
+	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ensure(GameInstance != nullptr);
+	auto GunStat = GameInstance->GetWeaponStat<FGunStat>(GetWeaponType(), FName("1"));
+	this->Damage = GunStat->Damage;
+	
+}
 
 
 void AGunActor::Fire()
@@ -56,7 +69,9 @@ void AGunActor::Fire()
 }
 
 
+
 void AGunActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
 {
 	EnhancedInputComponent->BindAction(FireInputAction, ETriggerEvent::Triggered, this, &AGunActor::Fire);
 }
+

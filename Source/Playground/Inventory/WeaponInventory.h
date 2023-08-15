@@ -7,7 +7,8 @@
  * 
  */
 
-enum EWeaponType : int;
+
+enum class EWeaponType : uint8;
 
 class PLAYGROUND_API FWeaponInventory
 {

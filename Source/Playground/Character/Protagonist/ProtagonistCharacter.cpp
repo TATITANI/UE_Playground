@@ -7,11 +7,14 @@
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "MyGameInstance.h"
 
 #include "Character/CharacterCurrentInfo.h"
 #include "Component/CharacterWeaponComponent.h"
+#include "Component/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -52,6 +55,7 @@ AProtagonistCharacter::AProtagonistCharacter()
 
 	Weapon = CreateDefaultSubobject<UCharacterWeaponComponent>(TEXT("Weapon"));
 	Climbing = CreateDefaultSubobject<UClimbComponent>(TEXT("Climb"));
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 }
 
 void AProtagonistCharacter::PostInitProperties()
@@ -60,10 +64,14 @@ void AProtagonistCharacter::PostInitProperties()
 	CharacterCurrentInfo = NewObject<UCharacterCurrentInfo>();
 }
 
+void AProtagonistCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+}
+
 
 void AProtagonistCharacter::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
@@ -85,6 +93,12 @@ void AProtagonistCharacter::BeginPlay()
 		}
 	}
 
+	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ensure(GameInstance != nullptr);
+	auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>
+		(ECharacterStatType::Protagonist, "1");
+	HealthComponent->Init( ProtaonistStat->MaxHp);
+	
 
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
+#include "Data/WeaponStat.h"
 #include "GunActor.generated.h"
 
 /**
@@ -14,9 +15,11 @@ class PLAYGROUND_API AGunActor : public AWeaponActor
 {
 	GENERATED_BODY()
 
+	
 protected:
+	virtual void BeginPlay() override;
 	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;	
-	virtual EWeaponType GetWeaponType() override { return GUN; }
+	virtual EWeaponType GetWeaponType() override { return EWeaponType::GUN; }
 
 protected:
 	/** Projectile class to spawn */
@@ -39,4 +42,6 @@ protected:
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(meta=(AllowPrivateAccess = "true"))
 	void Fire();
+private:
+	float Damage;
 };
