@@ -41,5 +41,5 @@ public:
 
 	void Init(int32 _MaxHp);
 	int32 GetCurrentHP() const { return CurrentHp; }
-	int32 GetMaxHP() const { return 50; }
+	int32 GetMaxHP() const { return MaxHp; }
 };

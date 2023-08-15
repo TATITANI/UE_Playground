@@ -49,13 +49,18 @@ void ASwordActor::Attack()
 	{
 		if (AnimInstance != nullptr)
 		{
+			 if(AnimInstance->Montage_IsPlaying(AttackMontage))
+			 	return;
+			
 			AnimInstance->Montage_Play(AttackMontage, 1.f);
 			AnimInstance->Montage_JumpToSection(GetSectionName());
 			SectionID = (SectionID == SectionMaxID) ? 1 : SectionID + 1;
 
 			Character->SetMovable(false);
-			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackEndEvent);
 			TrailComponent->Activate();
+
+			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackEndEvent);
+			AttackCheck();
 		}
 	}
 }
@@ -109,13 +114,12 @@ FName ASwordActor::GetSectionName() const
 
 void ASwordActor::AttackEndEvent(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == AttackMontage && !bInterrupted)
+	if (Montage == AttackMontage)
 	{
-		AttackCheck();
-
 		Character->SetMovable(true);
-		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackEndEvent);
 		TrailComponent->DeactivateImmediate();
+
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackEndEvent);
 	}
 }
 
