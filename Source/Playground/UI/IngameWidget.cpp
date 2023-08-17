@@ -9,6 +9,7 @@
 #include "Component/CharacterWeaponComponent.h"
 #include "Component/HealthComponent.h"
 #include "Components/HorizontalBox.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,15 +27,21 @@ void UIngameWidget::NativeOnInitialized()
 	UHealthComponent* HealthComponent = Cast<UHealthComponent>(ProtagonistCharacter->FindComponentByClass(UHealthComponent::StaticClass()));
 	ensure(HealthComponent!= nullptr);
 	HealthComponent->OnHpChanged.AddUObject(this, &UIngameWidget::UpdateHp);
+
+	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Img_HP_Gauge->Brush.GetResourceObject());
+	MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(MaterialInterface, nullptr);
+	MaterialInstanceDynamic->AddToRoot(); // GC 삭제 방지
+	Img_HP_Gauge->SetBrushFromMaterial(MaterialInstanceDynamic);
+	
 }
 
 void UIngameWidget::UpdateHp(int32 Hp, int32 MaxHp) const
 {
-	if (ensure(PB_HpBar))
+	if (ensure(Img_HP_Gauge))
 	{
-		ensureMsgf(MaxHp!=0, TEXT("MaxHp is zero %d"));
-		const float ratio = static_cast<float>(Hp) / MaxHp;
-		PB_HpBar->SetPercent(ratio);
+		ensureMsgf(MaxHp!=0, TEXT("MaxHp is zero !!"));
+		const float HpRatio = static_cast<float>(Hp) / MaxHp;
+		MaterialInstanceDynamic->SetScalarParameterValue(TEXT("FillAmount"), HpRatio);
 	}
 }
 

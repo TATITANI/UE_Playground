@@ -17,8 +17,11 @@ class PLAYGROUND_API UIngameWidget : public UUserWidget
 
 private:
 	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true)) // c++ 에서 widget 블루프린트 접근
-	class UProgressBar* PB_HpBar; // 에디터 상 컴포넌트 이름과 같아야 함.
+	class UImage* Img_HP_Gauge; // 에디터 상 컴포넌트 이름과 같아야 함.
 
+	UMaterialInstanceDynamic* MaterialInstanceDynamic;
+
+	
 	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true))
 	class UHorizontalBox* HB_Weapon;
 
