@@ -49,6 +49,7 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
 	OnHpChanged.Broadcast(CurrentHp, MaxHp);
 
+
 	if (DamagedActor != nullptr && DamageCauser != nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),

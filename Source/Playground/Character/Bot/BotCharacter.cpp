@@ -30,8 +30,8 @@ void ABotCharacter::BeginPlay()
 	auto BotStat = GameInstance->GetCharacterStat<FBotStat>
 		(ECharacterStatType::Bot, "1");
 	HealthComponent->Init(BotStat->MaxHp);
-	Damage = BotStat->Damage;
-	
+	OnTakeAnyDamage.AddDynamic(this, &ABotCharacter::OnTakeDamageCallback);
+	AttackDamage = BotStat->Damage;
 }
 
 void ABotCharacter::PostInitializeComponents()
@@ -99,7 +99,13 @@ void ABotCharacter::CheckAttack()
 	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)
 	{
-		UGameplayStatics::ApplyDamage(ActorHit, Damage, this->GetController(),
+		UGameplayStatics::ApplyDamage(ActorHit, AttackDamage, this->GetController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
 	}
+}
+
+void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
+                                         AActor* DamageCauser)
+{
+	AnimInstance->PlayAttackedMontage();
 }

@@ -19,7 +19,6 @@ public:
 	ABotCharacter();
 
 protected:
-	
 	virtual void PostInitializeComponents() override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -27,24 +26,22 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
-
 public:
 	virtual void Attack();
 
 	TSharedPtr<FOnAttackEnd> OnAttackEnd;
 
-
 private:
 	UPROPERTY()
 	class UBotAnimInstance* AnimInstance;
-	
+
 	UPROPERTY()
 	class UHealthComponent* HealthComponent;
-	
+
 
 	UPROPERTY(VisibleAnywhere, Category="Attack")
-	int32 Damage;
-	
+	int32 AttackDamage;
+
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	float attackDistance = 100.f;
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
@@ -53,6 +50,11 @@ private:
 private:
 	UFUNCTION()
 	void BindUI();
-	
+
+
 	virtual void CheckAttack();
+
+	UFUNCTION()
+	void OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	
 };

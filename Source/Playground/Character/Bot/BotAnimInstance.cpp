@@ -3,6 +3,8 @@
 
 #include "BotAnimInstance.h"
 
+#include "BotCharacter.h"
+
 UBotAnimInstance::UBotAnimInstance()
 {
 	OnAttackEnded = MakeShared<FOnAttackEnded>();
@@ -38,6 +40,15 @@ void UBotAnimInstance::PlayAttackMontage()
 		Montage_Play(AttackMontage);
 	}
 }
+
+void UBotAnimInstance::PlayAttackedMontage()
+{
+	if (Montage_IsPlaying(AttackedMontage) == false)
+	{
+		Montage_Play(AttackedMontage);
+	}
+}
+
 
 void UBotAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted) 
 {
