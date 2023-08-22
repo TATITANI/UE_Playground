@@ -109,3 +109,8 @@ void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, con
 {
 	AnimInstance->PlayAttackedMontage();
 }
+
+bool ABotCharacter::IsAttacked()
+{
+	return AnimInstance->IsPlayingAttackedMontage();
+}

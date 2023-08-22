@@ -50,10 +50,11 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 		if (TargetActor != nullptr)
 		{
 			ensure(Bot);
-			const auto dir = TargetActor->GetActorLocation() - Bot->GetActorLocation();
-			auto Rot = FRotationMatrix::MakeFromX(dir).Rotator();
-			Rot = FMath::RInterpTo(Bot->GetActorRotation(), Rot, DeltaSeconds, 3.0f); // 회전 보간
-			Bot->SetActorRotation(Rot);
+			const auto Dir = TargetActor->GetActorLocation() - Bot->GetActorLocation();
+			const double Yaw = FRotationMatrix::MakeFromX(Dir).Rotator().Yaw;
+			FRotator TargetRot = FRotator(Bot->GetActorRotation().Pitch, Yaw, Bot->GetActorRotation().Roll);
+			TargetRot = FMath::RInterpTo(Bot->GetActorRotation(), TargetRot, DeltaSeconds, 3.0f); // 회전 보간
+			Bot->SetActorRotation(TargetRot);
 		}
 	}
 

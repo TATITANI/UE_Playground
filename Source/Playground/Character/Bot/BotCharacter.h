@@ -28,6 +28,7 @@ public:
 
 public:
 	virtual void Attack();
+	bool IsAttacked();
 
 	TSharedPtr<FOnAttackEnd> OnAttackEnd;
 
@@ -56,5 +57,6 @@ private:
 
 	UFUNCTION()
 	void OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
 	
 };

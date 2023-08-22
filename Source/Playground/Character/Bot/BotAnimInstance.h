@@ -34,10 +34,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	UAnimMontage* AttackedMontage;
-	
+
 	// "AnimNotify_노티파이명(AttackHit)" 네이밍 필요
 	UFUNCTION()
-	void AnimNotify_AttackHit(); 
+	void AnimNotify_AttackHit();
 
 public:
 	FOnAttackHit OnAttackHit;
@@ -46,6 +46,7 @@ public:
 public:
 	void PlayAttackMontage();
 	void PlayAttackedMontage();
+	bool IsPlayingAttackedMontage() const { return Montage_IsPlaying(AttackedMontage); }
 
 	UFUNCTION()
 	void MontageEnd(UAnimMontage* Montage, bool bInterrupted);

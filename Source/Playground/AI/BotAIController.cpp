@@ -12,7 +12,6 @@
 
 ABotAIController::ABotAIController()
 {
-	UE_LOG(LogTemp, Log, TEXT("ABotAIController Constructor"));
 }
 
 
@@ -20,7 +19,6 @@ void ABotAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	UE_LOG(LogTemp, Log, TEXT("ai OnPossess %s"), *InPawn->GetName());
-	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ABotAIController::RandomMove, 3.f, true);
 	
 	UBlackboardComponent* _Blackboard = Blackboard;
 	if (UseBlackboard(BlackboardData, _Blackboard))
@@ -36,7 +34,6 @@ void ABotAIController::OnUnPossess()
 {
 	Super::OnUnPossess();
 
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
 
