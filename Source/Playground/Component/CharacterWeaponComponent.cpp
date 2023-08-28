@@ -88,11 +88,11 @@ void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 	}
 	if (CurrentWeapon != nullptr)
 	{
-		CurrentWeapon->UnUse();
+		CurrentWeapon->UnEquip();
 	}
 
 	CurrentWeapon = WeaponActor;
-	WeaponActor->Use(ProtagonistCharacter);
+	WeaponActor->Equip(ProtagonistCharacter);
 	ProtagonistCharacter->CharacterCurrentInfo->SetCurrentWeaponType(WeaponActor->GetWeaponType());
 	OnChangeWeapon.Broadcast(WeaponActor);
 }

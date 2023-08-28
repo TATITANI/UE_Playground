@@ -18,27 +18,11 @@ void AGunActor::BeginPlay()
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
 	auto GunStat = GameInstance->GetWeaponStat<FGunStat>(GetWeaponType(), FName("1"));
-	CurrentBullet = BulletCnt = GunStat->BulletCnt;
+	ReusableCnt = ReusableMaxCnt = GunStat->BulletCnt;
+	
 }
 
-// bool AGunActor::IsCharging()
-// {
-// 	if (CurrentBullet == 0)
-// 	{
-// 		const double CurrentTime = GetWorld()->GetTimeSeconds();
-// 		return CurrentTime < LastAttackTime + CoolTime;
-// 	}
-// 	return false;
-// }
-
-void AGunActor::OnRefill()
-{
-	Super::OnRefill();
-	CurrentBullet = BulletCnt;
-}
-
-
-void AGunActor::AttackStart()
+void AGunActor::AttackInputStarted()
 {
 	// Try and fire a projectile
 	if (ProjectileClass != nullptr)
@@ -66,7 +50,6 @@ void AGunActor::AttackStart()
 				if (Projectile != nullptr) // 충돌지점이기 때문에 생성되지 않는 경우
 				{
 					Projectile->Init(this->Damage);
-					CurrentBullet--;
 				}
 			}
 		}

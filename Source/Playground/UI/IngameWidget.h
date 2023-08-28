@@ -50,6 +50,9 @@ public:
 
 	UFUNCTION()
 	void Cooldown(double BeginSeconds, double EndSeconds);
+
+	UFUNCTION()
+	void UseWeapon(int32 RemainCnt, int32 MaxCnt);
 	
 	EWeaponType GetSlotWeaponType(int8 SlotID);
 };

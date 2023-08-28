@@ -39,8 +39,10 @@ public:
 	
 	void ActiveCooldown(double _CoolBeginSeconds, double _CoolEndSeconds);
 
+	void SetAvailableCnt(float Progress);
 private:
 	double CoolBeginSeconds, CoolEndSeconds;
 	const FName KeyMaterialProgress = "Progress";
 	const FName KeyMaterialRefill = "Refill";
+
 };

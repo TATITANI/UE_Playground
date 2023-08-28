@@ -31,14 +31,14 @@ private:
 
 protected:
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::SWORD; }
-	virtual ETriggerEvent GetCooldownOccurEvent() override { return ETriggerEvent::Started; };
+	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Started; };
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta=(AllowPrivateAccess = "true"))
 	UAnimMontage* AttackMontage;
 
 
-	virtual void AttackStart() override;
+	virtual void AttackInputStarted() override;
 
 	void AttackCheck() const;
 
@@ -57,6 +57,6 @@ private:
 	class UNiagaraComponent* TrailComponent;
 
 public:
-	virtual void Use(AProtagonistCharacter* TargetCharacter) override;
+	virtual void Equip(AProtagonistCharacter* TargetCharacter) override;
 	virtual void BeginPlay() override;
 };

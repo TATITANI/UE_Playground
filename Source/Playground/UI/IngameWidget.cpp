@@ -23,6 +23,7 @@ void UIngameWidget::NativeOnInitialized()
 	ProtagonistCharacter->WeaponComponent->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
 	ProtagonistCharacter->WeaponComponent->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
 	ProtagonistCharacter->WeaponComponent->OnCooldown.AddUObject(this,&UIngameWidget::Cooldown);
+	ProtagonistCharacter->WeaponComponent->OnUseWeapon.AddUObject(this, &UIngameWidget::UseWeapon);
 	
 	UE_LOG(LogTemp, Log, TEXT(" UIngameWidget::NativeOnInitialized"));
 
@@ -91,4 +92,10 @@ EWeaponType UIngameWidget::GetSlotWeaponType(int8 SlotID)
 void UIngameWidget::Cooldown(double BeginSeconds, double EndSeconds)
 {
 	CurrentWeaponSlot->ActiveCooldown(BeginSeconds, EndSeconds);
+}
+
+void UIngameWidget::UseWeapon(int32 RemainCnt, int32 MaxCnt)
+{
+	CurrentWeaponSlot->SetAvailableCnt(1-static_cast<float>(RemainCnt) / MaxCnt);
+	
 }

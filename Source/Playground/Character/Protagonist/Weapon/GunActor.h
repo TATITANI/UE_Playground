@@ -18,7 +18,7 @@ class PLAYGROUND_API AGunActor : public AWeaponActor
 protected:
 	virtual void BeginPlay() override;
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::GUN; }
-	virtual ETriggerEvent GetCooldownOccurEvent() override { return ETriggerEvent::Started; };
+	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Started; };
 
 protected:
 	/** Projectile class to spawn */
@@ -33,11 +33,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta=(AllowPrivateAccess = "true"))
 	UAnimMontage* FireMontage;
 
-	virtual void AttackStart() override;
+	virtual void AttackInputStarted() override;
 
 private:
-	int32 BulletCnt;
-	int32 CurrentBullet;
-	// virtual bool IsCharging() override;
-	virtual void OnRefill() override;
 };

@@ -56,34 +56,38 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* AttackInputAction;
 
-
 	bool IsCharging = false;
 	bool IsAttack = false;
-	virtual void OnRefill();
+	int32 ReusableCnt;
 
+	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess))
+	int32 ReusableMaxCnt = 0;
+	
 	FTimerHandle RefillTimerHandle;
 
 private:
 	void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent);
-	void OnAttackStarted();
-	void OnAttackTriggered();
-	void OnAttackCompleted();
+	void OnAttackInputStarted();
+	void OnAttackInputTriggered();
+	void OnAttackInputCompleted();
+
+	void AttackTriggerIfPossible(ETriggerEvent TriggerEvent);
 
 	void CooldownIfPossible(ETriggerEvent TriggerEvent);
 protected:
-	virtual void AttackStart()	{	};
-	virtual void AttackTrigger(){	};
-	virtual void AttackFinish()	{	};
+	virtual void AttackInputStarted()	{	};
+	virtual void AttackInputTrigger(){	};
+	virtual void AttackInputCompleted()	{	};
 
-	virtual ETriggerEvent GetCooldownOccurEvent() PURE_VIRTUAL(AWeaponActor::GetCooldownOccurEvent, return ETriggerEvent::None;);
-	virtual bool CheckCooldown();
-	
+	virtual ETriggerEvent GetAttackTriggerEvent() PURE_VIRTUAL(AWeaponActor::GetAttackTriggerEvent, return ETriggerEvent::None;);
+	virtual void OnRefill();
+
 
 public:
 	virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::WEAPON_None;);
 
-	virtual void Use(AProtagonistCharacter* TargetCharacter);
-	virtual void UnUse();
+	virtual void Equip(AProtagonistCharacter* TargetCharacter);
+	virtual void UnEquip();
 
 	FName GetSocketName() const { return SocketName; }
 };

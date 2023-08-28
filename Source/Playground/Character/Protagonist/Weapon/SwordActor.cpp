@@ -33,7 +33,7 @@ void ASwordActor::BeginPlay()
 }
 
 
-void ASwordActor::AttackStart()
+void ASwordActor::AttackInputStarted()
 {
 	if (AttackMontage != nullptr)
 	{
@@ -115,8 +115,8 @@ void ASwordActor::AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted
 	}
 }
 
-void ASwordActor::Use(AProtagonistCharacter* TargetCharacter)
+void ASwordActor::Equip(AProtagonistCharacter* TargetCharacter)
 {
-	Super::Use(TargetCharacter);
+	Super::Equip(TargetCharacter);
 
 }

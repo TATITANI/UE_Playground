@@ -46,7 +46,7 @@ private:
 	UFUNCTION()
 	void Throw();
 
-	virtual void AttackStart() override;
+	virtual void AttackInputStarted() override;
 
 	void SetAimMovement(bool IsAim) const;
 
@@ -58,11 +58,11 @@ private:
 	
 protected:
 	virtual void BeginPlay() override;
-	virtual void AttackFinish() override;
+	virtual void AttackInputCompleted() override;
 
-	virtual void UnUse() override;
+	virtual void UnEquip() override;
 	void SetVisibleTrajectory(bool bVisible);
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::BOMB; };
-	virtual ETriggerEvent GetCooldownOccurEvent() override { return ETriggerEvent::Completed; };
+	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Completed; };
 
 };

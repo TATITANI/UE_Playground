@@ -22,6 +22,8 @@ void UWeaponSlotWidget::AssignWeapon(UTexture2D* Tex, EWeaponType _WeaponType)
 void UWeaponSlotWidget::ActiveUseEffect(bool bActive)
 {
 	MaterialInstanceDynamic->SetScalarParameterValue(TEXT("IsActive"), bActive);
+	int32 Darkness = bActive ? 255 : 100;
+	Img_Weapon->Brush.TintColor = FSlateColor(FColor(Darkness,Darkness,Darkness));
 }
 
 void UWeaponSlotWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -32,7 +34,7 @@ void UWeaponSlotWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	{
 		double CurrentSeconds = GetWorld()->GetTimeSeconds();
 		float Progress = FMath::Clamp((CurrentSeconds - CoolBeginSeconds) / (CoolEndSeconds - CoolBeginSeconds), 0, 1);
-		
+
 		MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialProgress, Progress);
 		if (CurrentSeconds > CoolEndSeconds)
 		{
@@ -50,4 +52,9 @@ void UWeaponSlotWidget::ActiveCooldown(double _CoolBeginSeconds, double _CoolEnd
 	CoolBeginSeconds = _CoolBeginSeconds;
 	CoolEndSeconds = _CoolEndSeconds;
 	MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialRefill, true);
+}
+
+void UWeaponSlotWidget::SetAvailableCnt(float Progress)
+{
+	MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialProgress, Progress);
 }

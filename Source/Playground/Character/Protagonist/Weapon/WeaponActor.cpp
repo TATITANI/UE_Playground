@@ -33,40 +33,53 @@ void AWeaponActor::BeginPlay()
 	ensureMsgf(WeaponStat.IsSet(), TEXT("Weapon Stat is Null"));
 	this->Damage = WeaponStat->Damage;
 	this->CoolTime = WeaponStat->CoolTime;
+	ReusableCnt = ReusableMaxCnt;
 }
 
 
-void AWeaponActor::OnAttackStarted()
+void AWeaponActor::OnAttackInputStarted()
 {
 	if (IsCharging)
 		return;
 
 	IsAttack = true;
-	AttackStart();
+	AttackInputStarted();
 
-	CooldownIfPossible(ETriggerEvent::Started);
-
+	AttackTriggerIfPossible(ETriggerEvent::Started);
 }
 
-void AWeaponActor::OnAttackTriggered()
+void AWeaponActor::OnAttackInputTriggered()
 {
 	if (!IsAttack)
 		return;
 
-	AttackTrigger();
-	CooldownIfPossible(ETriggerEvent::Triggered);
+	AttackInputTrigger();
 
+	AttackTriggerIfPossible(ETriggerEvent::Triggered);
 }
 
-void AWeaponActor::OnAttackCompleted()
+void AWeaponActor::OnAttackInputCompleted()
 {
 	if (!IsAttack)
 		return;
 
-	AttackFinish();
+	AttackInputCompleted();
 
 	IsAttack = false;
-	CooldownIfPossible(ETriggerEvent::Completed);
+	AttackTriggerIfPossible(ETriggerEvent::Completed);
+}
+
+void AWeaponActor::AttackTriggerIfPossible(ETriggerEvent TriggerEvent)
+{
+	if (GetAttackTriggerEvent() == TriggerEvent)
+	{
+		if(ReusableMaxCnt >0)
+		{
+			ReusableCnt--;
+			Character->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
+		}
+		CooldownIfPossible(TriggerEvent);
+	}
 }
 
 void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
@@ -74,10 +87,10 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 	if (CoolTime <= 0)
 		return;
 
-	if (GetCooldownOccurEvent() == TriggerEvent && CheckCooldown())
+	if (ReusableCnt == 0)
 	{
 		IsCharging = true;
-		double CurrentSeconds =  GetWorld()->GetTimeSeconds();
+		double CurrentSeconds = GetWorld()->GetTimeSeconds();
 		Character->WeaponComponent->OnCooldown.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
 		Character->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
 	}
@@ -87,15 +100,11 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 void AWeaponActor::OnRefill()
 {
 	IsCharging = false;
+	ReusableCnt = ReusableMaxCnt;
 }
 
 
-bool AWeaponActor::CheckCooldown()
-{
-	return true;
-}
-
-void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
+void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 {
 	Character = TargetCharacter;
 	ensure(Character != nullptr);
@@ -110,14 +119,14 @@ void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
 
 void AWeaponActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
 {
-	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Started, this, &AWeaponActor::OnAttackStarted);
-	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Triggered, this, &AWeaponActor::OnAttackTriggered);
-	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Canceled, this, &AWeaponActor::OnAttackCompleted);
-	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Completed, this, &AWeaponActor::OnAttackCompleted);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Started, this, &AWeaponActor::OnAttackInputStarted);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Triggered, this, &AWeaponActor::OnAttackInputTriggered);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Canceled, this, &AWeaponActor::OnAttackInputCompleted);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Completed, this, &AWeaponActor::OnAttackInputCompleted);
 }
 
 
-void AWeaponActor::UnUse()
+void AWeaponActor::UnEquip()
 {
 	RemoveInputMappingContext();
 	SetActorHiddenInGame(true);

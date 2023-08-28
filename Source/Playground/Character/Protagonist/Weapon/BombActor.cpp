@@ -32,9 +32,9 @@ void ABombActor::BeginPlay()
 }
 
 
-void ABombActor::AttackFinish()
+void ABombActor::AttackInputCompleted()
 {
-	Super::AttackFinish();
+	Super::AttackInputCompleted();
 	Throw();
 
 }
@@ -68,9 +68,9 @@ FVector ABombActor::GetThrowingStartLocation()
 
 
 
-void ABombActor::UnUse()
+void ABombActor::UnEquip()
 {
-	Super::UnUse();
+	Super::UnEquip();
 	SetVisibleTrajectory(false);
 
 	SetAimMovement(false);
@@ -97,7 +97,7 @@ FVector ABombActor::GetThrowingVelocity() const
 }
 
 
-void ABombActor::AttackStart()
+void ABombActor::AttackInputStarted()
 {
 	SetAimMovement(true);
 	
