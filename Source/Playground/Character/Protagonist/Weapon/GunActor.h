@@ -15,11 +15,10 @@ class PLAYGROUND_API AGunActor : public AWeaponActor
 {
 	GENERATED_BODY()
 
-	
 protected:
 	virtual void BeginPlay() override;
-	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;	
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::GUN; }
+	virtual ETriggerEvent GetCooldownOccurEvent() override { return ETriggerEvent::Started; };
 
 protected:
 	/** Projectile class to spawn */
@@ -33,15 +32,12 @@ protected:
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta=(AllowPrivateAccess = "true"))
 	UAnimMontage* FireMontage;
-	
 
-	/** Fire Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* FireInputAction;
+	virtual void AttackStart() override;
 
-	/** Make the weapon Fire a Projectile */
-	UFUNCTION(meta=(AllowPrivateAccess = "true"))
-	void Fire();
 private:
-	float Damage;
+	int32 BulletCnt;
+	int32 CurrentBullet;
+	// virtual bool IsCharging() override;
+	virtual void OnRefill() override;
 };

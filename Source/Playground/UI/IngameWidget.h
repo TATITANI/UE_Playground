@@ -35,15 +35,21 @@ private:
 	TMap<EWeaponType, UTexture2D*> WeaponImageTable;
 
 	uint8 NewWeaponIndex = 0;
+
+	class UWeaponSlotWidget* CurrentWeaponSlot;
+
 protected:
 	virtual void NativeOnInitialized() override;
 
 public:
 	UFUNCTION()
-	void ChangeCurrentWeapon(class AWeaponActor* WeaponActor) const;
+	void ChangeCurrentWeapon(class AWeaponActor* WeaponActor) ;
 	
 	UFUNCTION()
 	void AddWeapon(class AWeaponActor* WeaponActor);
 
+	UFUNCTION()
+	void Cooldown(double BeginSeconds, double EndSeconds);
+	
 	EWeaponType GetSlotWeaponType(int8 SlotID);
 };

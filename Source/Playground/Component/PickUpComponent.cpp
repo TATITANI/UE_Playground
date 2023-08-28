@@ -28,7 +28,7 @@ void UPickUpComponent::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCompo
 	AProtagonistCharacter* ProtagonistCharacter = Cast<AProtagonistCharacter>(OtherActor);
 	if (ProtagonistCharacter != nullptr)
 	{
-		ProtagonistCharacter->Weapon->ObtainWeapon(WeaponActor);
+		ProtagonistCharacter->WeaponComponent->ObtainWeapon(WeaponActor);
 		
 		// Notify that the actor is being pickekd up
 		OnPickUp.Broadcast(ProtagonistCharacter);

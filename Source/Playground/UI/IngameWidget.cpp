@@ -16,12 +16,14 @@
 void UIngameWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
-
+	
 	const auto PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(PlayerPawn);
 	ensure(ProtagonistCharacter!= nullptr);
-	ProtagonistCharacter->Weapon->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
-	ProtagonistCharacter->Weapon->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
+	ProtagonistCharacter->WeaponComponent->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
+	ProtagonistCharacter->WeaponComponent->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
+	ProtagonistCharacter->WeaponComponent->OnCooldown.AddUObject(this,&UIngameWidget::Cooldown);
+	
 	UE_LOG(LogTemp, Log, TEXT(" UIngameWidget::NativeOnInitialized"));
 
 	UHealthComponent* HealthComponent = Cast<UHealthComponent>(ProtagonistCharacter->FindComponentByClass(UHealthComponent::StaticClass()));
@@ -32,29 +34,34 @@ void UIngameWidget::NativeOnInitialized()
 	MaterialInstanceDynamic = UMaterialInstanceDynamic::Create(MaterialInterface, nullptr);
 	MaterialInstanceDynamic->AddToRoot(); // GC 삭제 방지
 	Img_HP_Gauge->SetBrushFromMaterial(MaterialInstanceDynamic);
-	
 }
 
 void UIngameWidget::UpdateHp(int32 Hp, int32 MaxHp) const
 {
 	if (ensure(Img_HP_Gauge))
 	{
-		ensureMsgf(MaxHp!=0, TEXT("MaxHp is zero !!"));
+		ensureMsgf(MaxHp!=0, TEXT("MaxHp is zero !"));
 		const float HpRatio = static_cast<float>(Hp) / MaxHp;
 		MaterialInstanceDynamic->SetScalarParameterValue(TEXT("FillAmount"), HpRatio);
 	}
 }
 
-void UIngameWidget::ChangeCurrentWeapon(AWeaponActor* WeaponActor) const
+void UIngameWidget::ChangeCurrentWeapon(AWeaponActor* WeaponActor)
 {
 	const auto WeaponType = WeaponActor->GetWeaponType();
 
-	for (int8 i = 0; i < NewWeaponIndex; i++)
+	if (CurrentWeaponSlot != nullptr)
 	{
-		const UWeaponSlotWidget* WeaponSlotWidget = Cast<UWeaponSlotWidget>(HB_Weapon->GetChildAt(i));
-		const bool IsUse = WeaponType == WeaponSlotWidget->GetWeaponType();
-		WeaponSlotWidget->ActiveUseEffect(IsUse);
+		CurrentWeaponSlot->ActiveUseEffect(false);
 	}
+	auto WeaponSlots = HB_Weapon->GetAllChildren();
+	CurrentWeaponSlot = Cast<UWeaponSlotWidget>(*WeaponSlots.FindByPredicate([&](UWidget* SlotWidget)
+	{
+		return Cast<UWeaponSlotWidget>(SlotWidget)->GetWeaponType() == WeaponType;
+	}));
+
+	ensureMsgf(CurrentWeaponSlot != nullptr, TEXT("changed weapon slot not exist"));
+	CurrentWeaponSlot->ActiveUseEffect(true);
 }
 
 void UIngameWidget::AddWeapon(AWeaponActor* WeaponActor)
@@ -66,17 +73,22 @@ void UIngameWidget::AddWeapon(AWeaponActor* WeaponActor)
 
 	UTexture2D* Texture = WeaponImageTable[WeaponType];
 	UWeaponSlotWidget* WeaponSlotWidget = Cast<UWeaponSlotWidget>(HB_Weapon->GetChildAt(NewWeaponIndex));
-	WeaponSlotWidget->Init(Texture, WeaponType);
+	WeaponSlotWidget->AssignWeapon(Texture, WeaponType);
 	NewWeaponIndex++;
 }
 
 EWeaponType UIngameWidget::GetSlotWeaponType(int8 SlotID)
 {
 	const auto WeaponSlotWidget = Cast<UWeaponSlotWidget>(HB_Weapon->GetChildAt(SlotID));
-	if(WeaponSlotWidget==nullptr)
+	if (WeaponSlotWidget == nullptr)
 	{
-		UE_LOG(LogTemp,Error, TEXT("weapon slot not found"));
+		UE_LOG(LogTemp, Error, TEXT("weapon slot not found"));
 		return EWeaponType::WEAPON_None;
 	}
 	return WeaponSlotWidget->GetWeaponType();
+}
+
+void UIngameWidget::Cooldown(double BeginSeconds, double EndSeconds)
+{
+	CurrentWeaponSlot->ActiveCooldown(BeginSeconds, EndSeconds);
 }

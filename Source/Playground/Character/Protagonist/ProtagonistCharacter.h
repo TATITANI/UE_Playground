@@ -92,7 +92,7 @@ public:
 	UCharacterCurrentInfo* CharacterCurrentInfo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	class UCharacterWeaponComponent *Weapon;
+	class UCharacterWeaponComponent *WeaponComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UClimbComponent *Climbing;

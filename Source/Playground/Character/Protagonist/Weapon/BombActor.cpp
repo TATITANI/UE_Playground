@@ -27,9 +27,16 @@ void ABombActor::BeginPlay()
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
 	auto BombStat = GameInstance->GetWeaponStat<FBombStat>(GetWeaponType(), FName("1"));
-	this->Damage = BombStat->Damage;
 	this->Speed = BombStat->Speed;
 	
+}
+
+
+void ABombActor::AttackFinish()
+{
+	Super::AttackFinish();
+	Throw();
+
 }
 
 void ABombActor::InitSplineMeshes()
@@ -60,11 +67,6 @@ FVector ABombActor::GetThrowingStartLocation()
 }
 
 
-void ABombActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
-{
-	EnhancedInputComponent->BindAction(ThrowInputAction, ETriggerEvent::Triggered, this, &ABombActor::Aim);
-	EnhancedInputComponent->BindAction(ThrowInputAction, ETriggerEvent::Completed, this, &ABombActor::Throw);
-}
 
 void ABombActor::UnUse()
 {
@@ -95,7 +97,7 @@ FVector ABombActor::GetThrowingVelocity() const
 }
 
 
-void ABombActor::Aim()
+void ABombActor::AttackStart()
 {
 	SetAimMovement(true);
 	

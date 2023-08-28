@@ -11,6 +11,7 @@
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnObtainWeapon, class AWeaponActor*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, class AWeaponActor*);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCooldownWeapon, double /* begin time*/, double /* endtime*/);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -45,7 +46,8 @@ private:
 public:
 	FOnObtainWeapon OnObtainWeapon;
 	FOnChangeWeapon OnChangeWeapon;
-
+	FOnCooldownWeapon OnCooldown;
+	
 	void ObtainWeapon(class AWeaponActor* WeaponActor);
 	void ChangeWeapon(class AWeaponActor* WeaponActor);
 	void SetWeaponHidden(bool IsHidden) const;

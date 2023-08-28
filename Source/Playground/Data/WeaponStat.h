@@ -17,48 +17,38 @@ enum class EWeaponType : uint8
 };
 
 
-USTRUCT()
-struct FWeaponTableRowBase : public FTableRowBase
-{
-	GENERATED_BODY()
-};
-
 USTRUCT(Atomic, BlueprintType)
-struct FSwordStat : public FWeaponTableRowBase
+struct FWeaponStat : public FTableRowBase
 {
 	GENERATED_BODY()
-
+	
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Damage;
-};
-
-USTRUCT(Atomic, BlueprintType)
-struct FGunStat : public FWeaponTableRowBase
-{
-	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
+	float CoolTime;
+
+};
+
+
+USTRUCT(Atomic, BlueprintType)
+struct FGunStat : public FWeaponStat
+{
+	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 BulletCnt;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Cooltime;
 };
 
-
 USTRUCT(Atomic, BlueprintType)
-struct FBombStat : public FWeaponTableRowBase
+struct FBombStat : public FWeaponStat
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Speed;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Cooltime;
+
 };
+

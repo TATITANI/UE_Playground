@@ -28,8 +28,19 @@ private:
 	UMaterialInstanceDynamic* MaterialInstanceDynamic;
 
 public:
-	void Init(UTexture2D* Tex, EWeaponType _WeaponType);
+	void AssignWeapon(UTexture2D* Tex, EWeaponType _WeaponType);
 	
 	EWeaponType GetWeaponType() const { return this->WeaponType; }
-	void ActiveUseEffect(bool bActive) const;
+	void ActiveUseEffect(bool bActive) ;
+
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	bool IsCooldown = false;
+	
+	void ActiveCooldown(double _CoolBeginSeconds, double _CoolEndSeconds);
+
+private:
+	double CoolBeginSeconds, CoolEndSeconds;
+	const FName KeyMaterialProgress = "Progress";
+	const FName KeyMaterialRefill = "Refill";
 };

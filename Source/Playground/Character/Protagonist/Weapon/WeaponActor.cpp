@@ -8,6 +8,7 @@
 #include "MyGameInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Component/CharacterWeaponComponent.h"
 #include "Component/HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -24,9 +25,75 @@ void AWeaponActor::BeginPlay()
 	SetActorTickEnabled(false);
 	MeshComponent = Cast<UMeshComponent>(FindComponentByClass(UMeshComponent::StaticClass()));
 	MeshComponent->SetRenderCustomDepth(true);
-		
+
+	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ensure(GameInstance != nullptr);
+	auto WeaponStat = GameInstance->GetWeaponStat<FWeaponStat>(GetWeaponType(), FName("1"));
+
+	ensureMsgf(WeaponStat.IsSet(), TEXT("Weapon Stat is Null"));
+	this->Damage = WeaponStat->Damage;
+	this->CoolTime = WeaponStat->CoolTime;
 }
 
+
+void AWeaponActor::OnAttackStarted()
+{
+	if (IsCharging)
+		return;
+
+	IsAttack = true;
+	AttackStart();
+
+	CooldownIfPossible(ETriggerEvent::Started);
+
+}
+
+void AWeaponActor::OnAttackTriggered()
+{
+	if (!IsAttack)
+		return;
+
+	AttackTrigger();
+	CooldownIfPossible(ETriggerEvent::Triggered);
+
+}
+
+void AWeaponActor::OnAttackCompleted()
+{
+	if (!IsAttack)
+		return;
+
+	AttackFinish();
+
+	IsAttack = false;
+	CooldownIfPossible(ETriggerEvent::Completed);
+}
+
+void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
+{
+	if (CoolTime <= 0)
+		return;
+
+	if (GetCooldownOccurEvent() == TriggerEvent && CheckCooldown())
+	{
+		IsCharging = true;
+		double CurrentSeconds =  GetWorld()->GetTimeSeconds();
+		Character->WeaponComponent->OnCooldown.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
+		Character->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
+	}
+}
+
+
+void AWeaponActor::OnRefill()
+{
+	IsCharging = false;
+}
+
+
+bool AWeaponActor::CheckCooldown()
+{
+	return true;
+}
 
 void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
 {
@@ -35,10 +102,20 @@ void AWeaponActor::Use(AProtagonistCharacter* TargetCharacter)
 	AnimInstance = Cast<UProtagonistAnimInstance>(Character->GetMesh()->GetAnimInstance());
 	ensure(AnimInstance!=nullptr);
 
-	
+
 	SetupInput();
 	SetActorHiddenInGame(false);
 }
+
+
+void AWeaponActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
+{
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Started, this, &AWeaponActor::OnAttackStarted);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Triggered, this, &AWeaponActor::OnAttackTriggered);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Canceled, this, &AWeaponActor::OnAttackCompleted);
+	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Completed, this, &AWeaponActor::OnAttackCompleted);
+}
+
 
 void AWeaponActor::UnUse()
 {

@@ -36,7 +36,7 @@ AProtagonistProjectile::AProtagonistProjectile()
 void AProtagonistProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse,
                                    const FHitResult& Hit)
 {
-	UE_LOG(LogTemp, Log, TEXT("AProtagonistProjectile hit : %s, %s"), *HitComp->GetName(), *OtherActor->GetName());
+	// UE_LOG(LogTemp, Log, TEXT("AProtagonistProjectile hit : %s, %s"), *HitComp->GetName(), *OtherActor->GetName());
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) /* && OtherComp->IsSimulatingPhysics()*/)
 	{
@@ -52,3 +52,4 @@ void AProtagonistProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 }
+

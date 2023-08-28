@@ -18,12 +18,27 @@ void AGunActor::BeginPlay()
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
 	auto GunStat = GameInstance->GetWeaponStat<FGunStat>(GetWeaponType(), FName("1"));
-	this->Damage = GunStat->Damage;
-	
+	CurrentBullet = BulletCnt = GunStat->BulletCnt;
+}
+
+// bool AGunActor::IsCharging()
+// {
+// 	if (CurrentBullet == 0)
+// 	{
+// 		const double CurrentTime = GetWorld()->GetTimeSeconds();
+// 		return CurrentTime < LastAttackTime + CoolTime;
+// 	}
+// 	return false;
+// }
+
+void AGunActor::OnRefill()
+{
+	Super::OnRefill();
+	CurrentBullet = BulletCnt;
 }
 
 
-void AGunActor::Fire()
+void AGunActor::AttackStart()
 {
 	// Try and fire a projectile
 	if (ProjectileClass != nullptr)
@@ -38,7 +53,6 @@ void AGunActor::Fire()
 
 			if (Arrow != nullptr || PlayerController != nullptr)
 			{
-
 				//world trf
 				const FVector ProjectilePos = Arrow->GetComponentLocation();
 				const auto ProjectileRot = Character->GetActorRotation();
@@ -49,8 +63,11 @@ void AGunActor::Fire()
 
 				// Spawn the projectile at the muzzle
 				const auto Projectile = World->SpawnActor<AProtagonistProjectile>(ProjectileClass, ProjectilePos, ProjectileRot, ActorSpawnParams);
-				if(Projectile != nullptr) // 충돌지점이기 때문에 생성되지 않는 경우
+				if (Projectile != nullptr) // 충돌지점이기 때문에 생성되지 않는 경우
+				{
 					Projectile->Init(this->Damage);
+					CurrentBullet--;
+				}
 			}
 		}
 	}
@@ -67,11 +84,3 @@ void AGunActor::Fire()
 		AnimInstance->Montage_Play(FireMontage, 1.f);
 	}
 }
-
-
-
-void AGunActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
-{
-	EnhancedInputComponent->BindAction(FireInputAction, ETriggerEvent::Triggered, this, &AGunActor::Fire);
-}
-

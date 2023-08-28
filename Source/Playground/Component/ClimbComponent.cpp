@@ -91,7 +91,7 @@ void UClimbComponent::ActiveClimbing(bool IsActive, bool IsStand)
 	ProtagonistCharacter->GetCharacterMovement()->bOrientRotationToMovement = !IsActive;
 	ProtagonistCharacter->CharacterCurrentInfo->OnClimbing = IsActive;
 
-	ProtagonistCharacter->Weapon->SetWeaponHidden(IsActive);
+	ProtagonistCharacter->WeaponComponent->SetWeaponHidden(IsActive);
 	CanControlMoving = IsActive;
 
 	if (IsStand)

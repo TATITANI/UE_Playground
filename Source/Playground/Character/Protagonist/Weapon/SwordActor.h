@@ -23,31 +23,27 @@ private:
 
 	FName GetSectionName() const;
 
-	float Damage;
 	UPROPERTY(EditAnywhere, Category=Attack, meta=(AllowPrivateAccess=true))
 	float AttackDistance = 100.f;
 
 	UPROPERTY(EditAnywhere, Category=Attack, meta=(AllowPrivateAccess=true))
-	FVector BoxExtent = FVector(50,50,50);
-	
+	FVector BoxExtent = FVector(50, 50, 50);
+
 protected:
-	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::SWORD; }
+	virtual ETriggerEvent GetCooldownOccurEvent() override { return ETriggerEvent::Started; };
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay, meta=(AllowPrivateAccess = "true"))
 	UAnimMontage* AttackMontage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
-	class UInputAction* AttackInputAction;
 
-	UFUNCTION(meta=(AllowPrivateAccess = "true"))
-	void Attack();
+	virtual void AttackStart() override;
 
 	void AttackCheck() const;
 
 	UFUNCTION()
-	void AttackEndEvent(UAnimMontage* Montage, bool bInterrupted);
+	void AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted);
 
 	UPROPERTY(EditDefaultsOnly, Category="Trail")
 	class UNiagaraSystem* TrailSystem;
@@ -59,6 +55,7 @@ private:
 	FName TrailSocketBotName = "Bot";
 
 	class UNiagaraComponent* TrailComponent;
+
 public:
 	virtual void Use(AProtagonistCharacter* TargetCharacter) override;
 	virtual void BeginPlay() override;

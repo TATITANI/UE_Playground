@@ -29,28 +29,18 @@ void ASwordActor::BeginPlay()
 		TrailComponent->Deactivate();
 	}
 
-	// stat
-	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	ensure(GameInstance != nullptr);
-	auto SwordStat = GameInstance->GetWeaponStat<FSwordStat>(GetWeaponType(), FName("1"));
-	this->Damage = SwordStat->Damage;
 	
 }
 
 
-void ASwordActor::BindInputActions(UEnhancedInputComponent* EnhancedInputComponent)
-{
-	EnhancedInputComponent->BindAction(AttackInputAction, ETriggerEvent::Started, this, &ASwordActor::Attack);
-}
-
-void ASwordActor::Attack()
+void ASwordActor::AttackStart()
 {
 	if (AttackMontage != nullptr)
 	{
 		if (AnimInstance != nullptr)
 		{
-			 if(AnimInstance->Montage_IsPlaying(AttackMontage))
-			 	return;
+			if(AnimInstance->Montage_IsPlaying(AttackMontage))
+				return;
 			
 			AnimInstance->Montage_Play(AttackMontage, 1.f);
 			AnimInstance->Montage_JumpToSection(GetSectionName());
@@ -59,11 +49,13 @@ void ASwordActor::Attack()
 			Character->SetMovable(false);
 			TrailComponent->Activate();
 
-			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackEndEvent);
+			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackMontageEndEvent);
 			AttackCheck();
 		}
 	}
 }
+
+
 
 void ASwordActor::AttackCheck() const
 {
@@ -112,14 +104,14 @@ FName ASwordActor::GetSectionName() const
 }
 
 
-void ASwordActor::AttackEndEvent(UAnimMontage* Montage, bool bInterrupted)
+void ASwordActor::AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage)
 	{
 		Character->SetMovable(true);
 		TrailComponent->DeactivateImmediate();
 
-		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackEndEvent);
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackMontageEndEvent);
 	}
 }
 

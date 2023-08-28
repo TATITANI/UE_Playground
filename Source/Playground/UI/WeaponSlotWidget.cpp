@@ -5,7 +5,8 @@
 #include "Materials/MaterialInstance.h"
 #include "Components/Image.h"
 
-void UWeaponSlotWidget::Init(UTexture2D* Tex, EWeaponType _WeaponType)
+
+void UWeaponSlotWidget::AssignWeapon(UTexture2D* Tex, EWeaponType _WeaponType)
 {
 	Img_Weapon->SetBrushFromTexture(Tex);
 	Img_Weapon->SetVisibility(ESlateVisibility::Visible);
@@ -18,7 +19,35 @@ void UWeaponSlotWidget::Init(UTexture2D* Tex, EWeaponType _WeaponType)
 	Img_Panel->SetBrushFromMaterial(MaterialInstanceDynamic);
 }
 
-void UWeaponSlotWidget::ActiveUseEffect(bool bActive) const
+void UWeaponSlotWidget::ActiveUseEffect(bool bActive)
 {
 	MaterialInstanceDynamic->SetScalarParameterValue(TEXT("IsActive"), bActive);
+}
+
+void UWeaponSlotWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	if (IsCooldown)
+	{
+		double CurrentSeconds = GetWorld()->GetTimeSeconds();
+		float Progress = FMath::Clamp((CurrentSeconds - CoolBeginSeconds) / (CoolEndSeconds - CoolBeginSeconds), 0, 1);
+		
+		MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialProgress, Progress);
+		if (CurrentSeconds > CoolEndSeconds)
+		{
+			IsCooldown = false;
+			MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialRefill, false);
+			MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialProgress, 0);
+		}
+	}
+}
+
+
+void UWeaponSlotWidget::ActiveCooldown(double _CoolBeginSeconds, double _CoolEndSeconds)
+{
+	IsCooldown = true;
+	CoolBeginSeconds = _CoolBeginSeconds;
+	CoolEndSeconds = _CoolEndSeconds;
+	MaterialInstanceDynamic->SetScalarParameterValue(KeyMaterialRefill, true);
 }

@@ -23,9 +23,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category=Weapon, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AFlyingBomb> FlyingBombClass;
 
-	UPROPERTY(EditDefaultsOnly, Category=Input, meta=(AllowPrivateAccess=true))
-	UInputAction* ThrowInputAction;
-
 	UPROPERTY(EditDefaultsOnly, Category=Ani, meta=(AllowPrivateAccess=true))
 	UAnimMontage* ThrowMontage;
 
@@ -49,12 +46,10 @@ private:
 	UFUNCTION()
 	void Throw();
 
-	UFUNCTION()
-	void Aim();
+	virtual void AttackStart() override;
 
 	void SetAimMovement(bool IsAim) const;
 
-	float Damage;
 	float Speed;
 
 	FVector GetThrowingVelocity() const;	
@@ -63,10 +58,11 @@ private:
 	
 protected:
 	virtual void BeginPlay() override;
-	virtual void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent) override;
+	virtual void AttackFinish() override;
 
 	virtual void UnUse() override;
 	void SetVisibleTrajectory(bool bVisible);
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::BOMB; };
+	virtual ETriggerEvent GetCooldownOccurEvent() override { return ETriggerEvent::Completed; };
 
 };
