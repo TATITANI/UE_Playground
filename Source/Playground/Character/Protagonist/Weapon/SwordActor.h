@@ -15,11 +15,8 @@ class PLAYGROUND_API ASwordActor : public AWeaponActor
 	GENERATED_BODY()
 
 private:
-	/**
-	 * @brief range : 1~6
-	 */
 	int SectionID = 1;
-	const int SectionMaxID = 6;
+	const int SectionMaxID = 5;
 
 	FName GetSectionName() const;
 

@@ -20,7 +20,7 @@ UClimbComponent::UClimbComponent()
 	ClimbFallAction = UtilPlayground::LoadAsset<
 		UInputAction>("/Script/EnhancedInput.InputAction'/Game/Data/Input/Actions/IA_ClimbFall.IA_ClimbFall'");
 
-	ClimbMontage = UtilPlayground::LoadAsset<UAnimMontage>("/Script/Engine.AnimMontage'/Game/ArtResources/Mixamo/Protagonist/AM_Climb.AM_Climb'");
+	ClimbMontage = UtilPlayground::LoadAsset<UAnimMontage>("/Script/Engine.AnimMontage'/Game/ArtResources/Mixamo/Protagonist/Rootbone/AM_Climb_Root.AM_Climb_Root'");
 	JumpSpeedCurve = UtilPlayground::LoadAsset<UCurveFloat>("/Script/Engine.CurveFloat'/Game/Data/Curve_ClimbJump.Curve_ClimbJump'");
 }
 

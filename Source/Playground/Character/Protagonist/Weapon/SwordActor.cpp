@@ -108,6 +108,9 @@ void ASwordActor::AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted
 {
 	if (Montage == AttackMontage)
 	{
+		if(AnimInstance->Montage_IsPlaying(AttackMontage))
+			return;
+		
 		Character->SetMovable(true);
 		TrailComponent->DeactivateImmediate();
 
