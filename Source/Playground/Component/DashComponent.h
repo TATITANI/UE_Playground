@@ -26,21 +26,27 @@ public:
 
 private:
 	class AProtagonistCharacter *ProtagonistCharacter;
+	class UProtagonistAnimInstance *AnimInstance;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Ani", meta=(AllowPrivateAccess = "true"))
+	UAnimMontage* DashMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* DashAction;
 
-	UPROPERTY(EditDefaultsOnly, Category=DASH)
+	UPROPERTY(EditDefaultsOnly, Category="dash")
 	UCurveFloat* DashPowerCurve;
 
-	const float DashPower = 2000.0f;
-	const float DashDistanceSquared = 5000.0f;
+	UPROPERTY(EditDefaultsOnly, Category="dash",  meta=(AllowPrivateAccess))
+	float DashDistance = 5000.0f;
+	
 	float RemainDistance = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="dash",  meta=(AllowPrivateAccess))
+	float CoolTime = 2.f;
 	
 	bool IsCooltime = false;
 	FTimerHandle CooltimeTimerHandle;
-	const float CoolTime = 2.f;
-
 private:
 	UFUNCTION()
 	void ProgressDash(float& dt);

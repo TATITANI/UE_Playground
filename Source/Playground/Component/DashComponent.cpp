@@ -5,6 +5,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Character/Protagonist/ProtagonistAnimInstance.h"
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -28,6 +29,9 @@ void UDashComponent::BeginPlay()
 	{
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &UDashComponent::StartDash);
 	}
+
+	AnimInstance = Cast<UProtagonistAnimInstance>(ProtagonistCharacter->GetMesh()->GetAnimInstance());
+	ensure(AnimInstance!=nullptr);
 }
 
 
@@ -52,7 +56,9 @@ void UDashComponent::StartDash(const FInputActionValue& Value)
 		return;
 	}
 
-	RemainDistance = DashDistanceSquared;
+	AnimInstance->Montage_Play(DashMontage);
+	
+	RemainDistance = DashDistance;
 	ProtagonistCharacter->GetWorldTimerManager().SetTimer(CooltimeTimerHandle, FTimerDelegate::CreateLambda([this]
 	{
 		IsCooltime = false;
@@ -63,8 +69,10 @@ void UDashComponent::StartDash(const FInputActionValue& Value)
 
 void UDashComponent::ProgressDash(float& dt)
 {
-	const float DashCoefficent = DashPowerCurve->GetFloatValue(1 - RemainDistance / DashDistanceSquared);
-	const FVector Displacement = ProtagonistCharacter->GetActorForwardVector() * DashPower * DashCoefficent * dt;
+	const float DashCurrentDistance = DashDistance * dt/ (DashMontage->GetPlayLength()/ DashMontage->RateScale);
+	// const float DashCoefficent = DashPowerCurve->GetFloatValue(1 - RemainDistance / DashDistanceSquared);
+	const FVector Displacement = ProtagonistCharacter->GetActorForwardVector() * DashCurrentDistance;
 	ProtagonistCharacter->AddActorWorldOffset(Displacement);
-	RemainDistance -= Displacement.SizeSquared();
+	RemainDistance -= DashCurrentDistance;
+
 }
