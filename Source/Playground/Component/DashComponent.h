@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Components/ActorComponent.h"
 #include "DashComponent.generated.h"
 
@@ -23,6 +24,7 @@ protected:
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	FOnCooldown OnCooldownDash;
 
 private:
 	class AProtagonistCharacter *ProtagonistCharacter;
@@ -38,12 +40,12 @@ private:
 	UCurveFloat* DashPowerCurve;
 
 	UPROPERTY(EditDefaultsOnly, Category="dash",  meta=(AllowPrivateAccess))
-	float DashDistance = 5000.0f;
+	float DashDistance = 1000.0f;
 	
 	float RemainDistance = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="dash",  meta=(AllowPrivateAccess))
-	float CoolTime = 2.f;
+	float CoolTime = 5.f;
 	
 	bool IsCooltime = false;
 	FTimerHandle CooltimeTimerHandle;

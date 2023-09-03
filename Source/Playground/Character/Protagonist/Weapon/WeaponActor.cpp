@@ -91,7 +91,7 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 	{
 		IsCharging = true;
 		double CurrentSeconds = GetWorld()->GetTimeSeconds();
-		Character->WeaponComponent->OnCooldown.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
+		Character->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
 		Character->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
 	}
 }

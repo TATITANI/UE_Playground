@@ -56,15 +56,19 @@ void UDashComponent::StartDash(const FInputActionValue& Value)
 		return;
 	}
 
-	AnimInstance->Montage_Play(DashMontage);
-	
+	IsCooltime = true;
 	RemainDistance = DashDistance;
+	
 	ProtagonistCharacter->GetWorldTimerManager().SetTimer(CooltimeTimerHandle, FTimerDelegate::CreateLambda([this]
 	{
 		IsCooltime = false;
 
 		ProtagonistCharacter->GetWorldTimerManager().ClearTimer(CooltimeTimerHandle);
 	}), CoolTime, false);
+
+	AnimInstance->Montage_Play(DashMontage);
+	const double CurrentSeconds = GetWorld()->GetTimeSeconds();
+	OnCooldownDash.Broadcast(CurrentSeconds, CurrentSeconds+ CoolTime);
 }
 
 void UDashComponent::ProgressDash(float& dt)

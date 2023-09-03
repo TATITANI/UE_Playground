@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "InputActionValue.h"
+#include "Character/Protagonist/ProtagonistCharacter.h"
 #include "CharacterWeaponComponent.generated.h"
 
 
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnObtainWeapon, class AWeaponActor*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, class AWeaponActor*);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCooldownWeapon, double /* begin time*/, double /* endtime*/);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnUseWeapon, int32 /* remainCnt */, int32 /* MaxCnt */);
 
 
@@ -47,7 +47,7 @@ private:
 public:
 	FOnObtainWeapon OnObtainWeapon;
 	FOnChangeWeapon OnChangeWeapon;
-	FOnCooldownWeapon OnCooldown;
+	FOnCooldown OnCooldownWeapon;
 	FOnUseWeapon OnUseWeapon;
 	
 	void ObtainWeapon(class AWeaponActor* WeaponActor);

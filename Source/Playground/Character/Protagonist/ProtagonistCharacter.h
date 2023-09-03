@@ -15,6 +15,8 @@ class UCameraComponent;
 class UAnimMontage;
 class USoundBase;
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCooldown, double /* begin time*/, double /* endtime*/);
+
 
 UCLASS(config=Game)
 class AProtagonistCharacter : public ACharacter
@@ -94,6 +96,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UCharacterWeaponComponent *WeaponComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	class UDashComponent *DashComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UClimbComponent *Climbing;
 	

@@ -22,7 +22,7 @@ void UIngameWidget::NativeOnInitialized()
 	ensure(ProtagonistCharacter!= nullptr);
 	ProtagonistCharacter->WeaponComponent->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
 	ProtagonistCharacter->WeaponComponent->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
-	ProtagonistCharacter->WeaponComponent->OnCooldown.AddUObject(this,&UIngameWidget::Cooldown);
+	ProtagonistCharacter->WeaponComponent->OnCooldownWeapon.AddUObject(this,&UIngameWidget::Cooldown);
 	ProtagonistCharacter->WeaponComponent->OnUseWeapon.AddUObject(this, &UIngameWidget::UseWeapon);
 	
 	UE_LOG(LogTemp, Log, TEXT(" UIngameWidget::NativeOnInitialized"));
@@ -58,7 +58,7 @@ void UIngameWidget::ChangeCurrentWeapon(AWeaponActor* WeaponActor)
 	auto WeaponSlots = HB_Weapon->GetAllChildren();
 	CurrentWeaponSlot = Cast<UWeaponSlotWidget>(*WeaponSlots.FindByPredicate([&](UWidget* SlotWidget)
 	{
-		return Cast<UWeaponSlotWidget>(SlotWidget)->GetWeaponType() == WeaponType;
+		return Cast<UWeaponSlotWidget>(SlotWidget)-> GetWeaponType() == WeaponType;
 	}));
 
 	ensureMsgf(CurrentWeaponSlot != nullptr, TEXT("changed weapon slot not exist"));

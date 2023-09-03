@@ -11,6 +11,7 @@
 
 #include "Character/CharacterCurrentInfo.h"
 #include "Component/CharacterWeaponComponent.h"
+#include "Component/DashComponent.h"
 #include "Component/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -55,6 +56,7 @@ AProtagonistCharacter::AProtagonistCharacter()
 
 	WeaponComponent = CreateDefaultSubobject<UCharacterWeaponComponent>(TEXT("Weapon"));
 	Climbing = CreateDefaultSubobject<UClimbComponent>(TEXT("Climb"));
+	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("Dash"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 }
 
