@@ -9,7 +9,7 @@
 
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHpChanged, int32 /*Hp*/ , int32 /*maxHP*/);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnHpDamaged, int32 /* Damage*/ );
+DECLARE_MULTICAST_DELEGATE(FOnDead);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLAYGROUND_API UHealthComponent : public UActorComponent
 {
@@ -39,8 +39,10 @@ private:
 
 public:
 	FOnHpChanged OnHpChanged;
+	FOnDead OnDead;
 	
 	void Init(int32 _MaxHp);
+	void Reset();
 	int32 GetCurrentHP() const { return CurrentHp; }
 	int32 GetMaxHP() const { return MaxHp; }
 };

@@ -25,6 +25,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
+	void Init(class ABotGenerator* _Generator, FVector Loc);
 
 public:
 	virtual void Attack();
@@ -33,6 +34,8 @@ public:
 	TSharedPtr<FOnAttackEnd> OnAttackEnd;
 
 private:
+	ABotGenerator* Generator;
+
 	UPROPERTY()
 	class UBotAnimInstance* AnimInstance;
 
@@ -48,6 +51,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	float attackRadius = 50.f;
 
+	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
+	TEnumAsByte<ECollisionChannel> AttackCollisionChannel;
+
 private:
 	UFUNCTION()
 	void BindUI();
@@ -56,7 +62,8 @@ private:
 	virtual void CheckAttack();
 
 	UFUNCTION()
-	void OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+	void OnDeadCallback();
 
-	
+	UFUNCTION()
+	void OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 };

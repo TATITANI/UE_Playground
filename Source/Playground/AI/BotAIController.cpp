@@ -3,30 +3,28 @@
 
 #include "BotAIController.h"
 
-#include "NavigationSystem.h"
-#include "BehaviorTree/BehaviorTree.h"
-#include "BehaviorTree/BlackboardComponent.h"
-#include "BehaviorTree/BlackboardData.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-
+#include "BehaviorTree/BehaviorTreeComponent.h"
 
 ABotAIController::ABotAIController()
 {
+	BehaviorTreeComponent = CreateDefaultSubobject<UBehaviorTreeComponent>(TEXT("BehaviorTreeComp"));
+}
+
+void ABotAIController::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 
 void ABotAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	UE_LOG(LogTemp, Log, TEXT("ai OnPossess %s"), *InPawn->GetName());
 	
+	// UE_LOG(LogTemp, Log, TEXT("ai OnPossess %s"), *InPawn->GetName());
+
 	UBlackboardComponent* _Blackboard = Blackboard;
 	if (UseBlackboard(BlackboardData, _Blackboard))
 	{
-		if (RunBehaviorTree(BehaviorTree))
-		{
-			
-		}
 	}
 }
 
@@ -36,4 +34,10 @@ void ABotAIController::OnUnPossess()
 
 }
 
-
+void ABotAIController::ActiveBehaviorTree(bool IsActive)
+{
+	if(IsActive)
+		BehaviorTreeComponent->StartTree(*BehaviorTree);
+	else
+		BehaviorTreeComponent->StopTree();	
+}

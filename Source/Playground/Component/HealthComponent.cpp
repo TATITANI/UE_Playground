@@ -33,8 +33,15 @@ void UHealthComponent::BeginPlay()
 
 void UHealthComponent::Init(int32 _MaxHp)
 {
-	CurrentHp = MaxHp = _MaxHp;
+	MaxHp = _MaxHp;
+	Reset();
+}
+
+void UHealthComponent::Reset()
+{
+	CurrentHp = MaxHp;
 	OnHpChanged.Broadcast(CurrentHp, MaxHp);
+
 }
 
 
@@ -48,6 +55,10 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 {
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
 	OnHpChanged.Broadcast(CurrentHp, MaxHp);
+	if(CurrentHp <= 0)
+	{
+		OnDead.Broadcast();
+	}
 
 
 	if (DamagedActor != nullptr && DamageCauser != nullptr)

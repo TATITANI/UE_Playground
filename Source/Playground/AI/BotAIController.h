@@ -16,16 +16,20 @@ class PLAYGROUND_API ABotAIController : public AAIController
 
 public:
 	ABotAIController();
+	virtual void BeginPlay() override;
 	
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
+	void ActiveBehaviorTree(bool IsActive);
 private:
-	FTimerHandle TimerHandle;
-
+	class UBehaviorTreeComponent* BehaviorTreeComponent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))
 	class UBehaviorTree* BehaviorTree;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))
 	class UBlackboardData* BlackboardData;
+
+	
 };
