@@ -9,7 +9,7 @@
 ABotGenerator::ABotGenerator()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 // Called when the game starts or when spawned
@@ -26,11 +26,6 @@ void ABotGenerator::BeginPlay()
 	}
 
 	GetWorld()->GetTimerManager().SetTimer(SpawnTimerHandler, this, &ABotGenerator::TakeBot, SpawnCycle, true, 0);
-}
-
-void ABotGenerator::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ABotGenerator::SetActiveBot(ABotCharacter* Bot, bool IsActive)

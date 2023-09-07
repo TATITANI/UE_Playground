@@ -25,6 +25,7 @@ void ABotAIController::OnPossess(APawn* InPawn)
 	UBlackboardComponent* _Blackboard = Blackboard;
 	if (UseBlackboard(BlackboardData, _Blackboard))
 	{
+		
 	}
 }
 

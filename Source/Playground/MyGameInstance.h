@@ -6,6 +6,7 @@
 #include "Data/CharacterStat.h"
 #include "Engine/GameInstance.h"
 #include "Inventory/WeaponInventory.h"
+#include "Item/PlaygroundItem.h"
 #include "MyGameInstance.generated.h"
 
 enum class ECharacterStatType : uint8;
@@ -21,6 +22,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	TMap<EWeaponType, UDataTable*> WeaponStatMap;
+	
+	UPROPERTY(EditAnywhere, Category=Item, meta=(AllowPrivateAccess=true))
+	TArray<UPlaygroundItem *> ItemList;
+	
 
 public:
 	UMyGameInstance();
@@ -31,8 +36,11 @@ public:
 	template <class T>
 	TOptional<T> GetWeaponStat(EWeaponType StatType, FName RowName);
 
-
 	TSharedPtr<FWeaponInventory> WeaponInventory;
+
+	UPlaygroundItem* GetDroppedItem();
+
+	struct FStreamableManager* StreamableManager;
 };
 
 template <class T>

@@ -14,3 +14,26 @@ void UMyGameInstance::Init()
 
 }
 
+UPlaygroundItem* UMyGameInstance::GetDroppedItem()
+{
+	float AccumWeight = 0;
+	for(auto Item : ItemList)
+	{
+		AccumWeight += Item->DroppedWeight;
+	}
+
+	const float TargetWeight = FMath::FRandRange(0, AccumWeight); 
+	float Weight = 0;
+	for(auto Item : ItemList)
+	{
+		Weight += Item->DroppedWeight;
+		if(Weight >= TargetWeight)
+		{
+			return Item;
+		}
+	}
+
+	return ItemList.Last();
+	
+}
+

@@ -10,6 +10,7 @@
 #include "UI/BotWidget.h"
 #include "Component/HealthComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Item/DroppedItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Logging/LogMacros.h"
 
@@ -36,6 +37,8 @@ void ABotCharacter::BeginPlay()
 
 	OnTakeAnyDamage.AddDynamic(this, &ABotCharacter::OnTakeDamageCallback);
 	AttackDamage = BotStat->Damage;
+
+	
 }
 
 void ABotCharacter::PostInitializeComponents()
@@ -65,6 +68,7 @@ void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
 	SetActorLocation(Loc);
 	ABotAIController* AiController = Cast<ABotAIController>(GetController());
 	AiController->ActiveBehaviorTree(true);
+
 
 }
 
@@ -123,6 +127,11 @@ void ABotCharacter::OnDeadCallback()
 	Generator->ReturnBot(this);
 	ABotAIController* AiController = this->GetController<ABotAIController>();
 	AiController->ActiveBehaviorTree(false);
+
+	auto DroppedItem = GetWorld()->SpawnActor<ADroppedItem>(DroppedItemSubclassOf);
+	DroppedItem->Init(GetActorLocation());
+
+	
 }
 
 void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,

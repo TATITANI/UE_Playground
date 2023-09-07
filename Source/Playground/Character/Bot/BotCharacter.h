@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Item/DroppedItem.h"
 #include "BotCharacter.generated.h"
 
 
@@ -53,7 +54,10 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	TEnumAsByte<ECollisionChannel> AttackCollisionChannel;
-
+	
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+	TSubclassOf<ADroppedItem> DroppedItemSubclassOf;
+	
 private:
 	UFUNCTION()
 	void BindUI();
