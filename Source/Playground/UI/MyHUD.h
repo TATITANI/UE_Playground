@@ -20,8 +20,13 @@ private:
 	UPROPERTY(EditAnywhere, Category= Widget, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class UIngameWidget> IngameWidgetClass;
 
+	UPROPERTY(EditAnywhere, Category= Widget, meta=(AllowPrivateAccess=true))
+	TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
+	
+
 
 public:
 	class UIngameWidget* IngameWidget;
+	UInventoryWidget* InventoryWidget;
 	
 };

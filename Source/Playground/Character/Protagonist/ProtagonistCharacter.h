@@ -6,7 +6,7 @@
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "Character/CharacterCurrentInfo.h"
-#include "Item/PlaygroundItem.h"
+#include "Item/ItemData.h"
 #include "ProtagonistCharacter.generated.h"
 
 class UInputComponent;
@@ -58,12 +58,6 @@ private:
 	virtual void Jump() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category = Item)
-	FPrimaryAssetType ItemType;
-
-	UPROPERTY(EditAnywhere, Category = Item)
-	UPlaygroundItem *tt;
-	
 	//** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;

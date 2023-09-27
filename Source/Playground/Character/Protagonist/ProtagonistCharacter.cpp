@@ -74,6 +74,8 @@ void AProtagonistCharacter::PostInitializeComponents()
 
 void AProtagonistCharacter::BeginPlay()
 {
+	UE_LOG(LogTemp,Log,TEXT("beginplay"));
+
 	Super::BeginPlay();
 
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
@@ -174,7 +176,6 @@ void AProtagonistCharacter::Stop(const FInputActionValue& Value)
 void AProtagonistCharacter::Look(const FInputActionValue& Value)
 {
 	IsLookingAround = true;
-
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 

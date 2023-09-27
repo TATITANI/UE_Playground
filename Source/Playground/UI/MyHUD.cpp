@@ -2,6 +2,8 @@
 
 
 #include "UI/MyHUD.h"
+
+#include "InventoryWidget.h"
 #include "UI/IngameWidget.h"
 void AMyHUD::BeginPlay()
 {
@@ -9,4 +11,8 @@ void AMyHUD::BeginPlay()
 
 	IngameWidget = Cast<UIngameWidget>(CreateWidget(GetWorld(), IngameWidgetClass));
 	IngameWidget->AddToViewport();
+
+	InventoryWidget = Cast<UInventoryWidget>(CreateWidget(GetWorld(), InventoryWidgetClass));
+	InventoryWidget->AddToViewport();
+	
 }

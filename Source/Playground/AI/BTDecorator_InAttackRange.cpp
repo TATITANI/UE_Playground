@@ -17,7 +17,8 @@ bool UBTDecorator_InAttackRange::CalculateRawConditionValue(UBehaviorTreeCompone
 	ensureMsgf(OwnerBot != nullptr, TEXT("UBTDecorator_CanAttack - owner not exsit!"));
 
 	const auto TargetProtagonist = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TargetKeySelector.SelectedKeyName));
-	ensureMsgf(TargetProtagonist != nullptr, TEXT("UBTDecorator_CanAttack - TargetProtagonist not exsit!"));
+	if(TargetProtagonist == nullptr)
+		return false;
 
 	DrawDebugSphere(OwnerBot->GetWorld(), OwnerBot->GetActorLocation(),
 	                DistanceAttackable, 16, FColor::Cyan, false, 0.2f);

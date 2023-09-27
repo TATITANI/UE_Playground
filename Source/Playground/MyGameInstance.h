@@ -6,8 +6,14 @@
 #include "Data/CharacterStat.h"
 #include "Engine/GameInstance.h"
 #include "Inventory/WeaponInventory.h"
-#include "Item/PlaygroundItem.h"
+#include "Item/ItemData.h"
+#include "Item/ItemInventory.h"
 #include "MyGameInstance.generated.h"
+
+namespace EQSDebug
+{
+	struct FItemData;
+}
 
 enum class ECharacterStatType : uint8;
 
@@ -22,14 +28,12 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	TMap<EWeaponType, UDataTable*> WeaponStatMap;
-	
-	UPROPERTY(EditAnywhere, Category=Item, meta=(AllowPrivateAccess=true))
-	TArray<UPlaygroundItem *> ItemList;
-	
+		
 
 public:
 	UMyGameInstance();
 	virtual void Init() override;
+	
 	template <class T>
 	TOptional<T> GetCharacterStat(ECharacterStatType StatType, FName RowName);
 
@@ -37,8 +41,9 @@ public:
 	TOptional<T> GetWeaponStat(EWeaponType StatType, FName RowName);
 
 	TSharedPtr<FWeaponInventory> WeaponInventory;
-
-	UPlaygroundItem* GetDroppedItem();
+	
+	UPROPERTY(BlueprintReadWrite)
+	UItemInventory *ItemInventory;
 
 	struct FStreamableManager* StreamableManager;
 };

@@ -10,9 +10,12 @@
 #include "UI/BotWidget.h"
 #include "Component/HealthComponent.h"
 #include "Components/WidgetComponent.h"
-#include "Item/DroppedItem.h"
+#include "Item/PlaygroundItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Logging/LogMacros.h"
+#include "PlaygroundGameMode.h"
+#include "Item/DroppedItemTable.h"
+
 
 // Sets default values
 ABotCharacter::ABotCharacter()
@@ -128,8 +131,14 @@ void ABotCharacter::OnDeadCallback()
 	ABotAIController* AiController = this->GetController<ABotAIController>();
 	AiController->ActiveBehaviorTree(false);
 
-	auto DroppedItem = GetWorld()->SpawnActor<ADroppedItem>(DroppedItemSubclassOf);
-	DroppedItem->Init(GetActorLocation());
+	
+	const APlaygroundGameMode* PlaygroundGameMode = Cast<APlaygroundGameMode>(GetWorld()->GetAuthGameMode());
+	const auto Data = PlaygroundGameMode->DroppedItemTable->GetDroppedItemData();
+	UItemData* ItemData = Data.Key;
+	const FItemStatus ItemStatus = Data.Value;
+
+	const auto DroppedItem = GetWorld()->SpawnActor<APlaygroundItem>(ItemData->DroppedItem);
+	DroppedItem->Init(GetActorLocation(), ItemStatus);
 
 	
 }
