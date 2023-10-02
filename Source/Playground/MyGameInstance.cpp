@@ -5,13 +5,13 @@
 
 UMyGameInstance::UMyGameInstance()
 {
+
 }
 
 void UMyGameInstance::Init()
 {
 	Super::Init();
 	WeaponInventory = MakeShared<FWeaponInventory>();
-	// ItemInventory = MakeShared<UItemInventory>();
 	ItemInventory = NewObject<UItemInventory>();
 
 }

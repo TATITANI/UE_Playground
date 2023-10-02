@@ -10,6 +10,7 @@
  * 
  */
 
+class APlaygroundItem;
 USTRUCT(BlueprintType, Atomic)
 struct FItemStatus
 {
@@ -17,6 +18,9 @@ struct FItemStatus
 
 	UPROPERTY()
 	int32 Count = 0;
+
+	UPROPERTY()
+	int32 SlotID;
 };
 
 
@@ -39,7 +43,7 @@ public:
 	FText ItemName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Item)
-	TSubclassOf<class APlaygroundItem> DroppedItem;
+	TSubclassOf<APlaygroundItem> DroppedItem;
 	
 	/** User-visible long description */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Item)
@@ -56,6 +60,7 @@ public:
 	/** Returns the logical name, equivalent to the primary asset id */
 	UFUNCTION(BlueprintCallable, Category = Item)
 	FString GetIdentifierString() const;
+
 	
 
 	/** Overridden to use saved type */

@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Delegates/DelegateCombinations.h"
 #include "InventoryWidget.generated.h"
 
 /**
  * 
  */
+
 UCLASS()
 class PLAYGROUND_API UInventoryWidget : public UUserWidget
 {
@@ -17,13 +19,6 @@ class PLAYGROUND_API UInventoryWidget : public UUserWidget
 private:
 	UPROPERTY(meta=(AllowPrivateAccess, BindWidget))
 	class UUniformGridPanel* Grid_Slot;
-
-	UPROPERTY(meta=(AllowPrivateAccess, BindWidget))
-	class UTextBlock* TXT_ItemName;
-	UPROPERTY(meta=(AllowPrivateAccess, BindWidget))
-	class UTextBlock* TXT_ItemDescription;
-
-	int SelectedSlotID = 0;
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
@@ -34,9 +29,10 @@ private:
 
 	bool bOpen = false;
 
-
 	void UpdateInfo();
 	void AssignInput();
+
+	TArray<class UInventorySlotWidget*> ItemSlots;
 
 protected:
 	virtual void NativeOnInitialized() override;
@@ -44,10 +40,12 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void Close();
-	
+
 	UFUNCTION(BlueprintCallable)
 	void Open();
 
 	UFUNCTION(BlueprintCallable)
 	void ToggleOpenClose();
+
+	UInventorySlotWidget* GetItemSlot(int SlotID) { return this->ItemSlots[SlotID]; }
 };

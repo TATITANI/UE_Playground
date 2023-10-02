@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Delegates/DelegateCombinations.h"
 #include "InventorySlotWidget.generated.h"
 
 /**
  * 
  */
+
 UCLASS()
 class PLAYGROUND_API UInventorySlotWidget : public UUserWidget
 {
@@ -24,15 +26,39 @@ private:
 	UPROPERTY(meta=(AllowPrivateAccess, BindWidget))
 	class UBorder* Border_Cnt;
 
-	class UItemData *ItemData  = nullptr;
-	int32 Cnt;
+	UPROPERTY(meta=(BindWidget))
+	class UButton* Btn;
 
+private:
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess))
+	TSubclassOf<class UItemPreviewSlot> DragVisualClass;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	class UItemData* ItemData = nullptr;
+	
+	class UInventoryWidget* InventoryWidget;
+	int32 Cnt;
+	int32 SlotID;
+
+	void SwapSlot(int32 TargetSlotID);
+
+protected:
+	
+	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
+	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateTooltip();
 	
 public:
-	void UpdateData(UItemData *_ItemData, int32 _Cnt);
-	void SetActive(bool bActive);
+	virtual void NativeConstruct() override;
+	void Init(class UInventoryWidget* _InventoryWidget, int32 _SlotID);
+	void UpdateUI(UItemData* _ItemData, int32 _Cnt);
 
-	UPROPERTY(meta=( BindWidget))
-	class UCheckBox *CheckBox;
+	UFUNCTION(BlueprintCallable)
+	void OnClick();
 
+
+	UItemData* GetItemData() const { return this->ItemData; }
 };

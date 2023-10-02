@@ -10,10 +10,6 @@
 #include "Item/ItemInventory.h"
 #include "MyGameInstance.generated.h"
 
-namespace EQSDebug
-{
-	struct FItemData;
-}
 
 enum class ECharacterStatType : uint8;
 

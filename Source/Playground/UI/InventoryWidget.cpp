@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InventorySlotWidget.h"
 #include "MyGameInstance.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
 #include "Kismet/GameplayStatics.h"
@@ -16,6 +17,14 @@ void UInventoryWidget::NativeOnInitialized()
 	Super::NativeOnInitialized();
 	SetVisibility(ESlateVisibility::Hidden);
 	AssignInput();
+
+	auto SlotsWidgets = Grid_Slot->GetAllChildren();
+	for (int32 SlotID = 0; SlotID < SlotsWidgets.Num(); SlotID++)
+	{
+		auto ItemSlot = Cast<UInventorySlotWidget>(SlotsWidgets[SlotID]);
+		ItemSlot->Init(this, SlotID);
+		this->ItemSlots.Add(ItemSlot);
+	}
 }
 
 
@@ -37,6 +46,8 @@ void UInventoryWidget::AssignInput()
 
 void UInventoryWidget::Open()
 {
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
+
 	SetVisibility(ESlateVisibility::Visible);
 	GetOwningPlayer()->SetShowMouseCursor(true);
 
@@ -46,31 +57,21 @@ void UInventoryWidget::Open()
 
 void UInventoryWidget::UpdateInfo()
 {
-	auto Slots = Grid_Slot->GetAllChildren();
-	auto ItemInventory = Cast<UMyGameInstance>(GetGameInstance())->ItemInventory;
-	auto InventoryDatas = ItemInventory->GetTable().Array();
-	for (int32 SlotID = 0; SlotID < Slots.Num(); SlotID++)
+	auto ItemInventory = Cast<UMyGameInstance>(GetGameInstance())->ItemInventory->GetTable();
+
+	for (int32 SlotID = 0; SlotID < ItemSlots.Num(); SlotID++)
 	{
-		const auto SlotWidget = Cast<UInventorySlotWidget>(Slots[SlotID]);
-		if (bool IsItemSlot = SlotID < InventoryDatas.Num())
-		{
-			const auto ItemData = InventoryDatas[SlotID].Key;
-			const auto Cnt = InventoryDatas[SlotID].Value.Count;
-			SlotWidget->SetActive(true);
-			SlotWidget->UpdateData(ItemData, Cnt);
-
-			if (SlotID == SelectedSlotID)
-			{
-				TXT_ItemName->SetText(ItemData->ItemName);
-			}
-		}
-		else
-		{
-			SlotWidget->SetActive(false);
-		}
+		const auto SlotWidget = ItemSlots[SlotID];
+		SlotWidget->UpdateUI(nullptr, 0);
 	}
-
-	if (InventoryDatas.Num() > Slots.Num())
+	for (auto Item : ItemInventory)
+	{
+		UItemData* ItemData = Item.Key;
+		FItemStatus Status = Item.Value;
+		const auto SlotWidget = ItemSlots[Status.SlotID];
+		SlotWidget->UpdateUI(ItemData, Status.Count);
+	}
+	if (ItemInventory.Num() > ItemSlots.Num())
 	{
 		UE_LOG(LogTemp, Error, TEXT("more item data than slots"));
 	}
@@ -78,13 +79,18 @@ void UInventoryWidget::UpdateInfo()
 
 void UInventoryWidget::Close()
 {
+
 	GetOwningPlayer()->SetShowMouseCursor(false);
 	SetVisibility(ESlateVisibility::Hidden);
 	bOpen = false;
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+	UWidgetBlueprintLibrary::SetInputMode_GameOnly(GetOwningPlayer());
+
 }
 
 void UInventoryWidget::ToggleOpenClose()
 {
+	UE_LOG(LogTemp, Log, TEXT("Toggle %d"), bOpen);
 	if (bOpen)
 		Close();
 	else
