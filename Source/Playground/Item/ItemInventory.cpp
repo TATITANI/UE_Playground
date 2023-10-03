@@ -3,6 +3,8 @@
 
 #include "Item/ItemInventory.h"
 
+#include "Kismet/GameplayStatics.h"
+
 UItemInventory::UItemInventory()
 {
 	SlotTable.SetNum(SlotCnt);
@@ -35,6 +37,7 @@ void UItemInventory::AddItem(UItemData* ItemData, int32 Cnt)
 	}
 
 	Table[ItemData].Count += Cnt;
+
 }
 
 

@@ -24,8 +24,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	TMap<EWeaponType, UDataTable*> WeaponStatMap;
-		
 
+	const FString SavingSlotName = "Inventory";
+	void LoadSavingData();
 public:
 	UMyGameInstance();
 	virtual void Init() override;
@@ -42,6 +43,9 @@ public:
 	UItemInventory *ItemInventory;
 
 	struct FStreamableManager* StreamableManager;
+
+	UFUNCTION(BlueprintCallable)
+	void Save();
 };
 
 template <class T>
