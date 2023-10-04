@@ -28,7 +28,7 @@ private:
 	TArray<UItemData*> SlotTable;
 
 public:
-	void Init(TMap<UItemData*, FItemStatus> _Table) { this->Table = _Table; };
+	void Init(TMap<UItemData*, FItemStatus> _Table);
 	void AddItem(UItemData* ItemData, int32 Cnt);
 	void SwapSlotID(int32 SlotID1, int32 SlotID2);
 

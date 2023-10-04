@@ -11,6 +11,16 @@ UItemInventory::UItemInventory()
 }
 
 
+void UItemInventory::Init(TMap<UItemData*, FItemStatus> _Table)
+{
+	this->Table = _Table;
+	for(auto Item : Table)
+	{
+		UItemData* ItemData = Item.Key;
+		SlotTable[Item.Value.SlotID] = ItemData;
+	}
+}
+
 void UItemInventory::AddItem(UItemData* ItemData, int32 Cnt)
 {
 	if (Table.Contains(ItemData) == false)
