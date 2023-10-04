@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Logging/LogMacros.h"
 #include "PlaygroundGameMode.h"
+#include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Item/DroppedItemTable.h"
 
 
@@ -102,7 +103,7 @@ void ABotCharacter::CheckAttack()
 
 	const FVector TraceRelatviePos = GetActorForwardVector() * attackDistance;
 	// 트레이스 채널을 사용해 충돌 감지
-	bool IsTrace = GetWorld()->SweepSingleByChannel(
+	GetWorld()->SweepSingleByChannel(
 		OUT hitResult,
 		GetActorLocation(),
 		GetActorLocation() + TraceRelatviePos,
@@ -111,14 +112,15 @@ void ABotCharacter::CheckAttack()
 		FCollisionShape::MakeSphere(attackRadius),
 		params);
 
-	FColor ColorDebugCapsule = IsTrace ? FColor::Orange : FColor::Green;
+	AActor* ActorHit = hitResult.GetActor();
+	bool IsHit = ActorHit != nullptr && ActorHit->IsA(AProtagonistCharacter::StaticClass());
+	
+	FColor ColorDebugCapsule = IsHit ? FColor::Orange : FColor::Green;
 	const FQuat QuatDebugCapsule = FRotationMatrix::MakeFromZ(TraceRelatviePos).ToQuat();
 	DrawDebugCapsule(GetWorld(), GetActorLocation() + TraceRelatviePos * 0.5f,
 	                 attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
-
-	AActor* ActorHit = hitResult.GetActor();
-	bool ExistsTargetActor = ActorHit != nullptr;
-	if (IsTrace && ExistsTargetActor)
+	
+	if (IsHit)
 	{
 		UGameplayStatics::ApplyDamage(ActorHit, AttackDamage, this->GetController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
