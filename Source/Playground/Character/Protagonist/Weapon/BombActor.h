@@ -47,6 +47,7 @@ private:
 	void Throw();
 
 	virtual void AttackInputStarted() override;
+	virtual void AttackInputTrigger() override;
 
 	void SetAimMovement(bool IsAim) const;
 

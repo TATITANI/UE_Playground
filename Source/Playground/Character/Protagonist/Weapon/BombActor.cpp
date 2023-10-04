@@ -101,6 +101,13 @@ void ABombActor::AttackInputStarted()
 {
 	SetAimMovement(true);
 	
+	
+}
+
+void ABombActor::AttackInputTrigger()
+{
+	Super::AttackInputTrigger();
+
 	FPredictProjectilePathResult PathResult;
 	TrajectoryParams.LaunchVelocity = GetThrowingVelocity();
 	TrajectoryParams.StartLocation = GetThrowingStartLocation();
