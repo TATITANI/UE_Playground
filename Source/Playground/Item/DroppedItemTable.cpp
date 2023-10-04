@@ -17,12 +17,11 @@ TPair<UItemData*, FItemStatus> UDroppedItemTable::GetDroppedItemData()
 		AccumWeight += Data.AppearanceWeight;
 	}
 
-	const float TargetWeight = FMath::FRandRange(0, AccumWeight);
-	float Weight = 0;
+	float TargetWeight = FMath::FRandRange(0, AccumWeight);
 	for (auto Data : Table)
 	{
-		Weight += Data.AppearanceWeight;
-		if (Weight >= TargetWeight)
+		TargetWeight -= Data.AppearanceWeight;
+		if (TargetWeight <= 0)
 		{
 			ResultData.Key = Data.ItemData;
 			ResultData.Value.Count = FMath::RandRange( Data.MinCnt, Data.MaxCnt);
