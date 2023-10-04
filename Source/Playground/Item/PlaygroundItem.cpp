@@ -17,17 +17,17 @@ APlaygroundItem::APlaygroundItem()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent->Mobility = EComponentMobility::Movable;
-	SetRootComponent(RootComponent);
-
-	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	StaticMeshComponent->SetupAttachment(RootComponent);
-
+	
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
 	SphereComponent->SetupAttachment(RootComponent);
-}
+	SphereComponent->SetSimulatePhysics(true);
+	SetRootComponent(SphereComponent);
 
+	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	StaticMeshComponent->SetupAttachment(SphereComponent);
+
+}
+	
 void APlaygroundItem::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -42,6 +42,7 @@ void APlaygroundItem::PostInitProperties()
 void APlaygroundItem::BeginPlay()
 {
 	Super::BeginPlay();
+
 	SphereComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &APlaygroundItem::OnSphereBeginOverlap);
 }
 
