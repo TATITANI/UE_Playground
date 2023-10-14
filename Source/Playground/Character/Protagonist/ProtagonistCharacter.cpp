@@ -14,6 +14,7 @@
 #include "Component/DashComponent.h"
 #include "Component/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -58,6 +59,7 @@ AProtagonistCharacter::AProtagonistCharacter()
 	Climbing = CreateDefaultSubobject<UClimbComponent>(TEXT("Climb"));
 	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("Dash"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+
 }
 
 void AProtagonistCharacter::PostInitProperties()
@@ -198,6 +200,11 @@ void AProtagonistCharacter::Jump()
 	Super::Jump();
 	CharacterCurrentInfo->OnJump = true;
 }
+
+void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType)
+{
+}
+
 
 void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {

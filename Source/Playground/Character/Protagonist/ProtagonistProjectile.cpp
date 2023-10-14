@@ -1,6 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ProtagonistProjectile.h"
+
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -13,7 +16,7 @@ AProtagonistProjectile::AProtagonistProjectile()
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 	CollisionComp->OnComponentHit.AddUniqueDynamic(this, &AProtagonistProjectile::OnHit);
 	// set up a notification for when this component hits something blocking
-	
+
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
@@ -22,7 +25,7 @@ AProtagonistProjectile::AProtagonistProjectile()
 	RootComponent = CollisionComp;
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp2"));
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
 	ProjectileMovement->InitialSpeed = 2000.f;
 	ProjectileMovement->MaxSpeed = 3000.f;
@@ -44,6 +47,14 @@ void AProtagonistProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherAc
 
 		UGameplayStatics::ApplyDamage(OtherActor, this->Damage, this->GetInstigatorController(),
 		                              this, UDamageType::StaticClass());
+
+		ensure(ExplodeParticleSystem != nullptr);
+		if (ExplodeParticleSystem != nullptr)
+		{
+			auto Explosion =  UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, ExplodeParticleSystem, GetActorLocation());
+			Explosion->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+		}
+
 		Destroy();
 	}
 }
@@ -52,4 +63,3 @@ void AProtagonistProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 }
-

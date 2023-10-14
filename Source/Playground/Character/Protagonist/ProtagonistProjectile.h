@@ -7,7 +7,6 @@
 #include "ProtagonistProjectile.generated.h"
 
 class USphereComponent;
-class UProjectileMovementComponent;
 
 UCLASS(config=Game)
 class AProtagonistProjectile : public AActor
@@ -18,19 +17,23 @@ class AProtagonistProjectile : public AActor
 	UPROPERTY(VisibleDefaultsOnly, Category=Projectile)
 	USphereComponent* CollisionComp;
 
-	/** Projectile movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	UProjectileMovementComponent* ProjectileMovement;
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
+	class UNiagaraSystem* ExplodeParticleSystem;
 
+public:
+	
+	/** Projectile movement component */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowPrivateAccess))
+	class UProjectileMovementComponent* ProjectileMovement;
+	
 private:
 	float Damage = 0;
 
 public:
 	AProtagonistProjectile();
 	virtual void BeginPlay() override;
-	
-public:
 
+public:
 	/** called when projectile hits something */
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -40,7 +43,5 @@ public:
 	/** Returns ProjectileMovement subobject **/
 	UProjectileMovementComponent* GetProjectileMovement() const { return ProjectileMovement; }
 
-	void Init(float &_Damage){this->Damage = _Damage;}
-
+	void Init(float& _Damage) { this->Damage = _Damage; }
 };
-

@@ -110,5 +110,8 @@ public:
 	bool GetMovable() { return this->Movable; }
 	void SetUsingControllerYaw(bool bActive) { bUseControllerRotationYaw = bActive; }
 
+	UFUNCTION(BlueprintNativeEvent)
+	void AimCamByWeapon(EWeaponType WeaponType);
+
 
 };

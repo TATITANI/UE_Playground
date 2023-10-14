@@ -39,8 +39,11 @@ void AGunActor::AttackInputStarted()
 			{
 				//world trf
 				const FVector ProjectilePos = Arrow->GetComponentLocation();
-				const auto ProjectileRot = Character->GetActorRotation();
 
+				const auto ControllerRot = Character->GetControlRotation();
+
+				const auto ProjectileRot = Character->GetActorRotation().Add(ControllerRot.Pitch +ProjectilePitchOffset,0,0);
+				
 				//Set Spawn Collision Handling Override
 				FActorSpawnParameters ActorSpawnParams;
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
@@ -66,4 +69,10 @@ void AGunActor::AttackInputStarted()
 	{
 		AnimInstance->Montage_Play(FireMontage, 1.f);
 	}
+}
+
+void AGunActor::Equip(AProtagonistCharacter* TargetCharacter)
+{
+	Super::Equip(TargetCharacter);
+	
 }

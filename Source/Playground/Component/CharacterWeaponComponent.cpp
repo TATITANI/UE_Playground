@@ -94,6 +94,8 @@ void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 	CurrentWeapon = WeaponActor;
 	WeaponActor->Equip(ProtagonistCharacter);
 	ProtagonistCharacter->CharacterCurrentInfo->SetCurrentWeaponType(WeaponActor->GetWeaponType());
+	ProtagonistCharacter->AimCamByWeapon(WeaponActor->GetWeaponType());
+	
 	OnChangeWeapon.Broadcast(WeaponActor);
 }
 

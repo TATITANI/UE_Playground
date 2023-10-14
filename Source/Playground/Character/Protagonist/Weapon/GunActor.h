@@ -34,6 +34,9 @@ protected:
 	UAnimMontage* FireMontage;
 
 	virtual void AttackInputStarted() override;
-
+	virtual void Equip(AProtagonistCharacter* TargetCharacter) override;
 private:
+
+	UPROPERTY(EditDefaultsOnly)
+	float ProjectilePitchOffset = -10; 
 };
