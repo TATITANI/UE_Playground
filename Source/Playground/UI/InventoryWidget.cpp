@@ -50,6 +50,8 @@ void UInventoryWidget::Open()
 
 	SetVisibility(ESlateVisibility::Visible);
 	GetOwningPlayer()->SetShowMouseCursor(true);
+	
+	UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(GetOwningPlayer());
 
 	UpdateInfo();
 	bOpen = true;

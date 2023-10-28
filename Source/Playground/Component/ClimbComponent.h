@@ -71,7 +71,10 @@ private:
 	float WalkableAngle;
 
 	bool CanControlMoving = true;
-	const float JumpDistance = 250;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float JumpDistance = 250;
+	
 	float RemainJumpDistance = 0;
 	FVector LastJumpLoc;
 	FVector2D JumpDir = FVector2D::Zero();
