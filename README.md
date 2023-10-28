@@ -1,4 +1,3 @@
-# 플레이 영상
+# 소개 영상
 
-https://github.com/TATITANI/UE_Playground/assets/32747387/51ecce7d-003b-4c1c-ad78-71349e158c57
-
+[![Video Label](http://img.youtube.com/vi/Wi6BHaPHmg0/0.jpg)](https://youtu.be/Wi6BHaPHmg0)
