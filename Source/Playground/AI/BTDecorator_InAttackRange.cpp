@@ -20,8 +20,8 @@ bool UBTDecorator_InAttackRange::CalculateRawConditionValue(UBehaviorTreeCompone
 	if(TargetProtagonist == nullptr)
 		return false;
 
-	DrawDebugSphere(OwnerBot->GetWorld(), OwnerBot->GetActorLocation(),
-	                DistanceAttackable, 16, FColor::Cyan, false, 0.2f);
+	// DrawDebugSphere(OwnerBot->GetWorld(), OwnerBot->GetActorLocation(),
+	//                 DistanceAttackable, 16, FColor::Cyan, false, 0.2f);
 
 	const bool InAttackRange = TargetProtagonist->GetDistanceTo(OwnerBot) <= DistanceAttackable;
 	return InAttackRange;

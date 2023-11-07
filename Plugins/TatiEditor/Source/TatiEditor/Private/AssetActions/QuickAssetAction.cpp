@@ -8,21 +8,22 @@
 #include "EditorUtilityLibrary.h"
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
+#include "TatiEditor.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Misc/MessageDialog.h"
 
 void UQuickAssetAction::TestFunc()
 {
-	Print(TEXT("Working"), FColor::Cyan);
+	DebugHeader::Print(TEXT("Working"), FColor::Cyan);
 }
 
 void UQuickAssetAction::DuplicateAssets(int32 NumOfDuplicates)
 {
 	if (NumOfDuplicates <= 0)
 	{
-		Print(TEXT("Please enter a VALID number"), FColor::Red);
+		DebugHeader::Print(TEXT("Please enter a VALID number"), FColor::Red);
 
-		ShowMsgDialog(EAppMsgType::Ok, TEXT("Please enter valid number"));
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("Please enter valid number"));
 		return;
 	}
 
@@ -33,7 +34,7 @@ void UQuickAssetAction::DuplicateAssets(int32 NumOfDuplicates)
 	{
 		for (int32 i = 0; i < NumOfDuplicates; i++)
 		{
-			const FString SourceAssetPath = SelectedAssetData.ObjectPath.ToString();
+			const FString SourceAssetPath = SelectedAssetData.GetSoftObjectPath().ToString();
 			const FString NewDuplicatedAssetName = SelectedAssetData.AssetName.ToString() + TEXT("_") + FString::FromInt(i);
 			const FString NewPathName = FPaths::Combine(SelectedAssetData.PackagePath.ToString(), NewDuplicatedAssetName);
 
@@ -47,7 +48,7 @@ void UQuickAssetAction::DuplicateAssets(int32 NumOfDuplicates)
 
 	if (Counter > 0)
 	{
-		ShowNotifyInfo(TEXT("Duplate Success : ") + FString::FromInt(Counter) + " files");
+		DebugHeader::ShowNotifyInfo(TEXT("Duplate Success : ") + FString::FromInt(Counter) + " files");
 	}
 }
 
@@ -64,7 +65,7 @@ void UQuickAssetAction::AddPrefixes()
 		FString* PrefixFound = PrefixMap.Find(SelectedObject->GetClass());
 		if (!PrefixFound || PrefixFound->IsEmpty())
 		{
-			Print(TEXT("Failed to find prefix for class") + SelectedObject->GetClass()->GetName(), FColor::Red);
+			DebugHeader::Print(TEXT("Failed to find prefix for class") + SelectedObject->GetClass()->GetName(), FColor::Red);
 			continue;
 		}
 		FString OldName = SelectedObject->GetName();
@@ -85,7 +86,7 @@ void UQuickAssetAction::AddPrefixes()
 		Counter++;
 	}
 
-	ShowNotifyInfo(FString::Printf(TEXT("Rename %d Assets"), Counter));
+	DebugHeader::ShowNotifyInfo(FString::Printf(TEXT("Rename %d Assets"), Counter));
 }
 
 void UQuickAssetAction::RemoveUnusedAssets()
@@ -93,7 +94,8 @@ void UQuickAssetAction::RemoveUnusedAssets()
 	TArray<FAssetData> SelectedAssetsData = UEditorUtilityLibrary::GetSelectedAssetData();
 	TArray<FAssetData> UnusedAssetsData;
 
-	FixUpRedirectors();
+	// FixUpRedirectors();
+	FTatiEditorModule::FixUpRedirectors();
 
 	for (auto SelectedAssetData : SelectedAssetsData)
 	{
@@ -106,41 +108,11 @@ void UQuickAssetAction::RemoveUnusedAssets()
 
 	if (UnusedAssetsData.Num() == 0)
 	{
-		ShowMsgDialog(EAppMsgType::Ok, TEXT("No Unused Assets among selected assets"), false);
+		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("No Unused Assets among selected assets"), false);
 		return;
 	}
 
 	int32 DeleteCnt = ObjectTools::DeleteAssets(UnusedAssetsData);
 
-	ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("Delete %d Assets"), DeleteCnt), false);
-}
-
-void UQuickAssetAction::FixUpRedirectors()
-{
-	// NOTE
-	//애셋 레지스트리 (Asset Registry)는 에디터가 로드되면서 로드되지 않은 애셋에 대한 정보를 비동기적으로 그러모으는 에디터 서브시스템입니다
-	// https://docs.unrealengine.com/4.27/ko/ProgrammingAndScripting/ProgrammingWithCPP/Assets/Registry/
-
-	TArray<UObjectRedirector*> RedirectorsToFixArray;
-	FAssetRegistryModule& AssetRegistryModule =
-		FModuleManager::Get().LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
-
-	// GetAssets() 를 부를 때 FARFilter 를 제공하여 여러 범주별로 필터링되는 애셋 목록을 만들 수 있습니다. 필터는 여러 성분으로 구성됩니다:
-	FARFilter Filter;
-	Filter.bRecursivePaths = true; // true - 하위경로 탐색, false - 지정된 경로만 탐색
-	Filter.PackagePaths.Emplace("/Game"); // "/Game" - 콘텐츠 폴더
-	Filter.ClassPaths.Emplace("/Script/Engine.ObjectRedirector");
-	TArray<FAssetData> OutRedirectors;
-	AssetRegistryModule.Get().GetAssets(Filter, OutRedirectors);
-
-	for (const FAssetData& RedirectorData : OutRedirectors)
-	{
-		if (UObjectRedirector* RedirectorToFix = Cast<UObjectRedirector>(RedirectorData.GetAsset()))
-		{
-			RedirectorsToFixArray.Add(RedirectorToFix);
-		}
-	}
-
-	FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
-	AssetToolsModule.Get().FixupReferencers(RedirectorsToFixArray);
+	DebugHeader::ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("Delete %d Assets"), DeleteCnt), false);
 }

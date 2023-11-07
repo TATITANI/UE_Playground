@@ -117,8 +117,8 @@ void ABotCharacter::CheckAttack()
 	
 	FColor ColorDebugCapsule = IsHit ? FColor::Orange : FColor::Green;
 	const FQuat QuatDebugCapsule = FRotationMatrix::MakeFromZ(TraceRelatviePos).ToQuat();
-	DrawDebugCapsule(GetWorld(), GetActorLocation() + TraceRelatviePos * 0.5f,
-	                 attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
+	// DrawDebugCapsule(GetWorld(), GetActorLocation() + TraceRelatviePos * 0.5f,
+	                 // attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
 	
 	if (IsHit)
 	{

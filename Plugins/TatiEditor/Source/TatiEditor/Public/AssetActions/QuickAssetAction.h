@@ -46,8 +46,6 @@ private:
 		{UDataTable::StaticClass(), TEXT("DT_")}
 	};
 
-	void FixUpRedirectors();
-	
 public:
 	UFUNCTION(CallInEditor)
 	void TestFunc();

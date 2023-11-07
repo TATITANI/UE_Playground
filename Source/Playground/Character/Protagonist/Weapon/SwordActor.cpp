@@ -27,6 +27,8 @@ void ASwordActor::BeginPlay()
 		TrailComponent->SetRenderCustomDepth(true);
 		TrailComponent->SetCustomDepthStencilValue(1 << 1);
 		TrailComponent->Deactivate();
+
+		
 	}
 
 	
@@ -59,6 +61,7 @@ void ASwordActor::AttackInputStarted()
 
 void ASwordActor::AttackCheck() const
 {
+
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams params(NAME_None, false, this);
 
@@ -87,8 +90,8 @@ void ASwordActor::AttackCheck() const
 	}
 
 	FColor ColorDebugBox = IsTrace ? FColor::Orange : FColor::Green;
-	DrawDebugBox(GetWorld(), Character->GetActorLocation() + TracingRelativePos * 0.5f,
-	             BoxExtent, QuatBox, ColorDebugBox, false, 2.f);
+	// DrawDebugBox(GetWorld(), Character->GetActorLocation() + TracingRelativePos * 0.5f,
+	//              BoxExtent, QuatBox, ColorDebugBox, false, 2.f);
 
 	bool ExistsTargetActor = ActorHit != nullptr;
 	if (IsTrace && ExistsTargetActor)

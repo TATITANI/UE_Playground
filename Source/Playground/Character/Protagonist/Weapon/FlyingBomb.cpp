@@ -51,14 +51,14 @@ void AFlyingBomb::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		const auto OveralppedActor = HitResult.GetActor();
 		if (OveralppedActor->IsA(ABotCharacter::StaticClass()))
-		{
+		{	
 			UE_LOG(LogTemp, Log, TEXT("overlap actor : %s"), *OveralppedActor->GetName());
 			IsHit = true;
 			UGameplayStatics::ApplyDamage(OveralppedActor, Damage, GetInstigatorController(), this, UDamageType::StaticClass());
 		}
 	}
 
-	DrawDebugSphere(GetWorld(), HitLocation, Radius, 32, IsHit ? FColor::Green : FColor::Orange, false, 0.2f);
+	// DrawDebugSphere(GetWorld(), HitLocation, Radius, 32, IsHit ? FColor::Green : FColor::Orange, false, 0.2f);
 
 	verify(ExplodeParticleSystem != nullptr);
 	if (ExplodeParticleSystem != nullptr)

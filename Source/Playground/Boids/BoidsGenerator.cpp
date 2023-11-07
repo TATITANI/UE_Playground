@@ -201,7 +201,7 @@ bool ABoidsGenerator::ShouldTickIfViewportsOnly() const
 {
 	if (IsSelected())
 	{
-		DrawDebugBox(GetWorld(), GetActorLocation(), SpawnBox.GetExtent(), FColor::Green, false);
+		// DrawDebugBox(GetWorld(), GetActorLocation(), SpawnBox.GetExtent(), FColor::Green, false);
 		// DrawDebugSphere(GetWorld(), GetActorLocation(), MovableRadius, 32, FColor::Orange, false);
 	}
 

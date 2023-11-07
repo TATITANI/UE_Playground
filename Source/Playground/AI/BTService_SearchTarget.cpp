@@ -47,7 +47,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 			if (IsMatch)
 			{
 				OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, TargetActor);
-				DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Green, false, 0.2f);
+				// DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Green, false, 0.2f);
 				return;
 			}
 		}
@@ -55,7 +55,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	else
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, nullptr);
-		DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.2f);
+		// DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.2f);
 
 	}
 
