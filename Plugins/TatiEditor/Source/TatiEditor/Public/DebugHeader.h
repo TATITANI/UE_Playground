@@ -5,12 +5,12 @@
 
 namespace DebugHeader
 {
-	void PrintLog(const FString& Message)
+	static void PrintLog(const FString& Message)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 	}
 
-	void Print(const FString& Message, const FColor& Color)
+	static void Print(const FString& Message, const FColor& Color)
 	{
 		if (GEngine)
 		{
@@ -19,7 +19,7 @@ namespace DebugHeader
 		}
 	}
 
-	EAppReturnType::Type ShowMsgDialog(EAppMsgType::Type MsgType, const FString& Msg, bool bShowMsgAsWarning = true)
+	static EAppReturnType::Type ShowMsgDialog(EAppMsgType::Type MsgType, const FString& Msg, bool bShowMsgAsWarning = true)
 	{
 		if (bShowMsgAsWarning)
 		{
@@ -32,11 +32,12 @@ namespace DebugHeader
 		}
 	}
 
+	
 	// 우측 하단에 표시되는 노티파이 출력
-	void ShowNotifyInfo(const FString& Message)
+	static void ShowNotifyInfo(const FString& Message)
 	{
 		FNotificationInfo NotifyInfo(FText::FromString(Message));
-		NotifyInfo.bUseLargeFont = true;
+		NotifyInfo.bUseLargeFont = true; 
 		NotifyInfo.FadeOutDuration = 7.f;
 
 		FSlateNotificationManager::Get().AddNotification(NotifyInfo);

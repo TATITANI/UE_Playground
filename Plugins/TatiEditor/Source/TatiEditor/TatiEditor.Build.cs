@@ -28,7 +28,7 @@ public class TatiEditor : ModuleRules
 			new string[]
 			{
 				"Core", "Blutility", "EditorScriptingUtilities", "UMG",
-				"Niagara", "UnrealEd", "AssetTools", "ContentBrowser"
+				"Niagara", "UnrealEd", "AssetTools", "ContentBrowser", "InputCore"
 				// ... add other public dependencies that you statically link with here ...
 			}
 		);

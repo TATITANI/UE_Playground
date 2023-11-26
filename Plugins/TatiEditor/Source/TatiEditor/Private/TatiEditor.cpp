@@ -8,19 +8,24 @@
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Slate/AdvanceDeletionWidget.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
+
+const FName FTatiEditorModule::AdvanceDeletionName(TEXT("AdvanceDeletion"));
 
 void FTatiEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 
-	UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
+	// UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
 	InitCBMenuExtension();
+	RegisterAdvanceDeletionTab();
 }
 
 void FTatiEditorModule::ShutdownModule()
 {
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AdvanceDeletionName);
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 }
@@ -31,9 +36,12 @@ void FTatiEditorModule::InitCBMenuExtension()
 {
 	UE_LOG(LogTemp, Warning, TEXT("InitCBMenuExtension"));
 
+	// 콘텐츠 브라우저 모듈 로드
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 
+	// 콘텐츠 브라우저 컨텍스트메뉴 
 	TArray<FContentBrowserMenuExtender_SelectedPaths>& CBModuleMenuExtenders = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
+	// 컨텍스트 메뉴가 열리면 호출됨
 	CBModuleMenuExtenders.Add(FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FTatiEditorModule::CustomCBMenuExtender));
 }
 
@@ -46,7 +54,7 @@ TSharedRef<FExtender> FTatiEditorModule::CustomCBMenuExtender(const TArray<FStri
 	if (SelectedPaths.Num() > 0)
 	{
 		FolderPathsSelected = SelectedPaths;
-		
+
 		MenuExtender->AddMenuExtension(FName("Delete"),
 		                               EExtensionHook::After,
 		                               TSharedPtr<FUICommandList>(),
@@ -73,6 +81,14 @@ void FTatiEditorModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 		FText::FromString(TEXT("Safely delete all empty folders")),
 		FSlateIcon(),
 		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnDeleteEmtpyFoldersButtonClicked)
+
+	);
+
+	MenuBuilder.AddMenuEntry(
+		FText::FromString(TEXT("Advance Delete")),
+		FText::FromString(TEXT("에셋 상태별 리스트")),
+		FSlateIcon(),
+		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnAdvanceDeleteButtonClicked)
 
 	);
 }
@@ -140,7 +156,7 @@ void FTatiEditorModule::OnDeleteEmtpyFoldersButtonClicked()
 		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("you can only do this to one folder"));
 		return;
 	}
-	
+
 	TArray<FString> FolderPaths = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0], true, true);
 	uint32 Count = 0;
 
@@ -193,6 +209,113 @@ void FTatiEditorModule::OnDeleteEmtpyFoldersButtonClicked()
 
 	DebugHeader::ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("폴더 %d 개 삭제"), DeleteCnt), false);
 }
+
+#pragma region CustomEditorTab
+
+void FTatiEditorModule::OnAdvanceDeleteButtonClicked()
+{
+	FixUpRedirectors();
+	FGlobalTabmanager::Get()->TryInvokeTab(AdvanceDeletionName);
+	DebugHeader::PrintLog(TEXT("OnAdvanceDeleteButtonClicked"));
+}
+
+
+void FTatiEditorModule::RegisterAdvanceDeletionTab()
+{
+	DebugHeader::PrintLog(TEXT("RegisterAdvanceDeletionTab"));
+	// 사용자 설정 탭 등록
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(AdvanceDeletionName,
+	                                                  FOnSpawnTab::CreateRaw(this, &FTatiEditorModule::OnSpawnDeletionTab))
+	                        .SetDisplayName(FText::FromString(TEXT("Advance Deletion")));
+}
+
+TSharedRef<SDockTab> FTatiEditorModule::OnSpawnDeletionTab(const FSpawnTabArgs& SpawnTabArgs)
+{
+	// SNew - 슬레이트 위젯 생성
+	return SNew(SDockTab).TabRole(NomadTab)
+	[
+		SNew(SAdvanceDeletionTab)
+		.AssetDatas(GetAllAssetDatasUnderSelectedFolder()) // 에셋 데이터를 SAdvanceDeletionTab 파라미터로 넘김 
+	];
+}
+
+TArray<TSharedPtr<FAssetData>> FTatiEditorModule::GetAllAssetDatasUnderSelectedFolder()
+{
+	TArray<FString> AssetsPathNames = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);
+	TArray<TSharedPtr<FAssetData>> AssetDatas;
+
+	for (const FString& AssetPathName : AssetsPathNames)
+	{
+		//  don't touch root folder
+		if (AssetPathName.Contains("Developers") ||
+			AssetPathName.Contains("Collections") ||
+			AssetPathName.Contains("__ExternalActors__") ||
+			AssetPathName.Contains("__ExternalObjects__"))
+		{
+			continue;
+		}
+
+		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
+			continue;
+
+		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
+		AssetDatas.Add(MakeShared<FAssetData>(Data));
+	}
+
+	return AssetDatas;
+}
+
+bool FTatiEditorModule::DeleteSingleAssetForAssetList(const FAssetData& DeletingAssetData)
+{
+	if (ObjectTools::DeleteAssets({DeletingAssetData}) > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void FTatiEditorModule::ListUnusedAssets(const TArray<TSharedPtr<FAssetData>> AssetDatasToFilter,
+                                         TArray<TSharedPtr<FAssetData>>& OutUnusedAssetDatas)
+{
+	OutUnusedAssetDatas.Empty();
+
+	for (auto AssetData : AssetDatasToFilter)
+	{
+		auto Reference = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetData->GetObjectPathString());
+
+		if (Reference.Num() == 0)
+			OutUnusedAssetDatas.Add(AssetData);
+	}
+}
+
+void FTatiEditorModule::ListSameNamedAssets(const TArray<TSharedPtr<FAssetData>> AssetDatasToFilter,
+                                            TArray<TSharedPtr<FAssetData>>& OutSameNamedAssetDatas)
+{
+	OutSameNamedAssetDatas.Empty();
+	
+	TMap<FName, TArray<TSharedPtr<FAssetData>>> Table;
+	for (auto AssetData : AssetDatasToFilter)
+	{
+		Table.FindOrAdd(AssetData->AssetName).Add(AssetData);
+	}
+
+	for (const auto TableItem : Table)
+	{
+		const auto AssetDatas = TableItem.Value;
+		if (bool Overlapped = AssetDatas.Num() > 1)
+		{
+			for (auto AssetData : AssetDatas)
+			{
+				OutSameNamedAssetDatas.Add(AssetData);
+			}
+		}
+	}
+}
+
+
+#pragma  endregion
+
 
 void FTatiEditorModule::FixUpRedirectors()
 {
