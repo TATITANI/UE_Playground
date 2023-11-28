@@ -8,6 +8,7 @@
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "CustomStyle/TatiEditorStyle.h"
 #include "Slate/AdvanceDeletionWidget.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
@@ -18,13 +19,14 @@ void FTatiEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 
-	// UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
+	UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
 	InitCBMenuExtension();
 	RegisterAdvanceDeletionTab();
 }
 
 void FTatiEditorModule::ShutdownModule()
 {
+	FTatiEditorStyle::Shutdown();
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AdvanceDeletionName);
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -35,7 +37,7 @@ void FTatiEditorModule::ShutdownModule()
 void FTatiEditorModule::InitCBMenuExtension()
 {
 	UE_LOG(LogTemp, Warning, TEXT("InitCBMenuExtension"));
-
+	
 	// 콘텐츠 브라우저 모듈 로드
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 
@@ -48,6 +50,7 @@ void FTatiEditorModule::InitCBMenuExtension()
 TSharedRef<FExtender> FTatiEditorModule::CustomCBMenuExtender(const TArray<FString>& SelectedPaths)
 {
 	UE_LOG(LogTemp, Warning, TEXT("CustomCBMenuExtender"));
+	FTatiEditorStyle::InitalizeIcons();
 
 	TSharedRef<FExtender> MenuExtender(new FExtender());
 
@@ -72,14 +75,14 @@ void FTatiEditorModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 	(
 		FText::FromString(TEXT("Delete Unused Assets")),
 		FText::FromString(TEXT("Safely delete all unused assets under folder")),
-		FSlateIcon(),
+		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "ContentBrowser.DeleteUnusedAssets"),
 		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnDeleteUnusedAssetButtonClicked)
 	);
 
 	MenuBuilder.AddMenuEntry(
 		FText::FromString(TEXT("Delete Empty Folders")),
 		FText::FromString(TEXT("Safely delete all empty folders")),
-		FSlateIcon(),
+		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "ContentBrowser.DeleteEmptyFolders"),
 		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnDeleteEmtpyFoldersButtonClicked)
 
 	);
@@ -87,7 +90,7 @@ void FTatiEditorModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 	MenuBuilder.AddMenuEntry(
 		FText::FromString(TEXT("Advance Delete")),
 		FText::FromString(TEXT("에셋 상태별 리스트")),
-		FSlateIcon(),
+		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "ContentBrowser.AdvanceDeletion"),
 		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnAdvanceDeleteButtonClicked)
 
 	);
@@ -257,7 +260,7 @@ TArray<TSharedPtr<FAssetData>> FTatiEditorModule::GetAllAssetDatasUnderSelectedF
 
 		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
 			continue;
-
+		
 		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
 		AssetDatas.Add(MakeShared<FAssetData>(Data));
 	}

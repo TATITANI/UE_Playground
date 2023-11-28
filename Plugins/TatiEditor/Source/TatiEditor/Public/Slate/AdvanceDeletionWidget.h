@@ -14,7 +14,7 @@ class SAdvanceDeletionTab : public SCompoundWidget
 
 	SLATE_END_ARGS()
 
-public:
+public:		
 	void Construct(const FArguments& InArgs);
 
 private:
