@@ -25,7 +25,35 @@ private:
 
 	void OnDeleteEmtpyFoldersButtonClicked();
 	void OnAdvanceDeleteButtonClicked();
+#pragma  endregion
 
+#pragma  region  LevelEditorMenuExtension
+	void InitLevelEditorExtension();
+
+	TSharedRef<FExtender> CustomLevelEditorMenuExtender(const TSharedRef<FUICommandList> UICommandList,
+	                                                    const TArray<AActor*> SelectedActors);
+
+	void AddLevelMenuEntry(FMenuBuilder& MenuBuilder);
+	void OnLockActorSelectionButtonClicked();
+	void OnUnlockActorSelectionButtonClicked();
+
+#pragma  endregion
+
+#pragma  region SelectionLock
+	void InitCustomSelectionEvent();
+	void OnActorSelected(UObject* SelectedObject);
+
+	void LockActorSelection(AActor* TargetActor);
+	void UnlockActorSelection(AActor* TargetActor);
+	bool CheckIsActorSelectionLocked(AActor* TargetActor);
+
+	static const FName SelectionLockTagName;
+		
+#pragma  endregion
+
+	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsytem;
+	bool GetEditorActorSubsystem();
+	
 private:
 	TArray<FString> FolderPathsSelected;
 

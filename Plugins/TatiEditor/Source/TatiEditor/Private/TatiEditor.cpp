@@ -6,14 +6,19 @@
 #include "ContentBrowserModule.h"
 #include  "DebugHeader.h"
 #include "EditorAssetLibrary.h"
+#include "LevelEditor.h"
 #include "ObjectTools.h"
+#include "Selection.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CustomStyle/TatiEditorStyle.h"
+#include "PhysicsEngine/ConstraintUtils.h"
 #include "Slate/AdvanceDeletionWidget.h"
+#include "Subsystems/EditorActorSubsystem.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
 
 const FName FTatiEditorModule::AdvanceDeletionName(TEXT("AdvanceDeletion"));
+const FName FTatiEditorModule::SelectionLockTagName(TEXT("Locked"));
 
 void FTatiEditorModule::StartupModule()
 {
@@ -21,7 +26,9 @@ void FTatiEditorModule::StartupModule()
 
 	UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
 	InitCBMenuExtension();
+	InitLevelEditorExtension();
 	RegisterAdvanceDeletionTab();
+	InitCustomSelectionEvent();
 }
 
 void FTatiEditorModule::ShutdownModule()
@@ -37,7 +44,7 @@ void FTatiEditorModule::ShutdownModule()
 void FTatiEditorModule::InitCBMenuExtension()
 {
 	UE_LOG(LogTemp, Warning, TEXT("InitCBMenuExtension"));
-	
+
 	// 콘텐츠 브라우저 모듈 로드
 	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 
@@ -222,6 +229,173 @@ void FTatiEditorModule::OnAdvanceDeleteButtonClicked()
 	DebugHeader::PrintLog(TEXT("OnAdvanceDeleteButtonClicked"));
 }
 
+void FTatiEditorModule::InitLevelEditorExtension()
+{
+	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+
+	TArray<FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors>& LevelEditorMenuExtenders =
+		LevelEditorModule.GetAllLevelViewportContextMenuExtenders();
+
+	LevelEditorMenuExtenders.Add(FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors::CreateRaw(this,
+		&FTatiEditorModule::CustomLevelEditorMenuExtender));
+}
+
+TSharedRef<FExtender> FTatiEditorModule::CustomLevelEditorMenuExtender(const TSharedRef<FUICommandList> UICommandList,
+                                                                       const TArray<AActor*> SelectedActors)
+{
+	FTatiEditorStyle::InitalizeIcons();
+	TSharedRef<FExtender> MenuExtender = MakeShareable(new FExtender());
+
+	if (SelectedActors.Num() > 0)
+	{
+		DebugHeader::PrintLog(TEXT("CustomLevelEditorMenuExtender") + FString::FromInt(SelectedActors.Num()));
+
+		MenuExtender->AddMenuExtension(FName("ActorOptions"),
+		                               EExtensionHook::Before,
+		                               UICommandList,
+		                               FMenuExtensionDelegate::CreateRaw(this, &FTatiEditorModule::AddLevelMenuEntry));
+	}
+	return MenuExtender;
+}
+
+void FTatiEditorModule::AddLevelMenuEntry(FMenuBuilder& MenuBuilder)
+{
+	MenuBuilder.AddMenuEntry
+	(
+		FText::FromString(TEXT("Lock Actor Selection")),
+		FText::FromString(TEXT("액터 선택하지 못하게 함")),
+		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "LevelEditor.SelectionLock"),
+		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnLockActorSelectionButtonClicked)
+	);
+
+	MenuBuilder.AddMenuEntry
+	(
+		FText::FromString(TEXT("UnLock Actor Selection")),
+		FText::FromString(TEXT("액터 선택 잠금 해제")),
+		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "LevelEditor.SelectionUnlock"),
+		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnUnlockActorSelectionButtonClicked)
+	);
+}
+
+void FTatiEditorModule::OnLockActorSelectionButtonClicked()
+{
+	if (GetEditorActorSubsystem() == false)
+		return;
+
+	TArray<AActor*> SelectedActors = WeakEditorActorSubsytem->GetSelectedLevelActors();
+	if (SelectedActors.Num() == 0)
+	{
+		DebugHeader::ShowNotifyInfo(TEXT("No Actors Selected"));
+		return;
+	}
+
+	FString CurrentLockedActorNames = TEXT("Locked selection for : ");
+	for (AActor* SelectedActor : SelectedActors)
+	{
+		if (SelectedActor == nullptr)
+			continue;
+
+		LockActorSelection(SelectedActor);
+		WeakEditorActorSubsytem->SetActorSelectionState(SelectedActor, false);
+
+		CurrentLockedActorNames.Append(TEXT("\n"));
+		CurrentLockedActorNames.Append(SelectedActor->GetActorLabel());
+	}
+
+	DebugHeader::ShowNotifyInfo(CurrentLockedActorNames);
+}
+
+void FTatiEditorModule::OnUnlockActorSelectionButtonClicked()
+{
+	if (GetEditorActorSubsystem() == false)
+		return;
+
+	TArray<AActor*> AllActorsInLevel = WeakEditorActorSubsytem->GetAllLevelActors();
+	TArray<AActor*> AllLockedActors;
+
+	for (AActor* ActorInLevel : AllActorsInLevel)
+	{
+		if (ActorInLevel == nullptr)
+			continue;
+
+		if (CheckIsActorSelectionLocked(ActorInLevel))
+		{
+			AllLockedActors.Add(ActorInLevel);
+		}
+	}
+
+	if (AllLockedActors.Num() == 0)
+	{
+		DebugHeader::ShowNotifyInfo(TEXT("현재 잠겨있는 액터 없음"));
+	}
+
+	FString UnlockedActorNames = TEXT("Unlokced Actors : ");
+	for (AActor* LockedActor : AllLockedActors)
+	{
+		UnlockActorSelection(LockedActor);
+		UnlockedActorNames.Append("\n");
+		UnlockedActorNames.Append(LockedActor->GetActorLabel());
+	}
+
+	DebugHeader::ShowNotifyInfo(UnlockedActorNames);
+}
+
+
+#pragma  region SelectionLock
+void FTatiEditorModule::InitCustomSelectionEvent()
+{
+	USelection* UserSelection = GEditor->GetSelectedActors();
+	UserSelection->SelectObjectEvent.AddRaw(this, &FTatiEditorModule::OnActorSelected);
+}
+
+void FTatiEditorModule::OnActorSelected(UObject* SelectedObject)
+{
+	if (GetEditorActorSubsystem() == false)
+		return;
+
+	if (AActor* SelectedActor = Cast<AActor>(SelectedObject); SelectedActor != nullptr)
+	{
+		// 선택 잠금된 액터이면 선택 취소
+		if (CheckIsActorSelectionLocked(SelectedActor))
+		{
+			WeakEditorActorSubsytem->SetActorSelectionState(SelectedActor, false);
+		}
+	}
+}
+
+void FTatiEditorModule::LockActorSelection(AActor* TargetActor)
+{
+	if (TargetActor == nullptr)
+		return;
+
+	if (TargetActor->ActorHasTag(FName("Locked")) == false)
+	{
+		TargetActor->Tags.Add(FName("Locked"));
+	}
+}
+
+void FTatiEditorModule::UnlockActorSelection(AActor* TargetActor)
+{
+	if (TargetActor == nullptr)
+		return;
+
+	if (TargetActor->ActorHasTag(SelectionLockTagName))
+	{
+		TargetActor->Tags.Remove(SelectionLockTagName);
+	}
+}
+
+
+bool FTatiEditorModule::CheckIsActorSelectionLocked(AActor* TargetActor)
+{
+	if (TargetActor == nullptr)
+		return false;
+
+	return TargetActor->ActorHasTag(SelectionLockTagName);
+}
+
+#pragma  endregion
+
 
 void FTatiEditorModule::RegisterAdvanceDeletionTab()
 {
@@ -260,7 +434,7 @@ TArray<TSharedPtr<FAssetData>> FTatiEditorModule::GetAllAssetDatasUnderSelectedF
 
 		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
 			continue;
-		
+
 		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
 		AssetDatas.Add(MakeShared<FAssetData>(Data));
 	}
@@ -296,7 +470,7 @@ void FTatiEditorModule::ListSameNamedAssets(const TArray<TSharedPtr<FAssetData>>
                                             TArray<TSharedPtr<FAssetData>>& OutSameNamedAssetDatas)
 {
 	OutSameNamedAssetDatas.Empty();
-	
+
 	TMap<FName, TArray<TSharedPtr<FAssetData>>> Table;
 	for (auto AssetData : AssetDatasToFilter)
 	{
@@ -319,6 +493,16 @@ void FTatiEditorModule::ListSameNamedAssets(const TArray<TSharedPtr<FAssetData>>
 
 #pragma  endregion
 
+
+bool FTatiEditorModule::GetEditorActorSubsystem()
+{
+	if (WeakEditorActorSubsytem.IsValid() == false)
+	{
+		WeakEditorActorSubsytem = GEditor->GetEditorSubsystem<UEditorActorSubsystem>();
+	}
+
+	return WeakEditorActorSubsytem.IsValid();
+}
 
 void FTatiEditorModule::FixUpRedirectors()
 {

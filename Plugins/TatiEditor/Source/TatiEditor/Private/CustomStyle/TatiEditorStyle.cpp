@@ -46,6 +46,12 @@ TSharedRef<FSlateStyleSet> FTatiEditorStyle::CreateSlateStyleSet()
 	CustomStyleSet->Set("ContentBrowser.AdvanceDeletion",
 						new FSlateImageBrush(IconDirectory/"AdvanceDeletion.png", CoreStyleConstants::Icon16x16));
 
+	CustomStyleSet->Set("LevelEditor.SelectionLock",
+						new FSlateImageBrush(IconDirectory/"SelectionLock.png", CoreStyleConstants::Icon16x16));
+
+	CustomStyleSet->Set("LevelEditor.SelectionUnlock",
+						new FSlateImageBrush(IconDirectory/"SelectionUnlock.png", CoreStyleConstants::Icon16x16));
+	
 
 	return CustomStyleSet;
 }
