@@ -11,14 +11,14 @@
 #include "Selection.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CustomStyle/TatiEditorStyle.h"
-#include "PhysicsEngine/ConstraintUtils.h"
+#include "CustomUICommand/TatiUICommands.h"
 #include "Slate/AdvanceDeletionWidget.h"
 #include "Subsystems/EditorActorSubsystem.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
 
-const FName FTatiEditorModule::AdvanceDeletionName(TEXT("AdvanceDeletion"));
-const FName FTatiEditorModule::SelectionLockTagName(TEXT("Locked"));
+const FName FTatiEditorModule::AdvanceDeletionName("AdvanceDeletion");
+const FName FTatiEditorModule::SelectionLockTagName("Locked");
 
 void FTatiEditorModule::StartupModule()
 {
@@ -26,17 +26,29 @@ void FTatiEditorModule::StartupModule()
 
 	UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
 	InitCBMenuExtension();
+
+	FTatiUICommands::Register();
+	InitCustomUICommands();
+	
 	InitLevelEditorExtension();
+
 	RegisterAdvanceDeletionTab();
 	InitCustomSelectionEvent();
 }
 
 void FTatiEditorModule::ShutdownModule()
 {
-	FTatiEditorStyle::Shutdown();
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AdvanceDeletionName);
+	FTatiEditorStyle::Shutdown();
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+}
+
+void FTatiEditorModule::PostLoadCallback()
+{
+	IModuleInterface::PostLoadCallback();
+
+	DebugHeader::PrintLog(TEXT("PostLoadCallback"));
 }
 
 #pragma region ContentBrowserMenuExtension
@@ -232,6 +244,9 @@ void FTatiEditorModule::OnAdvanceDeleteButtonClicked()
 void FTatiEditorModule::InitLevelEditorExtension()
 {
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
+
+	TSharedRef<FUICommandList> ExistingLevelCommands = LevelEditorModule.GetGlobalLevelEditorActions();
+	ExistingLevelCommands->Append(CustomUICommands.ToSharedRef());
 
 	TArray<FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors>& LevelEditorMenuExtenders =
 		LevelEditorModule.GetAllLevelViewportContextMenuExtenders();
@@ -490,6 +505,36 @@ void FTatiEditorModule::ListSameNamedAssets(const TArray<TSharedPtr<FAssetData>>
 	}
 }
 
+
+#pragma  endregion
+
+
+#pragma  region CustomEditorUICommands
+
+void FTatiEditorModule::InitCustomUICommands()
+{
+	CustomUICommands = MakeShareable(new FUICommandList());
+
+	CustomUICommands->MapAction(
+		FTatiUICommands::Get().LockActorSelection,
+		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnLockActorSelectionHotkeyPressed)
+	);
+
+	CustomUICommands->MapAction(
+		FTatiUICommands::Get().UnlockActorSelection,
+		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnUnlockActorSelectionHotkeyPressed)
+	);
+}
+
+void FTatiEditorModule::OnLockActorSelectionHotkeyPressed()
+{
+	OnLockActorSelectionButtonClicked();
+}
+
+void FTatiEditorModule::OnUnlockActorSelectionHotkeyPressed()
+{
+	OnUnlockActorSelectionButtonClicked();
+}
 
 #pragma  endregion
 

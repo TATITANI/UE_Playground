@@ -11,6 +11,7 @@ public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+	virtual void PostLoadCallback() override;
 
 private:
 #pragma region ContentBrowserMenuExtension
@@ -48,19 +49,29 @@ private:
 	bool CheckIsActorSelectionLocked(AActor* TargetActor);
 
 	static const FName SelectionLockTagName;
-		
+
 #pragma  endregion
+
+#pragma  region CustomEditorUICommands
+
+	TSharedPtr<class FUICommandList> CustomUICommands;
+	void InitCustomUICommands();
+	void OnLockActorSelectionHotkeyPressed();
+	void OnUnlockActorSelectionHotkeyPressed();
+
+#pragma  endregion
+
 
 	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsytem;
 	bool GetEditorActorSubsystem();
-	
+
 private:
 	TArray<FString> FolderPathsSelected;
 
 public:
 	static void FixUpRedirectors();
 
-#pragma region CustomEditorTab
+#pragma region CustomEditorTabf
 	void RegisterAdvanceDeletionTab();
 	TSharedRef<SDockTab> OnSpawnDeletionTab(const FSpawnTabArgs& SpawnTabArgs);
 	TArray<TSharedPtr<FAssetData>> GetAllAssetDatasUnderSelectedFolder();
@@ -76,5 +87,6 @@ public:
 #pragma endregion
 
 private:
+	UPROPERTY()
 	static const FName AdvanceDeletionName;
 };
