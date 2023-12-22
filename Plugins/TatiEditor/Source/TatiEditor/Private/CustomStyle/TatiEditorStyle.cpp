@@ -6,6 +6,7 @@
 #include "DebugHeader.h"
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleRegistry.h"
+#include "Styling/StyleColors.h"
 
 FName FTatiEditorStyle::StyleSetName = FName("TatiEditorStyle");
 TSharedPtr<FSlateStyleSet> FTatiEditorStyle::CreatedSlateStyleSet = nullptr;
@@ -33,25 +34,39 @@ TSharedRef<FSlateStyleSet> FTatiEditorStyle::CreateSlateStyleSet()
 	TSharedRef<FSlateStyleSet> CustomStyleSet = MakeShared<FSlateStyleSet>(StyleSetName);
 
 	// note : IPluginManager 가 속한 Projects 모듈을 build.cs에 추가해야함
-	const FString IconDirectory = IPluginManager::Get().FindPlugin(TEXT("TatiEditor"))->GetBaseDir()/"Resources";
-	DebugHeader::PrintLog(FString::Printf(TEXT("icon directory : %s"),*IconDirectory));
+	const FString IconDirectory = IPluginManager::Get().FindPlugin(TEXT("TatiEditor"))->GetBaseDir() / "Resources";
+	DebugHeader::PrintLog(FString::Printf(TEXT("icon directory : %s"), *IconDirectory));
 	CustomStyleSet->SetContentRoot(IconDirectory);
-	
+
 	CustomStyleSet->Set("ContentBrowser.DeleteUnusedAssets",
-	                    new FSlateImageBrush(IconDirectory/"DeleteUnusedAsset.png", CoreStyleConstants::Icon16x16));
+	                    new FSlateImageBrush(IconDirectory / "DeleteUnusedAsset.png", CoreStyleConstants::Icon16x16));
 
 	CustomStyleSet->Set("ContentBrowser.DeleteEmptyFolders",
-						new FSlateImageBrush(IconDirectory/"DeleteEmptyFolders.png", CoreStyleConstants::Icon16x16));
+	                    new FSlateImageBrush(IconDirectory / "DeleteEmptyFolders.png", CoreStyleConstants::Icon16x16));
 
 	CustomStyleSet->Set("ContentBrowser.AdvanceDeletion",
-						new FSlateImageBrush(IconDirectory/"AdvanceDeletion.png", CoreStyleConstants::Icon16x16));
+	                    new FSlateImageBrush(IconDirectory / "AdvanceDeletion.png", CoreStyleConstants::Icon16x16));
 
 	CustomStyleSet->Set("LevelEditor.SelectionLock",
-						new FSlateImageBrush(IconDirectory/"SelectionLock.png", CoreStyleConstants::Icon16x16));
+	                    new FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16));
 
 	CustomStyleSet->Set("LevelEditor.SelectionUnlock",
-						new FSlateImageBrush(IconDirectory/"SelectionUnlock.png", CoreStyleConstants::Icon16x16));
-	
+	                    new FSlateImageBrush(IconDirectory / "SelectionUnlock.png", CoreStyleConstants::Icon16x16));
+
+	const FCheckBoxStyle SelectionLockToggleStyle =
+		FCheckBoxStyle()
+		// Uncheck image
+		.SetCheckBoxType(ESlateCheckBoxType::ToggleButton)
+		.SetPadding(FMargin(10.0f))
+		.SetUncheckedImage(FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16, FStyleColors::White25))
+		.SetUncheckedHoveredImage(FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16, FStyleColors::AccentBlue))
+		.SetUncheckedPressedImage(FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16, FStyleColors::Foreground))
+		// Checked image
+		.SetCheckedImage(FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16, FStyleColors::Foreground))
+		.SetCheckedHoveredImage(FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16, FStyleColors::AccentBlue))
+		.SetCheckedPressedImage(FSlateImageBrush(IconDirectory / "SelectionLock.png", CoreStyleConstants::Icon16x16, FStyleColors::AccentGray));
+
+	CustomStyleSet->Set("SceneOutliner.SelectionLock", SelectionLockToggleStyle);
 
 	return CustomStyleSet;
 }

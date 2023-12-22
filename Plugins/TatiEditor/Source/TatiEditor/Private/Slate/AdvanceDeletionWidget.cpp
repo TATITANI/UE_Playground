@@ -13,9 +13,11 @@
 #define ListUnused TEXT("List unused Assets")
 #define ListSameName TEXT("List Same Name Assets")
 
+const FName SAdvanceDeletionTab::AdvanceDeletionName("AdvanceDeletion");
+
 void SAdvanceDeletionTab::Construct(const FArguments& InArgs)
 {
-	UE_LOG(LogTemp, Log, TEXT("Construct"));
+	UE_LOG(LogTemp, Log, TEXT("SAdvanceDeletionTab Construct"));
 	bCanSupportFocus = true;
 
 	this->StoredAssetDatas = InArgs._AssetDatas;

@@ -3,43 +3,47 @@
 #include "TatiEditor.h"
 
 #include "AssetToolsModule.h"
-#include "ContentBrowserModule.h"
 #include  "DebugHeader.h"
 #include "EditorAssetLibrary.h"
 #include "LevelEditor.h"
 #include "ObjectTools.h"
-#include "Selection.h"
+#include "SceneOutlinerModule.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CustomStyle/TatiEditorStyle.h"
 #include "CustomUICommand/TatiUICommands.h"
+#include "Menu/CBMenuExtension.h"
+#include "Menu/LevelEditorMenuExtension.h"
+#include "Outliner/OutlinerExtension.h"
 #include "Slate/AdvanceDeletionWidget.h"
 #include "Subsystems/EditorActorSubsystem.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
 
-const FName FTatiEditorModule::AdvanceDeletionName("AdvanceDeletion");
 const FName FTatiEditorModule::SelectionLockTagName("Locked");
+TSharedPtr<SDockTab> FTatiEditorModule::ConstructedDockTab;
 
 void FTatiEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 
 	UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
-	InitCBMenuExtension();
 
+	FTatiEditorStyle::InitalizeIcons();
 	FTatiUICommands::Register();
-	InitCustomUICommands();
-	
-	InitLevelEditorExtension();
 
-	RegisterAdvanceDeletionTab();
-	InitCustomSelectionEvent();
+	InitCustomTabs();
+
+	CBMenuExtension = MakeShared<FCBMenuExtension>();
+	LevelEditorMenuExtension = MakeShared<FLevelEditorMenuExtension>();
+	OutlinerExtension = MakeShared<FOutlinerExtension>();
+	
 }
 
 void FTatiEditorModule::ShutdownModule()
 {
-	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(AdvanceDeletionName);
+	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SAdvanceDeletionTab::AdvanceDeletionName);
 	FTatiEditorStyle::Shutdown();
+	FTatiUICommands::Unregister();
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
 }
@@ -51,330 +55,43 @@ void FTatiEditorModule::PostLoadCallback()
 	DebugHeader::PrintLog(TEXT("PostLoadCallback"));
 }
 
-#pragma region ContentBrowserMenuExtension
 
-void FTatiEditorModule::InitCBMenuExtension()
+void FTatiEditorModule::InitCustomTabs()
 {
-	UE_LOG(LogTemp, Warning, TEXT("InitCBMenuExtension"));
+	// Advance Deleteion
+	const FCustomTabSpawner::FOnConstructSlate ConstructAdvanceDeletionTab = FCustomTabSpawner::FOnConstructSlate::CreateLambda(
+		[this]()-> TSharedRef<SAdvanceDeletionTab>
+		{
+			TArray<TSharedPtr<FAssetData>> AssetDatas;
+			if (CBMenuExtension->FolderPathsSelected.Num() > 0)
+				AssetDatas = CBMenuExtension->GetAllAssetDatasUnderSelectedFolder();
 
-	// 콘텐츠 브라우저 모듈 로드
-	FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
+			return SNew(SAdvanceDeletionTab)
+				.AssetDatas(AssetDatas); // 에셋 데이터를 SAdvanceDeletionTab 파라미터로 넘김
+		});
 
-	// 콘텐츠 브라우저 컨텍스트메뉴 
-	TArray<FContentBrowserMenuExtender_SelectedPaths>& CBModuleMenuExtenders = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
-	// 컨텍스트 메뉴가 열리면 호출됨
-	CBModuleMenuExtenders.Add(FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FTatiEditorModule::CustomCBMenuExtender));
-}
-
-TSharedRef<FExtender> FTatiEditorModule::CustomCBMenuExtender(const TArray<FString>& SelectedPaths)
-{
-	UE_LOG(LogTemp, Warning, TEXT("CustomCBMenuExtender"));
-	FTatiEditorStyle::InitalizeIcons();
-
-	TSharedRef<FExtender> MenuExtender(new FExtender());
-
-	if (SelectedPaths.Num() > 0)
+	const FCustomTabSpawner::FOnCloseTab OnCloseAdvanceDeletionTab = FCustomTabSpawner::FOnCloseTab::CreateLambda([this]
 	{
-		FolderPathsSelected = SelectedPaths;
-
-		MenuExtender->AddMenuExtension(FName("Delete"),
-		                               EExtensionHook::After,
-		                               TSharedPtr<FUICommandList>(),
-		                               FMenuExtensionDelegate::CreateRaw(this, &FTatiEditorModule::AddCBMenuEntry));
-	}
-
-
-	return MenuExtender;
+		CBMenuExtension->FolderPathsSelected.Empty();
+	});
+	
+	CustomTabSpawner.RegisterCustomTab<SAdvanceDeletionTab>(
+		SAdvanceDeletionTab::AdvanceDeletionName, ConstructAdvanceDeletionTab, OnCloseAdvanceDeletionTab);
+	
 }
 
 
-void FTatiEditorModule::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
-{
-	MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT("Delete Unused Assets")),
-		FText::FromString(TEXT("Safely delete all unused assets under folder")),
-		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "ContentBrowser.DeleteUnusedAssets"),
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnDeleteUnusedAssetButtonClicked)
-	);
 
-	MenuBuilder.AddMenuEntry(
-		FText::FromString(TEXT("Delete Empty Folders")),
-		FText::FromString(TEXT("Safely delete all empty folders")),
-		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "ContentBrowser.DeleteEmptyFolders"),
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnDeleteEmtpyFoldersButtonClicked)
-
-	);
-
-	MenuBuilder.AddMenuEntry(
-		FText::FromString(TEXT("Advance Delete")),
-		FText::FromString(TEXT("에셋 상태별 리스트")),
-		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "ContentBrowser.AdvanceDeletion"),
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnAdvanceDeleteButtonClicked)
-
-	);
-}
-
-void FTatiEditorModule::OnDeleteUnusedAssetButtonClicked()
-{
-	DebugHeader::Print(TEXT("Working"), FColor::Green);
-	if (FolderPathsSelected.Num() != 1)
-	{
-		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("you can only do this to one folder"));
-		return;
-	}
-	DebugHeader::Print(FString::Printf(TEXT("Currently selected folder : %s"), *FolderPathsSelected[0]), FColor::Green);
-
-	TArray<FString> AssetsPathNames = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);
-	if (AssetsPathNames.Num() == 0)
-	{
-		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("No Asset found under selected folder"));
-		return;
-	}
-
-	EAppReturnType::Type ConfirmResult =
-		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("총 %d 개의 에셋을 체크함. \n 진행할것?"), AssetsPathNames.Num()));
-
-	if (ConfirmResult == EAppReturnType::No)
-		return;
-
-	TArray<FAssetData> UnusedAssetsData;
-	for (const FString& AssetPathName : AssetsPathNames)
-	{
-		//  don't touch root folder
-		if (AssetPathName.Contains("Developers") ||
-			AssetPathName.Contains("Collections") ||
-			AssetPathName.Contains("__ExternalActors__") ||
-			AssetPathName.Contains("__ExternalObjects__"))
-		{
-			continue;
-		}
-
-		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
-		{
-			continue;
-		}
-
-		TArray<FString> AssetReferencers = UEditorAssetLibrary::FindPackageReferencersForAsset(AssetPathName);
-		if (AssetReferencers.Num() == 0)
-		{
-			const FAssetData UnusedAssetData = UEditorAssetLibrary::FindAssetData(AssetPathName);
-			UnusedAssetsData.Add(UnusedAssetData);
-		}
-	}
-
-	if (UnusedAssetsData.Num() > 0)
-	{
-		const int32 DeleteCnt = ObjectTools::DeleteAssets(UnusedAssetsData);
-		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("Delete %d Assets"), DeleteCnt), false);
-	}
-}
-
-void FTatiEditorModule::OnDeleteEmtpyFoldersButtonClicked()
-{
-	FixUpRedirectors();
-	if (FolderPathsSelected.Num() != 1)
-	{
-		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("you can only do this to one folder"));
-		return;
-	}
-
-	TArray<FString> FolderPaths = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0], true, true);
-	uint32 Count = 0;
-
-	TArray<FString> EmptyFolderPaths;
-	FString FolderNames = "";
-	for (const FString& FolderPath : FolderPaths)
-	{
-		//  don't touch root folder
-		if (FolderPath.Contains("Developers") ||
-			FolderPath.Contains("Collections") ||
-			FolderPath.Contains("__ExternalActors__") ||
-			FolderPath.Contains("__ExternalObjects__"))
-		{
-			continue;
-		}
-
-		if (UEditorAssetLibrary::DoesDirectoryExist(FolderPath) == false)
-		{
-			continue;
-		}
-
-		if (UEditorAssetLibrary::DoesDirectoryHaveAssets(FolderPath) == false)
-		{
-			EmptyFolderPaths.Add(FolderPath);
-			FolderNames += FolderPath + "\n";
-			// EmptyFolderPaths.Add(TEXT("\n"));
-		}
-	}
-
-	if (EmptyFolderPaths.Num() == 0)
-	{
-		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("빈 폴더 없음"), false);
-		return;
-	}
-
-	EAppReturnType::Type ConfirmResult = DebugHeader::ShowMsgDialog(EAppMsgType::OkCancel,
-	                                                                FString::Printf(TEXT("빈 폴더 %s"), *FolderNames));
-
-	if (ConfirmResult == EAppReturnType::Cancel)
-	{
-		return;
-	}
-
-	uint32 DeleteCnt = 0;
-	for (auto EmptyFolderPath : EmptyFolderPaths)
-	{
-		const bool bDelete = UEditorAssetLibrary::DeleteDirectory(EmptyFolderPath);
-		bDelete ? DeleteCnt++ : DebugHeader::Print(TEXT("폴더 삭제 실패 : ") + EmptyFolderPath, FColor::Red);
-	}
-
-	DebugHeader::ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("폴더 %d 개 삭제"), DeleteCnt), false);
-}
-
-#pragma region CustomEditorTab
-
-void FTatiEditorModule::OnAdvanceDeleteButtonClicked()
-{
-	FixUpRedirectors();
-	FGlobalTabmanager::Get()->TryInvokeTab(AdvanceDeletionName);
-	DebugHeader::PrintLog(TEXT("OnAdvanceDeleteButtonClicked"));
-}
-
-void FTatiEditorModule::InitLevelEditorExtension()
+// 레벨에디터에서 잠금설정을 하면 아웃라이너 잠금 체크박스에도 반영
+void FTatiEditorModule::RefreshSceneOutliner()
 {
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
 
-	TSharedRef<FUICommandList> ExistingLevelCommands = LevelEditorModule.GetGlobalLevelEditorActions();
-	ExistingLevelCommands->Append(CustomUICommands.ToSharedRef());
-
-	TArray<FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors>& LevelEditorMenuExtenders =
-		LevelEditorModule.GetAllLevelViewportContextMenuExtenders();
-
-	LevelEditorMenuExtenders.Add(FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors::CreateRaw(this,
-		&FTatiEditorModule::CustomLevelEditorMenuExtender));
-}
-
-TSharedRef<FExtender> FTatiEditorModule::CustomLevelEditorMenuExtender(const TSharedRef<FUICommandList> UICommandList,
-                                                                       const TArray<AActor*> SelectedActors)
-{
-	FTatiEditorStyle::InitalizeIcons();
-	TSharedRef<FExtender> MenuExtender = MakeShareable(new FExtender());
-
-	if (SelectedActors.Num() > 0)
+	TSharedPtr<ISceneOutliner> SceneOutliner = LevelEditorModule.GetFirstLevelEditor()->GetSceneOutliner();
+	if (SceneOutliner.IsValid())
 	{
-		DebugHeader::PrintLog(TEXT("CustomLevelEditorMenuExtender") + FString::FromInt(SelectedActors.Num()));
-
-		MenuExtender->AddMenuExtension(FName("ActorOptions"),
-		                               EExtensionHook::Before,
-		                               UICommandList,
-		                               FMenuExtensionDelegate::CreateRaw(this, &FTatiEditorModule::AddLevelMenuEntry));
-	}
-	return MenuExtender;
-}
-
-void FTatiEditorModule::AddLevelMenuEntry(FMenuBuilder& MenuBuilder)
-{
-	MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT("Lock Actor Selection")),
-		FText::FromString(TEXT("액터 선택하지 못하게 함")),
-		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "LevelEditor.SelectionLock"),
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnLockActorSelectionButtonClicked)
-	);
-
-	MenuBuilder.AddMenuEntry
-	(
-		FText::FromString(TEXT("UnLock Actor Selection")),
-		FText::FromString(TEXT("액터 선택 잠금 해제")),
-		FSlateIcon(FTatiEditorStyle::GetStyleSetName(), "LevelEditor.SelectionUnlock"),
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnUnlockActorSelectionButtonClicked)
-	);
-}
-
-void FTatiEditorModule::OnLockActorSelectionButtonClicked()
-{
-	if (GetEditorActorSubsystem() == false)
-		return;
-
-	TArray<AActor*> SelectedActors = WeakEditorActorSubsytem->GetSelectedLevelActors();
-	if (SelectedActors.Num() == 0)
-	{
-		DebugHeader::ShowNotifyInfo(TEXT("No Actors Selected"));
-		return;
-	}
-
-	FString CurrentLockedActorNames = TEXT("Locked selection for : ");
-	for (AActor* SelectedActor : SelectedActors)
-	{
-		if (SelectedActor == nullptr)
-			continue;
-
-		LockActorSelection(SelectedActor);
-		WeakEditorActorSubsytem->SetActorSelectionState(SelectedActor, false);
-
-		CurrentLockedActorNames.Append(TEXT("\n"));
-		CurrentLockedActorNames.Append(SelectedActor->GetActorLabel());
-	}
-
-	DebugHeader::ShowNotifyInfo(CurrentLockedActorNames);
-}
-
-void FTatiEditorModule::OnUnlockActorSelectionButtonClicked()
-{
-	if (GetEditorActorSubsystem() == false)
-		return;
-
-	TArray<AActor*> AllActorsInLevel = WeakEditorActorSubsytem->GetAllLevelActors();
-	TArray<AActor*> AllLockedActors;
-
-	for (AActor* ActorInLevel : AllActorsInLevel)
-	{
-		if (ActorInLevel == nullptr)
-			continue;
-
-		if (CheckIsActorSelectionLocked(ActorInLevel))
-		{
-			AllLockedActors.Add(ActorInLevel);
-		}
-	}
-
-	if (AllLockedActors.Num() == 0)
-	{
-		DebugHeader::ShowNotifyInfo(TEXT("현재 잠겨있는 액터 없음"));
-	}
-
-	FString UnlockedActorNames = TEXT("Unlokced Actors : ");
-	for (AActor* LockedActor : AllLockedActors)
-	{
-		UnlockActorSelection(LockedActor);
-		UnlockedActorNames.Append("\n");
-		UnlockedActorNames.Append(LockedActor->GetActorLabel());
-	}
-
-	DebugHeader::ShowNotifyInfo(UnlockedActorNames);
-}
-
-
-#pragma  region SelectionLock
-void FTatiEditorModule::InitCustomSelectionEvent()
-{
-	USelection* UserSelection = GEditor->GetSelectedActors();
-	UserSelection->SelectObjectEvent.AddRaw(this, &FTatiEditorModule::OnActorSelected);
-}
-
-void FTatiEditorModule::OnActorSelected(UObject* SelectedObject)
-{
-	if (GetEditorActorSubsystem() == false)
-		return;
-
-	if (AActor* SelectedActor = Cast<AActor>(SelectedObject); SelectedActor != nullptr)
-	{
-		// 선택 잠금된 액터이면 선택 취소
-		if (CheckIsActorSelectionLocked(SelectedActor))
-		{
-			WeakEditorActorSubsytem->SetActorSelectionState(SelectedActor, false);
-		}
+		// 아웃라이너의 ConstructRowWidget가 다시 호출되면서 체크박스 갱신
+		SceneOutliner->FullRefresh();
 	}
 }
 
@@ -383,9 +100,9 @@ void FTatiEditorModule::LockActorSelection(AActor* TargetActor)
 	if (TargetActor == nullptr)
 		return;
 
-	if (TargetActor->ActorHasTag(FName("Locked")) == false)
+	if (TargetActor->ActorHasTag(SelectionLockTagName) == false)
 	{
-		TargetActor->Tags.Add(FName("Locked"));
+		TargetActor->Tags.Add(SelectionLockTagName);
 	}
 }
 
@@ -409,53 +126,7 @@ bool FTatiEditorModule::CheckIsActorSelectionLocked(AActor* TargetActor)
 	return TargetActor->ActorHasTag(SelectionLockTagName);
 }
 
-#pragma  endregion
 
-
-void FTatiEditorModule::RegisterAdvanceDeletionTab()
-{
-	DebugHeader::PrintLog(TEXT("RegisterAdvanceDeletionTab"));
-	// 사용자 설정 탭 등록
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(AdvanceDeletionName,
-	                                                  FOnSpawnTab::CreateRaw(this, &FTatiEditorModule::OnSpawnDeletionTab))
-	                        .SetDisplayName(FText::FromString(TEXT("Advance Deletion")));
-}
-
-TSharedRef<SDockTab> FTatiEditorModule::OnSpawnDeletionTab(const FSpawnTabArgs& SpawnTabArgs)
-{
-	// SNew - 슬레이트 위젯 생성
-	return SNew(SDockTab).TabRole(NomadTab)
-	[
-		SNew(SAdvanceDeletionTab)
-		.AssetDatas(GetAllAssetDatasUnderSelectedFolder()) // 에셋 데이터를 SAdvanceDeletionTab 파라미터로 넘김 
-	];
-}
-
-TArray<TSharedPtr<FAssetData>> FTatiEditorModule::GetAllAssetDatasUnderSelectedFolder()
-{
-	TArray<FString> AssetsPathNames = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);
-	TArray<TSharedPtr<FAssetData>> AssetDatas;
-
-	for (const FString& AssetPathName : AssetsPathNames)
-	{
-		//  don't touch root folder
-		if (AssetPathName.Contains("Developers") ||
-			AssetPathName.Contains("Collections") ||
-			AssetPathName.Contains("__ExternalActors__") ||
-			AssetPathName.Contains("__ExternalObjects__"))
-		{
-			continue;
-		}
-
-		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
-			continue;
-
-		const FAssetData Data = UEditorAssetLibrary::FindAssetData(AssetPathName);
-		AssetDatas.Add(MakeShared<FAssetData>(Data));
-	}
-
-	return AssetDatas;
-}
 
 bool FTatiEditorModule::DeleteSingleAssetForAssetList(const FAssetData& DeletingAssetData)
 {
@@ -506,39 +177,6 @@ void FTatiEditorModule::ListSameNamedAssets(const TArray<TSharedPtr<FAssetData>>
 }
 
 
-#pragma  endregion
-
-
-#pragma  region CustomEditorUICommands
-
-void FTatiEditorModule::InitCustomUICommands()
-{
-	CustomUICommands = MakeShareable(new FUICommandList());
-
-	CustomUICommands->MapAction(
-		FTatiUICommands::Get().LockActorSelection,
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnLockActorSelectionHotkeyPressed)
-	);
-
-	CustomUICommands->MapAction(
-		FTatiUICommands::Get().UnlockActorSelection,
-		FExecuteAction::CreateRaw(this, &FTatiEditorModule::OnUnlockActorSelectionHotkeyPressed)
-	);
-}
-
-void FTatiEditorModule::OnLockActorSelectionHotkeyPressed()
-{
-	OnLockActorSelectionButtonClicked();
-}
-
-void FTatiEditorModule::OnUnlockActorSelectionHotkeyPressed()
-{
-	OnUnlockActorSelectionButtonClicked();
-}
-
-#pragma  endregion
-
-
 bool FTatiEditorModule::GetEditorActorSubsystem()
 {
 	if (WeakEditorActorSubsytem.IsValid() == false)
@@ -552,7 +190,7 @@ bool FTatiEditorModule::GetEditorActorSubsystem()
 void FTatiEditorModule::FixUpRedirectors()
 {
 	// NOTE
-	//애셋 레지스트리 (Asset Registry)는 에디터가 로드되면서 로드되지 않은 애셋에 대한 정보를 비동기적으로 그러모으는 에디터 서브시스템입니다
+	// 애셋 레지스트리 (Asset Registry)는 에디터가 로드되면서 로드되지 않은 애셋에 대한 정보를 비동기적으로 그러모으는 에디터 서브시스템입니다
 	// https://docs.unrealengine.com/4.27/ko/ProgrammingAndScripting/ProgrammingWithCPP/Assets/Registry/
 
 	TArray<UObjectRedirector*> RedirectorsToFixArray;
@@ -579,7 +217,6 @@ void FTatiEditorModule::FixUpRedirectors()
 	AssetToolsModule.Get().FixupReferencers(RedirectorsToFixArray);
 }
 
-#pragma  endregion
 
 
 #undef LOCTEXT_NAMESPACE

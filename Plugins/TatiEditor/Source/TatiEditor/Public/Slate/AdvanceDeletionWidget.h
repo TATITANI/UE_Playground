@@ -16,7 +16,9 @@ class SAdvanceDeletionTab : public SCompoundWidget
 
 public:		
 	void Construct(const FArguments& InArgs);
-
+	UPROPERTY()
+	static const FName AdvanceDeletionName;
+	
 private:
 	TArray<TSharedPtr<FAssetData>> StoredAssetDatas;
 	TArray<TSharedPtr<FAssetData>> DisplayedAssetsData;

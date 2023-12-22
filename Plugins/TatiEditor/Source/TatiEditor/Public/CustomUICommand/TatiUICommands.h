@@ -6,7 +6,7 @@
 /**
  * 
  */
-class FTatiUICommands : public TCommands<FTatiUICommands>
+class TATIEDITOR_API FTatiUICommands : public TCommands<FTatiUICommands>
 {
 public:
 	FTatiUICommands() : TCommands<FTatiUICommands>(TEXT("TatiEditor"),

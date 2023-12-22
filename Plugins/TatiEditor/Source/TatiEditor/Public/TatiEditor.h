@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "Slate/CustomTabSpawner.h"
 
 class FTatiEditorModule : public IModuleInterface
 {
@@ -12,81 +13,44 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	virtual void PostLoadCallback() override;
-
+	
 private:
-#pragma region ContentBrowserMenuExtension
+	void InitCustomTabs();
+	
+public:
+	static TSharedPtr<SDockTab> ConstructedDockTab; // 열려있는 탭
 
-	void InitCBMenuExtension();
-
-	TSharedRef<FExtender> CustomCBMenuExtender(const TArray<FString>& SelectedPaths);
-
-	void AddCBMenuEntry(FMenuBuilder& MenuBuilder);
-
-	void OnDeleteUnusedAssetButtonClicked();
-
-	void OnDeleteEmtpyFoldersButtonClicked();
-	void OnAdvanceDeleteButtonClicked();
-#pragma  endregion
-
-#pragma  region  LevelEditorMenuExtension
-	void InitLevelEditorExtension();
-
-	TSharedRef<FExtender> CustomLevelEditorMenuExtender(const TSharedRef<FUICommandList> UICommandList,
-	                                                    const TArray<AActor*> SelectedActors);
-
-	void AddLevelMenuEntry(FMenuBuilder& MenuBuilder);
-	void OnLockActorSelectionButtonClicked();
-	void OnUnlockActorSelectionButtonClicked();
-
-#pragma  endregion
-
-#pragma  region SelectionLock
-	void InitCustomSelectionEvent();
-	void OnActorSelected(UObject* SelectedObject);
-
-	void LockActorSelection(AActor* TargetActor);
-	void UnlockActorSelection(AActor* TargetActor);
-	bool CheckIsActorSelectionLocked(AActor* TargetActor);
-
+	FCustomTabSpawner CustomTabSpawner;
+	TSharedPtr<class FCBMenuExtension> CBMenuExtension;
+	TSharedPtr<class FLevelEditorMenuExtension> LevelEditorMenuExtension;
+	TSharedPtr<class FOutlinerExtension> OutlinerExtension;
+	
 	static const FName SelectionLockTagName;
-
-#pragma  endregion
-
-#pragma  region CustomEditorUICommands
-
-	TSharedPtr<class FUICommandList> CustomUICommands;
-	void InitCustomUICommands();
-	void OnLockActorSelectionHotkeyPressed();
-	void OnUnlockActorSelectionHotkeyPressed();
-
-#pragma  endregion
-
-
 	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsytem;
-	bool GetEditorActorSubsystem();
-
-private:
-	TArray<FString> FolderPathsSelected;
 
 public:
 	static void FixUpRedirectors();
+	bool GetEditorActorSubsystem();
+	void RefreshSceneOutliner();
 
-#pragma region CustomEditorTabf
-	void RegisterAdvanceDeletionTab();
-	TSharedRef<SDockTab> OnSpawnDeletionTab(const FSpawnTabArgs& SpawnTabArgs);
-	TArray<TSharedPtr<FAssetData>> GetAllAssetDatasUnderSelectedFolder();
 
-#pragma  endregion
-
-#pragma region ProcessDataForAdvanceDeletionTab
-
+#pragma region Asset
 	bool DeleteSingleAssetForAssetList(const FAssetData& DeletingAssetData);
 	void ListUnusedAssets(const TArray<TSharedPtr<FAssetData>> AssetDatasToFilter, TArray<TSharedPtr<FAssetData>>& OutUnusedAssetDatas);
 	void ListSameNamedAssets(const TArray<TSharedPtr<FAssetData>> AssetDatasToFilter, TArray<TSharedPtr<FAssetData>>& OutSameNamedAssetDatas);
 
 #pragma endregion
 
-private:
-	UPROPERTY()
-	static const FName AdvanceDeletionName;
+	
+#pragma  region SelectionLock
+	void LockActorSelection(AActor* TargetActor);
+	void UnlockActorSelection(AActor* TargetActor);
+	bool CheckIsActorSelectionLocked(AActor* TargetActor);
+
+#pragma  endregion
+
+	
+
+
+
 };
