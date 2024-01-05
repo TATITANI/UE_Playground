@@ -222,8 +222,6 @@ void FCBMenuExtension::OnAdvanceDeleteButtonClicked()
 }
 
 
-
-
 TArray<TSharedPtr<FAssetData>> FCBMenuExtension::GetAllAssetDatasUnderSelectedFolder()
 {
 	TArray<FString> AssetsPathNames = UEditorAssetLibrary::ListAssets(FolderPathsSelected[0]);

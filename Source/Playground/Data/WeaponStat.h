@@ -24,10 +24,10 @@ struct FWeaponStat : public FTableRowBase
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Damage;
+	float Damage = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CoolTime;
+	float CoolTime = 0;
 
 };
 
@@ -38,7 +38,7 @@ struct FGunStat : public FWeaponStat
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 BulletCnt;
+	int32 BulletCnt = 0;
 
 };
 

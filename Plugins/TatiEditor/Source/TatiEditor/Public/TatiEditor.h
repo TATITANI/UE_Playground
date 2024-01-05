@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TatiEditorOutlinerSave.h"
 #include "Modules/ModuleManager.h"
 #include "Slate/CustomTabSpawner.h"
 
@@ -13,10 +14,10 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 	virtual void PostLoadCallback() override;
-	
 private:
 	void InitCustomTabs();
 	
+
 public:
 	static TSharedPtr<SDockTab> ConstructedDockTab; // 열려있는 탭
 
@@ -24,7 +25,7 @@ public:
 	TSharedPtr<class FCBMenuExtension> CBMenuExtension;
 	TSharedPtr<class FLevelEditorMenuExtension> LevelEditorMenuExtension;
 	TSharedPtr<class FOutlinerExtension> OutlinerExtension;
-	
+
 	static const FName SelectionLockTagName;
 	TWeakObjectPtr<class UEditorActorSubsystem> WeakEditorActorSubsytem;
 
@@ -41,16 +42,11 @@ public:
 
 #pragma endregion
 
-	
+
 #pragma  region SelectionLock
 	void LockActorSelection(AActor* TargetActor);
 	void UnlockActorSelection(AActor* TargetActor);
 	bool CheckIsActorSelectionLocked(AActor* TargetActor);
 
 #pragma  endregion
-
-	
-
-
-
 };

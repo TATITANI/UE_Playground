@@ -5,17 +5,21 @@
 #include "AssetToolsModule.h"
 #include  "DebugHeader.h"
 #include "EditorAssetLibrary.h"
+#include "EngineUtils.h"
 #include "LevelEditor.h"
 #include "ObjectTools.h"
 #include "SceneOutlinerModule.h"
+#include "TatiEditorOutlinerSave.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "CustomStyle/TatiEditorStyle.h"
 #include "CustomUICommand/TatiUICommands.h"
+#include "Kismet/GameplayStatics.h"
 #include "Menu/CBMenuExtension.h"
 #include "Menu/LevelEditorMenuExtension.h"
 #include "Outliner/OutlinerExtension.h"
 #include "Slate/AdvanceDeletionWidget.h"
 #include "Subsystems/EditorActorSubsystem.h"
+#include "Subsystems/UnrealEditorSubsystem.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
 
@@ -26,8 +30,6 @@ void FTatiEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 
-	UE_LOG(LogTemp, Warning, TEXT("StartupModule"));
-
 	FTatiEditorStyle::InitalizeIcons();
 	FTatiUICommands::Register();
 
@@ -36,7 +38,7 @@ void FTatiEditorModule::StartupModule()
 	CBMenuExtension = MakeShared<FCBMenuExtension>();
 	LevelEditorMenuExtension = MakeShared<FLevelEditorMenuExtension>();
 	OutlinerExtension = MakeShared<FOutlinerExtension>();
-	
+
 }
 
 void FTatiEditorModule::ShutdownModule()
@@ -51,8 +53,7 @@ void FTatiEditorModule::ShutdownModule()
 void FTatiEditorModule::PostLoadCallback()
 {
 	IModuleInterface::PostLoadCallback();
-
-	DebugHeader::PrintLog(TEXT("PostLoadCallback"));
+	DebugHeader::PrintLog(TEXT("FTatiEditorModule::PostLoadCallback"));
 }
 
 
@@ -74,13 +75,10 @@ void FTatiEditorModule::InitCustomTabs()
 	{
 		CBMenuExtension->FolderPathsSelected.Empty();
 	});
-	
+
 	CustomTabSpawner.RegisterCustomTab<SAdvanceDeletionTab>(
 		SAdvanceDeletionTab::AdvanceDeletionName, ConstructAdvanceDeletionTab, OnCloseAdvanceDeletionTab);
-	
 }
-
-
 
 // 레벨에디터에서 잠금설정을 하면 아웃라이너 잠금 체크박스에도 반영
 void FTatiEditorModule::RefreshSceneOutliner()
@@ -125,7 +123,6 @@ bool FTatiEditorModule::CheckIsActorSelectionLocked(AActor* TargetActor)
 
 	return TargetActor->ActorHasTag(SelectionLockTagName);
 }
-
 
 
 bool FTatiEditorModule::DeleteSingleAssetForAssetList(const FAssetData& DeletingAssetData)
@@ -216,7 +213,6 @@ void FTatiEditorModule::FixUpRedirectors()
 	FAssetToolsModule& AssetToolsModule = FModuleManager::LoadModuleChecked<FAssetToolsModule>(TEXT("AssetTools"));
 	AssetToolsModule.Get().FixupReferencers(RedirectorsToFixArray);
 }
-
 
 
 #undef LOCTEXT_NAMESPACE

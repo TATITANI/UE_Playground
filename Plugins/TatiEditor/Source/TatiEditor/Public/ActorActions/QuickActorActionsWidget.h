@@ -35,7 +35,7 @@ public:
 	void SelectSimilarNamedActors();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="ActorBatchSelection")
-	TEnumAsByte<ESearchCase::Type> SearchCase = ESearchCase::IgnoreCase;
+	TEnumAsByte<ESearchCase::Type> SearchCase = ESearchCase::IgnoreCase; // 대소문자 구분x
 
 #pragma  region ActorDuplication
 

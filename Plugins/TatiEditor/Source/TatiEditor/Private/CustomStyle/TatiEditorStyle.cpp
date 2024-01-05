@@ -68,5 +68,6 @@ TSharedRef<FSlateStyleSet> FTatiEditorStyle::CreateSlateStyleSet()
 
 	CustomStyleSet->Set("SceneOutliner.SelectionLock", SelectionLockToggleStyle);
 
+
 	return CustomStyleSet;
 }

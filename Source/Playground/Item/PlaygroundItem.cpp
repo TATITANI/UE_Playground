@@ -31,10 +31,6 @@ APlaygroundItem::APlaygroundItem()
 void APlaygroundItem::PostInitProperties()
 {
 	Super::PostInitProperties();
-	if (ItemData == nullptr)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ItemData null"));
-	}
 }
 
 
@@ -44,6 +40,8 @@ void APlaygroundItem::BeginPlay()
 	Super::BeginPlay();
 
 	SphereComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &APlaygroundItem::OnSphereBeginOverlap);
+	ItemStatus.Count= 1;
+	
 }
 
 

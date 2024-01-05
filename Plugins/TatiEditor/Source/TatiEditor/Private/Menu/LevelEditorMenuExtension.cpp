@@ -32,7 +32,8 @@ void FLevelEditorMenuExtension::InitLevelEditorExtension()
 
 	TArray<FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors>& LevelEditorMenuExtenders =
 		LevelEditorModule.GetAllLevelViewportContextMenuExtenders();
-
+	
+	
 	LevelEditorMenuExtenders.Add(FLevelEditorModule::FLevelViewportMenuExtender_SelectedActors::CreateRaw(this,
 		&FLevelEditorMenuExtension::CustomLevelEditorMenuExtender));
 }
@@ -171,6 +172,7 @@ void FLevelEditorMenuExtension::InitCustomUICommands()
 #pragma  endregion
 
 
+// 레벨에디터에서 액터 선택시 호출할 이벤트 등록 
 void FLevelEditorMenuExtension::InitCustomSelectionEvent()
 {
 	USelection* UserSelection = GEditor->GetSelectedActors();

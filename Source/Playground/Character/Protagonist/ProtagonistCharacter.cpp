@@ -59,7 +59,6 @@ AProtagonistCharacter::AProtagonistCharacter()
 	Climbing = CreateDefaultSubobject<UClimbComponent>(TEXT("Climb"));
 	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("Dash"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
-
 }
 
 void AProtagonistCharacter::PostInitProperties()
@@ -76,7 +75,7 @@ void AProtagonistCharacter::PostInitializeComponents()
 
 void AProtagonistCharacter::BeginPlay()
 {
-	UE_LOG(LogTemp,Log,TEXT("beginplay"));
+	UE_LOG(LogTemp, Log, TEXT("beginplay"));
 
 	Super::BeginPlay();
 
@@ -101,10 +100,9 @@ void AProtagonistCharacter::BeginPlay()
 
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
-	auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>
-		(ECharacterStatType::Protagonist, "1");
-	HealthComponent->Init( ProtaonistStat->MaxHp);
-	
+	auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>(ECharacterStatType::Protagonist, "1");
+	HealthComponent->Init(ProtaonistStat->MaxHp);
+
 
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);

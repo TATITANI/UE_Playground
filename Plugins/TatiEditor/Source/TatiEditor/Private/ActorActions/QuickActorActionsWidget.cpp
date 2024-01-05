@@ -44,6 +44,7 @@ void UQuickActorActionsWidget::SelectSimilarNamedActors()
 
 			if (ActorInLevel->GetActorLabel().Contains(NameSearching, SearchCase))
 			{
+				// 레벨에디터에서 이름이 유사한 액터들 선택
 				EditorActorSubsystem->SetActorSelectionState(ActorInLevel, true);
 				SelectionCount++;
 			}

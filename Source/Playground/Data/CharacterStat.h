@@ -19,10 +19,10 @@ struct FProtagonistStat : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Level;
+	int32 Level = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MaxHp;
+	int32 MaxHp = 0;
 
 
 };
@@ -33,10 +33,10 @@ struct FBotStat : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 MaxHp;
+	int32 MaxHp = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Damage;
+	int32 Damage = 0;
 
 };
 

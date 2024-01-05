@@ -32,7 +32,7 @@ void FCustomTabSpawner::RegisterCustomTab(FName TabID, FOnConstructSlate OnConst
 	// 사용자 설정 탭 등록
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
 		                        TabID, FOnSpawnTab::CreateRaw(this, &FCustomTabSpawner::OnSpawnTab<T>, OnConstructSlate, OnCloseTab))
-	                        .SetDisplayName(FText::FromString(FString::Printf(TEXT("%s Open"), *TabID.ToString())));
+	                        .SetDisplayName(FText::FromString(FString::Printf(TEXT("Open %s"), *TabID.ToString())));
 }
 
 template <class T>
