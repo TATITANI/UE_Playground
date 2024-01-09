@@ -48,15 +48,15 @@ void UClimbComponent::BeginPlay()
 	}
 
 	if (UEnhancedInputComponent* EnhancedInputComponent =
-		Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
+		Cast<UEnhancedInputComponent>(ProtagonistCharacter->InputComponent))
 	{
 		// none 바인딩 이유 : 키 누르고 있는 상태에서 우선순위 높은 컨텍스트 제거하면, 교체한 컨텍스트의 trigger로는 호출안되기 때문
 		// EnhancedInputComponent->BindAction(GrabWallAction, ETriggerEvent::None, this, &UClimbComponent::GrabWall);
 		EnhancedInputComponent->BindAction(GrabWallAction, ETriggerEvent::Triggered, this, &UClimbComponent::GrabWall);
-
+	
 		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Triggered, this, &UClimbComponent::Move);
 		EnhancedInputComponent->BindAction(ClimbAction, ETriggerEvent::Completed, this, &UClimbComponent::Stop);
-
+	
 		EnhancedInputComponent->BindAction(ClimbJumpAction, ETriggerEvent::Started, this, &UClimbComponent::Jump);
 		EnhancedInputComponent->BindAction(ClimbFallAction, ETriggerEvent::Started, this, &UClimbComponent::ActiveClimbing, false, true);
 	}
@@ -89,7 +89,7 @@ void UClimbComponent::ActiveClimbing(bool IsActive, bool IsStand)
 	ProtagonistCharacter->GetCharacterMovement()->SetMovementMode(IsActive ? MOVE_Flying : MOVE_Falling);
 	ProtagonistCharacter->GetCharacterMovement()->StopMovementImmediately();
 	ProtagonistCharacter->GetCharacterMovement()->bOrientRotationToMovement = !IsActive;
-	ProtagonistCharacter->CharacterCurrentInfo->OnClimbing = IsActive;
+	ProtagonistCharacter->CharacterCurrentInfo.OnClimbing = IsActive;
 
 	ProtagonistCharacter->WeaponComponent->SetWeaponHidden(IsActive);
 	CanControlMoving = IsActive;
@@ -159,15 +159,15 @@ void UClimbComponent::Jump()
 		return;
 	}
 
-	if (ProtagonistCharacter->CharacterCurrentInfo->InputDir.X < 0)
+	if (ProtagonistCharacter->CharacterCurrentInfo.InputDir.X < 0)
 	{
 		StartJump(FVector2D(-1, 0), FName("JumpLeft"));
 	}
-	else if (ProtagonistCharacter->CharacterCurrentInfo->InputDir.X > 0)
+	else if (ProtagonistCharacter->CharacterCurrentInfo.InputDir.X > 0)
 	{
 		StartJump(FVector2D(1, 0), FName("JumpRight"));
 	}
-	else if (ProtagonistCharacter->CharacterCurrentInfo->InputDir.Y > 0)
+	else if (ProtagonistCharacter->CharacterCurrentInfo.InputDir.Y > 0)
 	{
 		StartJump(FVector2D(0, 1), FName("JumpUp"));
 	}
@@ -246,7 +246,7 @@ bool UClimbComponent::CanClimbOver(FVector& ClimbOverLoc)
 
 void UClimbComponent::Stop()
 {
-	ProtagonistCharacter->CharacterCurrentInfo->InputDir = {0, 0};
+	ProtagonistCharacter->CharacterCurrentInfo.InputDir = {0, 0};
 	ProtagonistCharacter->GetCharacterMovement()->StopMovementImmediately();
 }
 
@@ -255,19 +255,19 @@ void UClimbComponent::Move(const FInputActionValue& Value)
 {
 	if (!CanControlMoving)
 	{
-		ProtagonistCharacter->CharacterCurrentInfo->InputDir = FVector2d::Zero();
+		ProtagonistCharacter->CharacterCurrentInfo.InputDir = FVector2d::Zero();
 		return;
 	}
 
 	const auto InputVector = Value.Get<FVector2D>();
 	// 방향 전환시 가속도 제거
-	if (ProtagonistCharacter->CharacterCurrentInfo->InputDir != InputVector)
+	if (ProtagonistCharacter->CharacterCurrentInfo.InputDir != InputVector)
 	{
 		ProtagonistCharacter->GetCharacterMovement()->StopMovementImmediately();
 	}
-	ProtagonistCharacter->CharacterCurrentInfo->InputDir = InputVector;
+	ProtagonistCharacter->CharacterCurrentInfo.InputDir = InputVector;
 
-	Climb(ProtagonistCharacter->CharacterCurrentInfo->InputDir);
+	Climb(ProtagonistCharacter->CharacterCurrentInfo.InputDir);
 }
 
 void UClimbComponent::Climb(FVector2D InputDir, float Speed)

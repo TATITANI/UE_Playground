@@ -39,8 +39,7 @@ private:
 	class UWeaponSlotWidget* CurrentWeaponSlot;
 
 protected:
-	virtual void NativeOnInitialized() override;
-
+	virtual void NativeConstruct() override;
 public:
 	UFUNCTION()
 	void ChangeCurrentWeapon(class AWeaponActor* WeaponActor) ;

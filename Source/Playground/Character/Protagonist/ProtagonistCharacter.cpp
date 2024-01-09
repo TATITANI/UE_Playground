@@ -12,6 +12,7 @@
 #include "Character/CharacterCurrentInfo.h"
 #include "Component/CharacterWeaponComponent.h"
 #include "Component/DashComponent.h"
+#include "Component/FootIKComponent.h"
 #include "Component/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -59,12 +60,14 @@ AProtagonistCharacter::AProtagonistCharacter()
 	Climbing = CreateDefaultSubobject<UClimbComponent>(TEXT("Climb"));
 	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("Dash"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	FootIKComponent = CreateDefaultSubobject<UFootIKComponent>(TEXT("FootIK"));
+	
 }
 
 void AProtagonistCharacter::PostInitProperties()
 {
 	Super::PostInitProperties();
-	CharacterCurrentInfo = NewObject<UCharacterCurrentInfo>();
+	// CharacterCurrentInfo = NewObject<FCharacterCurrentInfo>();
 }
 
 void AProtagonistCharacter::PostInitializeComponents()
@@ -136,28 +139,28 @@ void AProtagonistCharacter::Tick(float DeltaSeconds)
 
 void AProtagonistCharacter::GroundMove(const FInputActionValue& Value)
 {
-	CharacterCurrentInfo->InputDir = FVector2D::Zero();
+	CharacterCurrentInfo.InputDir = FVector2D::Zero();
 
 	if (!Movable)
 		return;
 
 	// input is a Vector2D
-	CharacterCurrentInfo->InputDir = Value.Get<FVector2D>();
+	CharacterCurrentInfo.InputDir = Value.Get<FVector2D>();
 	check(Controller != nullptr);
 	if (Controller != nullptr)
 	{
 		// 좌우키 입력시 회전하면서 이동. 후진/카메라 회전하는 중에는 제외.
-		if (CharacterCurrentInfo->InputDir.X != 0 && CharacterCurrentInfo->InputDir.Y != -1 && !IsLookingAround)
+		if (CharacterCurrentInfo.InputDir.X != 0 && CharacterCurrentInfo.InputDir.Y != -1 && !IsLookingAround)
 		{
-			const auto SideAdjustedRot = GetControlRotation().Add(0, 0.5f * CharacterCurrentInfo->InputDir.X, 0);
+			const auto SideAdjustedRot = GetControlRotation().Add(0, 0.5f * CharacterCurrentInfo.InputDir.X, 0);
 			Controller->SetControlRotation(SideAdjustedRot);
 		}
 
 		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * CharacterCurrentInfo->InputDir.Y;
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * CharacterCurrentInfo.InputDir.Y;
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * CharacterCurrentInfo->InputDir.X;
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * CharacterCurrentInfo.InputDir.X;
 		FVector Direction = ForwardDirection + RightDirection;
 		Direction.Normalize();
 
@@ -169,7 +172,7 @@ void AProtagonistCharacter::GroundMove(const FInputActionValue& Value)
 void AProtagonistCharacter::Stop(const FInputActionValue& Value)
 {
 	// UE_LOG(LogTemp, Log, TEXT("STOP"));
-	CharacterCurrentInfo->InputDir = {0, 0};
+	CharacterCurrentInfo.InputDir = {0, 0};
 	GetCharacterMovement()->StopMovementImmediately();
 }
 
@@ -196,7 +199,7 @@ void AProtagonistCharacter::StopLookAround(const FInputActionValue& Value)
 void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
-	CharacterCurrentInfo->OnJump = true;
+	CharacterCurrentInfo.OnJump = true;
 }
 
 void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType)
@@ -206,7 +209,7 @@ void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType
 
 void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {
-	CharacterCurrentInfo->OnJump = false;
+	CharacterCurrentInfo.OnJump = false;
 }
 
 
@@ -221,7 +224,7 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 	if (Character != this)
 		return;
 
-	CharacterCurrentInfo->CurrentMovementMode = GetCharacterMovement()->MovementMode;
+	CharacterCurrentInfo.CurrentMovementMode = GetCharacterMovement()->MovementMode;
 	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
-	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo->CurrentMovementMode));
+	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo.CurrentMovementMode));
 }

@@ -25,7 +25,7 @@ void UDashComponent::BeginPlay()
 	ensure(ProtagonistCharacter != nullptr);
 
 	if (UEnhancedInputComponent* EnhancedInputComponent =
-		Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
+		Cast<UEnhancedInputComponent>(ProtagonistCharacter->InputComponent))
 	{
 		EnhancedInputComponent->BindAction(DashAction, ETriggerEvent::Triggered, this, &UDashComponent::StartDash);
 	}

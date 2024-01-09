@@ -3,27 +3,12 @@
 
 #include "BoidsGenerator.h"
 #include "BoidEntity.h"
-#include "Selection.h"
-
-
 // Sets default values
 ABoidsGenerator::ABoidsGenerator()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-}
-
-void ABoidsGenerator::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-}
-
-
-void ABoidsGenerator::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	// UE_LOG(LogTemp, Log, TEXT(" ABoidsGenerator::PostEditChangeProperty() "));
 }
 
 

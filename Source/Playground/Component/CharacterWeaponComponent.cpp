@@ -37,7 +37,8 @@ void UCharacterWeaponComponent::BeginPlay()
 	}
 
 	if (UEnhancedInputComponent* EnhancedInputComponent =
-		Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
+		Cast<UEnhancedInputComponent>(ProtagonistCharacter->InputComponent))
+		// Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
 	{
 		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Started, this, &UCharacterWeaponComponent::ClickChangeWeapon);
 	}
@@ -93,7 +94,7 @@ void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 
 	CurrentWeapon = WeaponActor;
 	WeaponActor->Equip(ProtagonistCharacter);
-	ProtagonistCharacter->CharacterCurrentInfo->SetCurrentWeaponType(WeaponActor->GetWeaponType());
+	ProtagonistCharacter->CharacterCurrentInfo.SetCurrentWeaponType(WeaponActor->GetWeaponType());
 	ProtagonistCharacter->AimCamByWeapon(WeaponActor->GetWeaponType());
 	
 	OnChangeWeapon.Broadcast(WeaponActor);

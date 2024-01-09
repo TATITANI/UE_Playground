@@ -10,10 +10,9 @@
 #include "Component/HealthComponent.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
-#include "Components/ProgressBar.h"
 #include "Kismet/GameplayStatics.h"
 
-void UIngameWidget::NativeOnInitialized()
+void UIngameWidget::NativeConstruct()
 {
 	Super::NativeOnInitialized();
 	
@@ -36,6 +35,8 @@ void UIngameWidget::NativeOnInitialized()
 	MaterialInstanceDynamic->AddToRoot(); // GC 삭제 방지
 	Img_HP_Gauge->SetBrushFromMaterial(MaterialInstanceDynamic);
 }
+
+
 
 void UIngameWidget::UpdateHp(int32 Hp, int32 MaxHp) const
 {

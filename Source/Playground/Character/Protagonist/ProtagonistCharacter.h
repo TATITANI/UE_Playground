@@ -92,7 +92,7 @@ private:
 	
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UCharacterCurrentInfo* CharacterCurrentInfo;
+	FCharacterCurrentInfo CharacterCurrentInfo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UCharacterWeaponComponent *WeaponComponent;
@@ -105,6 +105,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UHealthComponent *HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UFootIKComponent *FootIKComponent;
 	
 	void SetMovable(bool bEnable) { this->Movable = bEnable; }
 	bool GetMovable() { return this->Movable; }

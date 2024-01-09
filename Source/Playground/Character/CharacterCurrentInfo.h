@@ -11,8 +11,8 @@
 
 
 
-UCLASS(BlueprintType, Blueprintable, EditInlineNew, DefaultToInstanced)
-class UCharacterCurrentInfo : public UObject
+USTRUCT(Atomic, BlueprintType)
+struct PLAYGROUND_API FCharacterCurrentInfo 
 {
 	GENERATED_BODY()
 
@@ -34,9 +34,9 @@ public:
 
 
 public:
-	UFUNCTION()
+	// UFUNCTION()
 	FORCEINLINE FVector2D GetDir() const { return InputDir; }
 
-	UFUNCTION()
-	void SetCurrentWeaponType(EWeaponType WeaponType) { this->CurrentWeaponType = WeaponType; }
+	// UFUNCTION()
+	void SetCurrentWeaponType(EWeaponType WeaponType) { CurrentWeaponType = WeaponType; }
 };

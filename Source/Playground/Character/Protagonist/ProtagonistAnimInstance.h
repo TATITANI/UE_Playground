@@ -5,7 +5,6 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "Character/CharacterCurrentInfo.h"
 #include "ProtagonistAnimInstance.generated.h"
 
 /**
@@ -21,14 +20,6 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void NativeBeginPlay() override;
 	virtual void NativeInitializeAnimation() override;
-
-	UProtagonistAnimInstance();
-private:
-	UPROPERTY(BlueprintReadWrite, Instanced,Transient, Category = Movement, meta = (AllowPrivateAccess = "true"))
-	UCharacterCurrentInfo* CharacterCurrentInfo;
-
-	UPROPERTY(BlueprintReadWrite, Instanced,Transient,  Category = Movement, meta = (AllowPrivateAccess = "true"))
-	class UFootIKComponent* FootIKComponent;
 
 
 };
