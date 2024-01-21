@@ -23,8 +23,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	FVector2D InputDir = FVector2d::ZeroVector;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
-	bool OnJump = false;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Movement)
+	bool OnBeginJump = false;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	bool OnClimbing = false;

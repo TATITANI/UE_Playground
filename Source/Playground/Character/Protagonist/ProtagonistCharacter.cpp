@@ -61,7 +61,6 @@ AProtagonistCharacter::AProtagonistCharacter()
 	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("Dash"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	FootIKComponent = CreateDefaultSubobject<UFootIKComponent>(TEXT("FootIK"));
-	
 }
 
 void AProtagonistCharacter::PostInitProperties()
@@ -199,7 +198,8 @@ void AProtagonistCharacter::StopLookAround(const FInputActionValue& Value)
 void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
-	CharacterCurrentInfo.OnJump = true;
+	CharacterCurrentInfo.OnBeginJump = true;
+	// UE_LOG(LogTemp, Log, TEXT("Jump"));
 }
 
 void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType)
@@ -209,7 +209,7 @@ void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType
 
 void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {
-	CharacterCurrentInfo.OnJump = false;
+
 }
 
 
