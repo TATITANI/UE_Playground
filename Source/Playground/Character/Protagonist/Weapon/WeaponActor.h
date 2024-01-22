@@ -48,7 +48,7 @@ protected:
 	int32 InputPriority = 1;
 
 	/** The Character holding this weapon*/
-	AProtagonistCharacter* Character;
+	AProtagonistCharacter* Protagonist;
 
 	UPROPERTY(EditDefaultsOnly, Category= Socket, meta=(AllowPrivateAccess=true))
 	FName SocketName = "GripPoint_Sword";

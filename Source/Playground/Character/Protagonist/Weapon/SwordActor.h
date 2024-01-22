@@ -15,10 +15,10 @@ class PLAYGROUND_API ASwordActor : public AWeaponActor
 	GENERATED_BODY()
 
 private:
-	int SectionID = 1;
+	int CurrentSectionID = 1;
 	const int SectionMaxID = 5;
 
-	FName GetSectionName() const;
+	FName GetSectionName(int32 SectionID) const;
 
 	UPROPERTY(EditAnywhere, Category=Attack, meta=(AllowPrivateAccess=true))
 	float AttackDistance = 100.f;
@@ -26,6 +26,11 @@ private:
 	UPROPERTY(EditAnywhere, Category=Attack, meta=(AllowPrivateAccess=true))
 	FVector BoxExtent = FVector(50, 50, 50);
 
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
+	TSoftObjectPtr<class UNiagaraSystem> SlashParticleSystem;
+	// class UNiagaraSystem* SlashParticleSystem;
+	
+	
 protected:
 	virtual EWeaponType GetWeaponType() override { return EWeaponType::SWORD; }
 	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Started; };
@@ -37,7 +42,7 @@ private:
 
 	virtual void AttackInputStarted() override;
 
-	void AttackCheck() const;
+	void CheckAttack() const;
 
 	UFUNCTION()
 	void AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted);

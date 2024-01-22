@@ -15,7 +15,20 @@ public:
 
 	template <typename T>
 	static T* LoadAsset(FString FileName);
-	
+
+	static void PrintLog(const FString& Message)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+	}
+
+	static void Print(const FString& Message, const FColor& Color)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 8.f, Color, Message);
+			PrintLog(Message);
+		}
+	}
 	
 };
 

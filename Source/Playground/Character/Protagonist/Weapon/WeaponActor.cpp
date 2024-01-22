@@ -76,7 +76,7 @@ void AWeaponActor::AttackTriggerIfPossible(ETriggerEvent TriggerEvent)
 		if(ReusableMaxCnt >0)
 		{
 			ReusableCnt--;
-			Character->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
+			Protagonist->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
 		}
 		CooldownIfPossible(TriggerEvent);
 	}
@@ -91,8 +91,8 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 	{
 		IsCharging = true;
 		double CurrentSeconds = GetWorld()->GetTimeSeconds();
-		Character->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
-		Character->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
+		Protagonist->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
+		Protagonist->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
 	}
 }
 
@@ -106,11 +106,10 @@ void AWeaponActor::OnRefill()
 
 void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 {
-	Character = TargetCharacter;
-	ensure(Character != nullptr);
-	AnimInstance = Cast<UProtagonistAnimInstance>(Character->GetMesh()->GetAnimInstance());
+	Protagonist = TargetCharacter;
+	ensure(Protagonist != nullptr);
+	AnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
 	ensure(AnimInstance!=nullptr);
-
 
 	SetupInput();
 	SetActorHiddenInGame(false);
@@ -135,7 +134,7 @@ void AWeaponActor::UnEquip()
 void AWeaponActor::SetupInput()
 {
 	// Set up action bindings
-	const APlayerController* const PlayerController = Cast<APlayerController>(Character->GetController());
+	const APlayerController* const PlayerController = Cast<APlayerController>(Protagonist->GetController());
 	ensure(PlayerController != nullptr);
 	if (PlayerController == nullptr)
 		return;

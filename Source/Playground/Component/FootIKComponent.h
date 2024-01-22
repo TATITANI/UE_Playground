@@ -7,8 +7,7 @@
 #include "FootIKComponent.generated.h"
 
 
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom))
 class PLAYGROUND_API UFootIKComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -20,7 +19,8 @@ private:
 		FRotator Rot;
 		FVector HitPoint;
 	};
-	ACharacter *Character;
+
+	ACharacter* Character;
 	float HalfHeightCapsule;
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
@@ -28,9 +28,8 @@ private:
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
 	FName RightFootSocketName = "RightFoot";
-	
-	
-public:	
+
+public:
 	// Sets default values for this component's properties
 	UFootIKComponent();
 
@@ -39,11 +38,13 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
+	TEnumAsByte<ETraceTypeQuery> TraceType;
+
+	UPROPERTY(BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
 	float OffsetLeft;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
 	float OffsetRight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
@@ -52,17 +53,12 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
 	FRotator RotLeft;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, Category = IK, meta = (AllowPrivateAccess = "true"))
 	float HipDisplacement;
 
-	
 private:
-	FTraceInfo TraceFromFoot(FName SocketName);	
+	FTraceInfo TraceFromFoot(FName SocketName);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
-	
-	
-
 };

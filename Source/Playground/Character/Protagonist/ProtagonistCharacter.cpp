@@ -15,11 +15,12 @@
 #include "Component/FootIKComponent.h"
 #include "Component/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
-
+#include "Utils/UtilPlayground.h"
 
 //////////////////////////////////////////////////////////////////////////
 AProtagonistCharacter::AProtagonistCharacter()
@@ -77,8 +78,6 @@ void AProtagonistCharacter::PostInitializeComponents()
 
 void AProtagonistCharacter::BeginPlay()
 {
-	UE_LOG(LogTemp, Log, TEXT("beginplay"));
-
 	Super::BeginPlay();
 
 	APlayerController* PlayerController = Cast<APlayerController>(Controller);
@@ -104,10 +103,17 @@ void AProtagonistCharacter::BeginPlay()
 	ensure(GameInstance != nullptr);
 	auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>(ECharacterStatType::Protagonist, "1");
 	HealthComponent->Init(ProtaonistStat->MaxHp);
+	HealthComponent->OnHpChanged.AddLambda([this](int32 CurrentHp, int32 DelthHp, int32 MaxHp)
+	{
+		if (DelthHp < 0)
+			CharacterCurrentInfo.OnHit = true;
+	});
 
 
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
+
+	
 }
 
 
@@ -199,7 +205,10 @@ void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
 	CharacterCurrentInfo.OnBeginJump = true;
-	// UE_LOG(LogTemp, Log, TEXT("Jump"));
+}
+
+void AProtagonistCharacter::ZoomOnSlash_Implementation()
+{
 }
 
 void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType)
@@ -209,7 +218,6 @@ void AProtagonistCharacter::AimCamByWeapon_Implementation(EWeaponType WeaponType
 
 void AProtagonistCharacter::OnLand(const FHitResult& Hit)
 {
-
 }
 
 
@@ -225,6 +233,6 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 		return;
 
 	CharacterCurrentInfo.CurrentMovementMode = GetCharacterMovement()->MovementMode;
-	UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
-	       *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo.CurrentMovementMode));
+	// UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
+	//        *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo.CurrentMovementMode));
 }

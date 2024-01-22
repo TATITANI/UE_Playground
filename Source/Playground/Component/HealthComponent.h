@@ -8,7 +8,7 @@
 #include "HealthComponent.generated.h"
 
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnHpChanged, int32 /*Hp*/ , int32 /*maxHP*/);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHpChanged, int32 /*Hp*/,int32 /*delta*/ , int32 /*maxHP*/);
 DECLARE_MULTICAST_DELEGATE(FOnDead);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLAYGROUND_API UHealthComponent : public UActorComponent
@@ -32,11 +32,17 @@ private:
 	int32 MaxHp = 0;
 	int32 CurrentHp = 0;
 
+	UPROPERTY(EditDefaultsOnly, Category=Animation, meta=(AllowPrivateAccess=true))
+	UAnimMontage* DamagedMontage;
+
+	UAnimInstance* AnimInstance;
+	
 private:
 	UFUNCTION()
 	void HandleTakenDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	                       class AController* InstigatedBy, AActor* DamageCauser);
 
+	
 public:
 	FOnHpChanged OnHpChanged;
 	FOnDead OnDead;

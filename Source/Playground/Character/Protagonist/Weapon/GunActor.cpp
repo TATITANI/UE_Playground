@@ -32,7 +32,7 @@ void AGunActor::AttackInputStarted()
 		{
 			const auto Arrow = Cast<USceneComponent>(FindComponentByClass(UArrowComponent::StaticClass()));
 			ensure(Arrow!= nullptr);
-			const APlayerController* PlayerController = Cast<APlayerController>(Character->GetController());
+			const APlayerController* PlayerController = Cast<APlayerController>(Protagonist->GetController());
 			ensure(PlayerController != nullptr);
 
 			if (Arrow != nullptr || PlayerController != nullptr)
@@ -40,9 +40,9 @@ void AGunActor::AttackInputStarted()
 				//world trf
 				const FVector ProjectilePos = Arrow->GetComponentLocation();
 
-				const auto ControllerRot = Character->GetControlRotation();
+				const auto ControllerRot = Protagonist->GetControlRotation();
 
-				const auto ProjectileRot = Character->GetActorRotation().Add(ControllerRot.Pitch +ProjectilePitchOffset,0,0);
+				const auto ProjectileRot = Protagonist->GetActorRotation().Add(ControllerRot.Pitch +ProjectilePitchOffset,0,0);
 				
 				//Set Spawn Collision Handling Override
 				FActorSpawnParameters ActorSpawnParams;
@@ -61,7 +61,7 @@ void AGunActor::AttackInputStarted()
 	// Try and play the sound if specified
 	if (FireSound != nullptr)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Protagonist->GetActorLocation());
 	}
 
 	// Try and play a firing animation if specified

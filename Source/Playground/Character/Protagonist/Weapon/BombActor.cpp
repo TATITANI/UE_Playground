@@ -89,7 +89,7 @@ void ABombActor::SetVisibleTrajectory(bool bVisible)
 FVector ABombActor::GetThrowingVelocity() const
 {
 	// 컨트롤러가 앞을 바라볼 때 방향벡터
-	const FVector Dir = FRotationMatrix(Character->GetControlRotation()).GetScaledAxis(EAxis::X);
+	const FVector Dir = FRotationMatrix(Protagonist->GetControlRotation()).GetScaledAxis(EAxis::X);
 
 	// UE_LOG(LogTemp,Log, TEXT("Throw Dir : %s"), *Dir.ToString());
 	const auto Velocity = Dir * Speed;
@@ -135,8 +135,8 @@ void ABombActor::AttackInputTrigger()
 
 void ABombActor::SetAimMovement(bool IsAim) const
 {
-	Character->SetMovable(!IsAim);
-	Character->SetUsingControllerYaw(IsAim);
+	Protagonist->SetMovable(!IsAim);
+	Protagonist->SetUsingControllerYaw(IsAim);
 }
 
 

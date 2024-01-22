@@ -14,24 +14,20 @@ void ASwordActor::BeginPlay()
 	Super::BeginPlay();
 
 	// trail
-	{ 
+	{
 		const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->GetSocketLocation(TrailSocketBotName));
 		const FRotator TrailRot = FRotationMatrix::MakeFromZ(
 			MeshComponent->GetSocketLocation(TrailSocketTopName) - MeshComponent->GetSocketLocation(TrailSocketBotName)).Rotator();
 
 		ensure(TrailSystem != nullptr);
 		TrailComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailSystem, MeshComponent, TrailSocketBotName, TrailPos, TrailRot,
-																	  EAttachLocation::KeepWorldPosition, false);
+		                                                              EAttachLocation::KeepWorldPosition, false);
 
 		ensure(TrailComponent != nullptr);
 		TrailComponent->SetRenderCustomDepth(true);
 		TrailComponent->SetCustomDepthStencilValue(1 << 1);
 		TrailComponent->Deactivate();
-
-		
 	}
-
-	
 }
 
 
@@ -41,38 +37,37 @@ void ASwordActor::AttackInputStarted()
 	{
 		if (AnimInstance != nullptr)
 		{
-			if(AnimInstance->Montage_IsPlaying(AttackMontage))
+			if (AnimInstance->Montage_IsPlaying(AttackMontage))
 				return;
-			
-			AnimInstance->Montage_Play(AttackMontage, 1.f);
-			AnimInstance->Montage_JumpToSection(GetSectionName());
-			SectionID = (SectionID == SectionMaxID) ? 1 : SectionID + 1;
 
-			Character->SetMovable(false);
+			AnimInstance->Montage_Play(AttackMontage, 1.f);
+			AnimInstance->Montage_JumpToSection(GetSectionName(CurrentSectionID));
+			CurrentSectionID = (CurrentSectionID == SectionMaxID) ? 1 : CurrentSectionID + 1;
+
+			Protagonist->SetMovable(false);
 			TrailComponent->Activate();
 
 			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackMontageEndEvent);
-			AttackCheck();
+			CheckAttack();
+			Protagonist->ZoomOnSlash();
 		}
 	}
 }
 
 
-
-void ASwordActor::AttackCheck() const
+void ASwordActor::CheckAttack() const
 {
-
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams params(NAME_None, false, this);
 
-	const FVector TracingRelativePos = Character->GetActorForwardVector() * AttackDistance;
+	const FVector TracingRelativePos = Protagonist->GetActorForwardVector() * AttackDistance;
 	const FQuat QuatBox = FRotationMatrix::MakeFromZ(TracingRelativePos).ToQuat();
 
 	// 트레이스 채널을 사용해 충돌 감지
 	GetWorld()->SweepMultiByChannel(
 		OUT HitResults,
-		Character->GetActorLocation(),
-		Character->GetActorLocation() + TracingRelativePos,
+		Protagonist->GetActorLocation(),
+		Protagonist->GetActorLocation() + TracingRelativePos,
 		QuatBox,
 		ECC_GameTraceChannel3,
 		FCollisionShape::MakeBox(BoxExtent),
@@ -80,11 +75,13 @@ void ASwordActor::AttackCheck() const
 
 	AActor* ActorHit = nullptr;
 	bool IsTrace = false;
+	FVector ImpactPoint;
 	for (auto HitResult : HitResults)
 	{
-		if (HitResult.GetActor() != Character)
+		if (HitResult.GetActor() != Protagonist)
 		{
 			ActorHit = HitResult.GetActor();
+			ImpactPoint = HitResult.ImpactPoint;
 			IsTrace = true;
 		}
 	}
@@ -98,10 +95,18 @@ void ASwordActor::AttackCheck() const
 	{
 		UGameplayStatics::ApplyDamage(ActorHit, Damage, GetInstigatorController(),
 		                              this->GetOwner(), UDamageType::StaticClass());
+
+		ensure(SlashParticleSystem != nullptr);
+		if (SlashParticleSystem != nullptr)
+		{
+			auto Explosion = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,
+			                                                                SlashParticleSystem.Get(), ImpactPoint);
+			Explosion->SetRelativeScale3D(FVector(0.2f, 0.2f, 0.2f));
+		}
 	}
 }
 
-FName ASwordActor::GetSectionName() const
+FName ASwordActor::GetSectionName(int32 SectionID) const
 {
 	return FName(*FString::Printf(TEXT("Attack%d"), SectionID));
 }
@@ -111,10 +116,10 @@ void ASwordActor::AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted
 {
 	if (Montage == AttackMontage)
 	{
-		if(AnimInstance->Montage_IsPlaying(AttackMontage))
+		if (AnimInstance->Montage_IsPlaying(AttackMontage))
 			return;
-		
-		Character->SetMovable(true);
+
+		Protagonist->SetMovable(true);
 		TrailComponent->DeactivateImmediate();
 
 		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackMontageEndEvent);
@@ -124,5 +129,8 @@ void ASwordActor::AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted
 void ASwordActor::Equip(AProtagonistCharacter* TargetCharacter)
 {
 	Super::Equip(TargetCharacter);
-
+	if (!SlashParticleSystem.IsValid())
+	{
+		SlashParticleSystem.LoadSynchronous();
+	}
 }

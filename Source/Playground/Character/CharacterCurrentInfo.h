@@ -10,7 +10,6 @@
  */
 
 
-
 USTRUCT(Atomic, BlueprintType)
 struct PLAYGROUND_API FCharacterCurrentInfo 
 {
@@ -28,6 +27,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	bool OnClimbing = false;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category=Health)
+	bool OnHit = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement)
 	TEnumAsByte<EMovementMode> CurrentMovementMode;

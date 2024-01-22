@@ -28,7 +28,9 @@ void UHealthComponent::InitializeComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	const ACharacter* Character = Cast<ACharacter>(GetOwner());
+	AnimInstance = Cast<UAnimInstance>(Character->GetMesh()->GetAnimInstance());
+
 }
 
 void UHealthComponent::Init(int32 _MaxHp)
@@ -40,8 +42,7 @@ void UHealthComponent::Init(int32 _MaxHp)
 void UHealthComponent::Reset()
 {
 	CurrentHp = MaxHp;
-	OnHpChanged.Broadcast(CurrentHp, MaxHp);
-
+	OnHpChanged.Broadcast(CurrentHp,0, MaxHp);
 }
 
 
@@ -54,8 +55,15 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
                                          AActor* DamageCauser)
 {
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
-	OnHpChanged.Broadcast(CurrentHp, MaxHp);
-	if(CurrentHp <= 0)
+	OnHpChanged.Broadcast(CurrentHp, -Damage, MaxHp);
+
+	if (AnimInstance)
+	{
+		if(DamagedMontage)
+			AnimInstance->Montage_Play(DamagedMontage);
+	}
+
+	if (CurrentHp <= 0)
 	{
 		OnDead.Broadcast();
 	}
@@ -67,4 +75,3 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 		       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
 	}
 }
-

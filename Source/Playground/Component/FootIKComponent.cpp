@@ -3,10 +3,13 @@
 
 #include "Component/FootIKComponent.h"
 
+#include "Algo/MaxElement.h"
+#include "Algo/MinElement.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Utils/UtilPlayground.h"
 
 // Sets default values for this component's properties
 UFootIKComponent::UFootIKComponent()
@@ -38,7 +41,6 @@ void UFootIKComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	const float CurrentHipDisplacement = FMath::Min(LeftTraceResult.Displacement, RightTraceResult.Displacement);
 	HipDisplacement = FMath::FInterpTo(HipDisplacement, CurrentHipDisplacement, DeltaTime, 10);
 
-	//test
 	OffsetLeft = (-LeftTraceResult.Displacement + HipDisplacement) * -1;
 	OffsetRight = (-RightTraceResult.Displacement + HipDisplacement) * -1;
 	// UE_LOG(LogTemp,Log,TEXT("offset : %f, %f"), OffsetLeft, OffsetRight);
@@ -50,7 +52,7 @@ void UFootIKComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 UFootIKComponent::FTraceInfo UFootIKComponent::TraceFromFoot(FName SocketName)
 {
-	UFootIKComponent::FTraceInfo TraceInfo;
+	FTraceInfo TraceInfo;
 
 	//! Set Linetraces startpoint and end point
 	FVector SocketLocation = Character->GetMesh()->GetSocketLocation(SocketName);
@@ -61,10 +63,11 @@ UFootIKComponent::FTraceInfo UFootIKComponent::TraceFromFoot(FName SocketName)
 	FHitResult HitResult;
 
 	bool IsHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), Line_Start, Line_End,
-	                                                   UEngineTypes::ConvertToTraceType(ECC_Visibility), true,
-	                                                   {GetOwner()}, EDrawDebugTrace::None /*ForOneFrame*/, HitResult, true);
+													  UEngineTypes::ConvertToTraceType(ECC_Visibility), true,
+													  {GetOwner()}, EDrawDebugTrace::None, HitResult, true);
 
 	//! Set ImpactNormal and Offset from HitResult
+	// UtilPlayground::PrintLog(*HitResult.GetActor()->GetName());
 	if (HitResult.IsValidBlockingHit() == true)
 	{
 		TraceInfo.HitPoint = HitResult.ImpactPoint;

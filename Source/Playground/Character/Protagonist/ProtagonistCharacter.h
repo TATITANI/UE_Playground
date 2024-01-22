@@ -116,5 +116,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void AimCamByWeapon(EWeaponType WeaponType);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void ZoomOnSlash();
+
 
 };

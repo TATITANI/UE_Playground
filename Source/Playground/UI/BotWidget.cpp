@@ -14,7 +14,7 @@ void UBotWidget::Bind(UHealthComponent* HealthComponent)
 }
 
 
-void UBotWidget::UpdateHp(int32 Hp, int32 MaxHp)
+void UBotWidget::UpdateHp(int32 Hp,  int32 DeltadHp, int32 MaxHp)
 {
 	if (ensure(PB_HpBar))
 	{

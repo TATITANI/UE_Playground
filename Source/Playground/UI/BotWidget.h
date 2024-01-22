@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "IPersonaPreviewScene.h"
 #include "Blueprint/UserWidget.h"
 #include "BotWidget.generated.h"
 
@@ -24,5 +25,5 @@ private:
 
 private:
 	UFUNCTION()
-	void UpdateHp(int32 Hp, int32 MaxHp);
+	void UpdateHp(int32 Hp, int32 DeltadHp, int32 MaxHp);
 };
