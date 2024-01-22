@@ -16,20 +16,16 @@ class PLAYGROUND_API UIngameWidget : public UUserWidget
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true)) // c++ 에서 widget 블루프린트 접근
-	class UImage* Img_HP_Gauge; // 에디터 상 컴포넌트 이름과 같아야 함.
-
-	UMaterialInstanceDynamic* MaterialInstanceDynamic;
-
-	
-	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true))
-	class UHorizontalBox* HB_Weapon;
-
 	UPROPERTY()
 	class AProtagonistCharacter* ProtagonistCharacter;
 
-	UFUNCTION()
-	void UpdateHp(int32 Hp, int32 MaxHp) const;
+	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true)) // c++ 에서 widget 블루프린트 접근
+	class UImage* Img_HP_Gauge; // 에디터 상 컴포넌트 이름과 같아야 함.
+
+	UPROPERTY(meta=(BindWidget, AllowPrivateAccess = true))
+	class UHorizontalBox* HB_Weapon;
+
+	UMaterialInstanceDynamic* HPMaterialInstanceDynamic;
 
 	UPROPERTY(EditAnywhere, Category=Weapon, meta=(AllowPrivateAccess=true))
 	TMap<EWeaponType, UTexture2D*> WeaponImageTable;
@@ -38,12 +34,20 @@ private:
 
 	class UWeaponSlotWidget* CurrentWeaponSlot;
 
+private:
+	UFUNCTION()
+	void UpdateHp(int32 CurrentHp, int32 DeltaHp, int32 MaxHp) const;
+
 protected:
 	virtual void NativeConstruct() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayHitAnimation();
+
 public:
 	UFUNCTION()
-	void ChangeCurrentWeapon(class AWeaponActor* WeaponActor) ;
-	
+	void ChangeCurrentWeapon(class AWeaponActor* WeaponActor);
+
 	UFUNCTION()
 	void AddWeapon(class AWeaponActor* WeaponActor);
 
@@ -52,6 +56,6 @@ public:
 
 	UFUNCTION()
 	void UseWeapon(int32 RemainCnt, int32 MaxCnt);
-	
+
 	EWeaponType GetSlotWeaponType(int8 SlotID);
 };

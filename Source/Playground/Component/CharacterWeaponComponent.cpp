@@ -11,6 +11,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Utils/UtilPlayground.h"
 
 // Sets default values for this component's properties
 UCharacterWeaponComponent::UCharacterWeaponComponent()
@@ -27,7 +28,6 @@ UCharacterWeaponComponent::UCharacterWeaponComponent()
 void UCharacterWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(GetOwner());
 	if (ProtagonistCharacter == nullptr)
@@ -49,7 +49,9 @@ void UCharacterWeaponComponent::BeginPlay()
 	AWeaponActor* DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
 	ensure(DefaultWeaponActor != nullptr);
 	ObtainWeapon(DefaultWeaponActor);
+	
 }
+
 
 
 void UCharacterWeaponComponent::ClickChangeWeapon(const FInputActionValue& Value)
@@ -75,7 +77,6 @@ void UCharacterWeaponComponent::ObtainWeapon(AWeaponActor* WeaponActor)
 	WeaponActor->AttachToComponent(ProtagonistCharacter->GetMesh(), AttachmentRules, FName(WeaponActor->GetSocketName()));
 
 	WeaponInventory->AddWeapon(WeaponActor);
-	OnObtainWeapon.Broadcast(WeaponActor);
 
 	ChangeWeapon(WeaponActor);
 }

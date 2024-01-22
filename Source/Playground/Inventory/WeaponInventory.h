@@ -9,6 +9,7 @@
 
 
 enum class EWeaponType : uint8;
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnObtainWeapon, class AWeaponActor*);
 
 class PLAYGROUND_API FWeaponInventory
 {
@@ -17,6 +18,8 @@ private:
 	TArray< class AWeaponActor*> WeaponList;
 	
 public:
+	FOnObtainWeapon OnAddWeapon;
+
 	FWeaponInventory();
 	~FWeaponInventory();
 
@@ -24,4 +27,5 @@ public:
 	bool HasWeapon(EWeaponType WeaponType) const;
 	void AddWeapon(class AWeaponActor * WeaponActor);
 	AWeaponActor* GetWeapon(EWeaponType WeaponType);
+	TArray< AWeaponActor*> GetWeapons(){return WeaponList;} 
 };

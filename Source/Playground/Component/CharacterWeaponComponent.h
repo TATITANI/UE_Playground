@@ -10,7 +10,6 @@
 
 
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnObtainWeapon, class AWeaponActor*);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangeWeapon, class AWeaponActor*);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnUseWeapon, int32 /* remainCnt */, int32 /* MaxCnt */);
 
@@ -45,7 +44,6 @@ private:
 
 
 public:
-	FOnObtainWeapon OnObtainWeapon;
 	FOnChangeWeapon OnChangeWeapon;
 	FOnCooldown OnCooldownWeapon;
 	FOnUseWeapon OnUseWeapon;
@@ -53,6 +51,5 @@ public:
 	void ObtainWeapon(class AWeaponActor* WeaponActor);
 	void ChangeWeapon(class AWeaponActor* WeaponActor);
 	void SetWeaponHidden(bool IsHidden) const;
-	
 	
 };
