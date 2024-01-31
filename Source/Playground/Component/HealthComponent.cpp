@@ -6,6 +6,7 @@
 #include "Character/Bot/BotCharacter.h"
 #include "MyGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Utils/UtilPlayground.h"
 
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -30,7 +31,6 @@ void UHealthComponent::BeginPlay()
 	Super::BeginPlay();
 	const ACharacter* Character = Cast<ACharacter>(GetOwner());
 	AnimInstance = Cast<UAnimInstance>(Character->GetMesh()->GetAnimInstance());
-
 }
 
 void UHealthComponent::Init(int32 _MaxHp)
@@ -42,7 +42,15 @@ void UHealthComponent::Init(int32 _MaxHp)
 void UHealthComponent::Reset()
 {
 	CurrentHp = MaxHp;
-	OnHpChanged.Broadcast(CurrentHp,0, MaxHp);
+	OnHpChanged.Broadcast(CurrentHp, 0, MaxHp);
+}
+
+float UHealthComponent::GetDamagedMontageLength() const
+{
+	if(!DamagedMontage)
+		return 0;
+	
+	return DamagedMontage->GetSectionLength(CurrentMontageSection);
 }
 
 
@@ -59,7 +67,7 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 
 	if (AnimInstance)
 	{
-		if(DamagedMontage)
+		if (DamagedMontage)
 			AnimInstance->Montage_Play(DamagedMontage);
 	}
 

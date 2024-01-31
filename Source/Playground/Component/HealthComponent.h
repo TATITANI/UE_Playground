@@ -9,7 +9,6 @@
 
 
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHpChanged, int32 /*Hp*/,int32 /*delta*/ , int32 /*maxHP*/);
-DECLARE_MULTICAST_DELEGATE(FOnDead);
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLAYGROUND_API UHealthComponent : public UActorComponent
 {
@@ -36,19 +35,20 @@ private:
 	UAnimMontage* DamagedMontage;
 
 	UAnimInstance* AnimInstance;
+	int8 CurrentMontageSection = 0;
 	
 private:
 	UFUNCTION()
 	void HandleTakenDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	                       class AController* InstigatedBy, AActor* DamageCauser);
 
-	
 public:
 	FOnHpChanged OnHpChanged;
-	FOnDead OnDead;
+	FSimpleMulticastDelegate OnDead;
 	
 	void Init(int32 _MaxHp);
 	void Reset();
 	int32 GetCurrentHP() const { return CurrentHp; }
 	int32 GetMaxHP() const { return MaxHp; }
+	float GetDamagedMontageLength() const;
 };

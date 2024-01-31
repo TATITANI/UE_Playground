@@ -4,7 +4,6 @@
 
 #include "Component/ClimbComponent.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "MyGameInstance.h"
@@ -15,11 +14,9 @@
 #include "Component/FootIKComponent.h"
 #include "Component/HealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/GameModeBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Utils/UtilPlayground.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,7 +64,6 @@ AProtagonistCharacter::AProtagonistCharacter()
 void AProtagonistCharacter::PostInitProperties()
 {
 	Super::PostInitProperties();
-	// CharacterCurrentInfo = NewObject<FCharacterCurrentInfo>();
 }
 
 void AProtagonistCharacter::PostInitializeComponents()
@@ -80,7 +76,7 @@ void AProtagonistCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APlayerController* PlayerController = Cast<APlayerController>(Controller);
+	const APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
 	if (PlayerController)
 	{
@@ -92,7 +88,7 @@ void AProtagonistCharacter::BeginPlay()
 		}
 
 		// clamp camera pitch	
-		if (auto CameraManager = PlayerController->PlayerCameraManager)
+		if (const auto CameraManager = PlayerController->PlayerCameraManager)
 		{
 			CameraManager->ViewPitchMin = -70.0;
 			CameraManager->ViewPitchMax = 70.0;
@@ -101,15 +97,10 @@ void AProtagonistCharacter::BeginPlay()
 
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
-	auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>(ECharacterStatType::Protagonist, "1");
+	const auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>(ECharacterStatType::Protagonist, "1");
+
 	HealthComponent->Init(ProtaonistStat->MaxHp);
-	HealthComponent->OnHpChanged.AddLambda([this](int32 CurrentHp, int32 DelthHp, int32 MaxHp)
-	{
-		if (DelthHp < 0)
-			CharacterCurrentInfo.OnHit = true;
-	});
-
-
+	HealthComponent->OnHpChanged.AddUObject(this, &AProtagonistCharacter::OnHpChanged);
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
 }
@@ -205,6 +196,25 @@ void AProtagonistCharacter::Jump()
 	CharacterCurrentInfo.OnBeginJump = true;
 }
 
+void AProtagonistCharacter::TriggerDamagedState(bool bOn)
+{
+	CharacterCurrentInfo.OnHit = bOn;
+	SetMovable(!bOn);
+}
+
+void AProtagonistCharacter::OnHpChanged(int32 CurrentHp, int32 DeltaHp, int32 MaxHp)
+{
+	if (DeltaHp < 0)
+		TriggerDamagedState(true);
+
+	const float FreezingDelay = HealthComponent->GetDamagedMontageLength() * 0.6f;
+	GetWorldTimerManager().SetTimer(DamageTriggerTimerHandle, FTimerDelegate::CreateLambda([this]()
+	{
+		TriggerDamagedState(false);
+	}), FreezingDelay, false);
+	
+}
+
 void AProtagonistCharacter::FixLocation(bool bFix) const
 {
 	if (bFix)
@@ -212,7 +222,6 @@ void AProtagonistCharacter::FixLocation(bool bFix) const
 		GetCharacterMovement()->Velocity = FVector::Zero();
 	}
 	GetCharacterMovement()->GravityScale = bFix ? 0 : 4;
-	
 }
 
 void AProtagonistCharacter::ZoomOnSlash_Implementation()

@@ -32,7 +32,7 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 private:
 	virtual void BeginPlay() override;
 	virtual void PostInitProperties() override;
@@ -43,12 +43,12 @@ private:
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	
+
 	UFUNCTION()
 	void OnLand(const FHitResult& Hit);
 	/** Called for movement input */
 	void GroundMove(const FInputActionValue& Value);
-	
+
 	void Stop(const FInputActionValue& Value);
 
 	/** Called for looking input */
@@ -56,6 +56,12 @@ private:
 
 	void StopLookAround(const FInputActionValue& Value);
 	virtual void Jump() override;
+	
+	UFUNCTION()
+	void TriggerDamagedState(bool bOn);
+
+	UFUNCTION()
+	void OnHpChanged(int32 CurrentHp, int32 DeltaHp, int32 MaxHp);
 
 private:
 	//** Camera boom positioning the camera behind the character */
@@ -67,12 +73,12 @@ private:
 	class UCameraComponent* FollowCamera;
 
 	class UEnhancedInputLocalPlayerSubsystem* Subsystem;
-	
+
 	/** MappingContext */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 
-	
+
 	/** Jump Input Action */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
@@ -85,6 +91,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	FTimerHandle DamageTriggerTimerHandle;
+
+
 	bool IsLookingAround = false;
 	bool Movable = true;
 
@@ -93,19 +102,19 @@ public:
 	FCharacterCurrentInfo CharacterCurrentInfo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	class UCharacterWeaponComponent *WeaponComponent;
+	class UCharacterWeaponComponent* WeaponComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	class UDashComponent *DashComponent;
-	
+	class UDashComponent* DashComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	class UClimbComponent *Climbing;
-	
+	class UClimbComponent* Climbing;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
-	class UHealthComponent *HealthComponent;
+	class UHealthComponent* HealthComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UFootIKComponent *FootIKComponent;
+	class UFootIKComponent* FootIKComponent;
 
 	void SetMovable(bool bEnable) { this->Movable = bEnable; }
 	bool GetMovable() { return this->Movable; }
