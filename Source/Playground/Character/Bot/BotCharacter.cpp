@@ -41,8 +41,6 @@ void ABotCharacter::BeginPlay()
 
 	OnTakeAnyDamage.AddDynamic(this, &ABotCharacter::OnTakeDamageCallback);
 	AttackDamage = BotStat->Damage;
-
-	
 }
 
 void ABotCharacter::PostInitializeComponents()
@@ -72,8 +70,6 @@ void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
 	SetActorLocation(Loc);
 	ABotAIController* AiController = Cast<ABotAIController>(GetController());
 	AiController->ActiveBehaviorTree(true);
-
-
 }
 
 
@@ -114,12 +110,12 @@ void ABotCharacter::CheckAttack()
 
 	AActor* ActorHit = hitResult.GetActor();
 	bool IsHit = ActorHit != nullptr && ActorHit->IsA(AProtagonistCharacter::StaticClass());
-	
+
 	FColor ColorDebugCapsule = IsHit ? FColor::Orange : FColor::Green;
 	const FQuat QuatDebugCapsule = FRotationMatrix::MakeFromZ(TraceRelatviePos).ToQuat();
 	// DrawDebugCapsule(GetWorld(), GetActorLocation() + TraceRelatviePos * 0.5f,
-	                 // attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
-	
+	// attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
+
 	if (IsHit)
 	{
 		UGameplayStatics::ApplyDamage(ActorHit, AttackDamage, this->GetController(),
@@ -133,16 +129,16 @@ void ABotCharacter::OnDeadCallback()
 	ABotAIController* AiController = this->GetController<ABotAIController>();
 	AiController->ActiveBehaviorTree(false);
 
-	
-	const APlaygroundGameMode* PlaygroundGameMode = Cast<APlaygroundGameMode>(GetWorld()->GetAuthGameMode());
-	const auto Data = PlaygroundGameMode->DroppedItemTable->GetDroppedItemData();
-	UItemData* ItemData = Data.Key;
-	const FItemStatus ItemStatus = Data.Value;
+	// 드랍 아이템
+	{ 
+		const APlaygroundGameMode* PlaygroundGameMode = Cast<APlaygroundGameMode>(GetWorld()->GetAuthGameMode());
+		const auto Data = PlaygroundGameMode->DroppedItemTable->GetDroppedItemData();
+		const UItemData* ItemData = Data.Key;
+		const FItemStatus ItemStatus = Data.Value;
 
-	const auto DroppedItem = GetWorld()->SpawnActor<APlaygroundItem>(ItemData->DroppedItem);
-	DroppedItem->Init(GetActorLocation(), ItemStatus);
-
-	
+		const auto DroppedItem = GetWorld()->SpawnActor<APlaygroundItem>(ItemData->DroppedItem);
+		DroppedItem->Init(GetActorLocation(), ItemStatus);
+	}
 }
 
 void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,

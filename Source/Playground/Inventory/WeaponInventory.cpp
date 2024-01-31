@@ -29,7 +29,7 @@ bool FWeaponInventory::HasWeapon(EWeaponType WeaponType) const
 void FWeaponInventory::AddWeapon(AWeaponActor* WeaponActor)
 {
 	WeaponList.Add(WeaponActor);
-	OnAddWeapon.Broadcast(WeaponActor);
+	OnObtainWeapon.Broadcast(WeaponActor);
 
 }
 

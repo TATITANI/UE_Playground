@@ -9,8 +9,8 @@
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Component/CharacterWeaponComponent.h"
-#include "Component/HealthComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Utils/UtilPlayground.h"
 
 
 // Sets default values for this component's properties
@@ -52,7 +52,7 @@ void AWeaponActor::OnAttackInputTriggered()
 {
 	if (!IsAttack)
 		return;
-
+	
 	AttackInputTrigger();
 
 	AttackTriggerIfPossible(ETriggerEvent::Triggered);

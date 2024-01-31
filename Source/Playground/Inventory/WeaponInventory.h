@@ -18,7 +18,7 @@ private:
 	TArray< class AWeaponActor*> WeaponList;
 	
 public:
-	FOnObtainWeapon OnAddWeapon;
+	FOnObtainWeapon OnObtainWeapon;
 
 	FWeaponInventory();
 	~FWeaponInventory();

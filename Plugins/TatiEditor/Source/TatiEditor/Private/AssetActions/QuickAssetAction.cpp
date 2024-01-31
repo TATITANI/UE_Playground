@@ -9,7 +9,6 @@
 #include "EditorAssetLibrary.h"
 #include "ObjectTools.h"
 #include "TatiEditor.h"
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "Misc/MessageDialog.h"
 
 void UQuickAssetAction::TestFunc()

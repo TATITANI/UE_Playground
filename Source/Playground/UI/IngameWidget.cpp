@@ -36,7 +36,7 @@ void UIngameWidget::NativeConstruct()
 	
 	const auto WeaponInventory = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->WeaponInventory;
 	ensure(WeaponInventory != nullptr);
-	WeaponInventory->OnAddWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
+	WeaponInventory->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
 	auto Weapons = WeaponInventory->GetWeapons();
 	for(const auto Weapon: Weapons)
 	{

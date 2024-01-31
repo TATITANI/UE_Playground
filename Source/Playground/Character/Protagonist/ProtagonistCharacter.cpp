@@ -26,7 +26,7 @@
 AProtagonistCharacter::AProtagonistCharacter()
 {
 	///// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	// GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -112,8 +112,6 @@ void AProtagonistCharacter::BeginPlay()
 
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
-
-	
 }
 
 
@@ -205,6 +203,16 @@ void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
 	CharacterCurrentInfo.OnBeginJump = true;
+}
+
+void AProtagonistCharacter::FixLocation(bool bFix) const
+{
+	if (bFix)
+	{
+		GetCharacterMovement()->Velocity = FVector::Zero();
+	}
+	GetCharacterMovement()->GravityScale = bFix ? 0 : 4;
+	
 }
 
 void AProtagonistCharacter::ZoomOnSlash_Implementation()

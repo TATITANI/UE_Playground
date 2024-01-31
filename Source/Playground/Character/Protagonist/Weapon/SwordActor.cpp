@@ -3,17 +3,22 @@
 
 #include "Character/Protagonist/Weapon/SwordActor.h"
 #include "EnhancedInputComponent.h"
-#include "MyGameInstance.h"
+#include "MovieSceneSequencePlaybackSettings.h"
+#include "LevelSequencePlayer.h"
 #include "Character/Protagonist/ProtagonistAnimInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Character/Bot/BotCharacter.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Utils/UtilPlayground.h"
 
 void ASwordActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// trail
+	//FX
 	{
 		const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->GetSocketLocation(TrailSocketBotName));
 		const FRotator TrailRot = FRotationMatrix::MakeFromZ(
@@ -28,101 +33,276 @@ void ASwordActor::BeginPlay()
 		TrailComponent->SetCustomDepthStencilValue(1 << 1);
 		TrailComponent->Deactivate();
 	}
+
+	const APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+	EnhancedInputComponent->BindAction(UpperAttackTriggerInputAction, ETriggerEvent::Triggered, this, &ASwordActor::TriggerUpperAttack);
+	EnhancedInputComponent->BindAction(LowerAttackTriggerInputAction, ETriggerEvent::Triggered, this, &ASwordActor::LowerAttack);
+
+	AttackMontageEndEventMap.Add(DefaultAttackMontage, FSimpleDelegate::CreateUObject(this, &ASwordActor::GroundAttackMontageEndEvent));
+	AttackMontageEndEventMap.Add(UpperAttackMontage, FSimpleDelegate::CreateUObject(this, &ASwordActor::JumpUpperAttackMontageEndEvent));
+
+	ALevelSequenceActor* SequenceActor;
+	FMovieSceneSequencePlaybackSettings UpperSequenceSettings;
+	UpperAttackSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), UpperAttackSequence,
+	                                                                            UpperSequenceSettings, SequenceActor);
 }
 
 
 void ASwordActor::AttackInputStarted()
 {
-	if (AttackMontage != nullptr)
+	switch (CurrentAttackType)
+	{
+	case Sword::Default:
+		AttackOnGround();
+		break;
+
+	case Sword::Upper:
+		UpperAttackCombo();
+		break;
+	}
+}
+
+void ASwordActor::AttackOnGround()
+{
+	if (DefaultAttackMontage != nullptr)
 	{
 		if (AnimInstance != nullptr)
 		{
-			if (AnimInstance->Montage_IsPlaying(AttackMontage))
+			if (AnimInstance->Montage_IsPlaying(DefaultAttackMontage))
 				return;
 
-			AnimInstance->Montage_Play(AttackMontage, 1.f);
-			AnimInstance->Montage_JumpToSection(GetSectionName(CurrentSectionID));
-			CurrentSectionID = (CurrentSectionID == SectionMaxID) ? 1 : CurrentSectionID + 1;
+			AnimInstance->Montage_Play(DefaultAttackMontage, 1.f);
+			AnimInstance->Montage_JumpToSection(GetGroundAttackSectionName(CurrentAttackSectionID));
+			CurrentAttackSectionID = (CurrentAttackSectionID == DefaultAttackSectionMaxID) ? 1 : CurrentAttackSectionID + 1;
 
 			Protagonist->SetMovable(false);
-			TrailComponent->Activate();
-
-			AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::AttackMontageEndEvent);
-			CheckAttack();
 			Protagonist->ZoomOnSlash();
+
+			TrailComponent->Activate();
+			GroundAttackToBots();
 		}
 	}
 }
 
-
-void ASwordActor::CheckAttack() const
+void ASwordActor::GroundAttackToBots()
 {
+	TArray<ABotCharacter*> Bots;
+
 	TArray<FHitResult> HitResults;
-	FCollisionQueryParams params(NAME_None, false, this);
+	UKismetSystemLibrary::BoxTraceMulti(GetWorld(), Protagonist->GetActorLocation() + Protagonist->GetActorForwardVector() * AttackRange.X,
+	                                    Protagonist->GetActorLocation() + Protagonist->GetActorForwardVector() * AttackRange.X,
+	                                    AttackRange * 0.5f,
+	                                    Protagonist->GetActorRotation(),
+	                                    AttackTraceType,
+	                                    false,
+	                                    {Protagonist},
+	                                    EDrawDebugTrace::ForDuration,
+	                                    HitResults,
+	                                    true);
 
-	const FVector TracingRelativePos = Protagonist->GetActorForwardVector() * AttackDistance;
-	const FQuat QuatBox = FRotationMatrix::MakeFromZ(TracingRelativePos).ToQuat();
-
-	// 트레이스 채널을 사용해 충돌 감지
-	GetWorld()->SweepMultiByChannel(
-		OUT HitResults,
-		Protagonist->GetActorLocation(),
-		Protagonist->GetActorLocation() + TracingRelativePos,
-		QuatBox,
-		ECC_GameTraceChannel3,
-		FCollisionShape::MakeBox(BoxExtent),
-		params);
-
-	AActor* ActorHit = nullptr;
-	bool IsTrace = false;
-	FVector ImpactPoint;
+	LastGroundHitBots.Reset();
 	for (auto HitResult : HitResults)
 	{
-		if (HitResult.GetActor() != Protagonist)
+		ABotCharacter* Bot = Cast<ABotCharacter>(HitResult.GetActor());
+		if (Bot != nullptr)
+			Bots.Add(Bot);
+
+		LastGroundHitBots.Add(Bot);
+		AttackToBot(Bot, HitResult.Location);
+	}
+}
+
+
+void ASwordActor::TriggerUpperAttack()
+{
+	if (CurrentAttackType != Sword::EAttackType::None)
+		return;
+
+	CurrentUpperComboNum = 0;
+
+	CurrentAttackType = Sword::EAttackType::Upper;
+	AnimInstance->Montage_Play(UpperAttackMontage);
+	AnimInstance->Montage_JumpToSection(FName("Trigger"));
+
+	Protagonist->JumpCurrentCount = Protagonist->JumpMaxCount; // 추가 점프 불가
+	// 외부압력을 받아도 밀리지 않음
+	Protagonist->GetCapsuleComponent()->BodyInstance.bLockXTranslation = true;
+	Protagonist->GetCapsuleComponent()->BodyInstance.bLockYTranslation = true;
+	Protagonist->GetCapsuleComponent()->BodyInstance.bLockZTranslation = true;
+
+	for (const auto Bot : LastGroundHitBots)
+	{
+		if (!Bot)
+			continue;
+
+		Bot->LaunchCharacter(FVector(0, 0, 800), true, true);
+	}
+}
+
+
+void ASwordActor::UpperAttackCombo()
+{
+	const float MontageProgress = AnimInstance->Montage_GetPosition(UpperAttackMontage);
+	const FName CurrentSectionName = AnimInstance->Montage_GetCurrentSection(UpperAttackMontage);
+
+	if (CurrentSectionName.ToString().StartsWith("Attack_") && MontageProgress > 0 && MontageProgress < 0.8f)
+		return;
+
+	if (CurrentUpperComboNum >= UpperAttackComboMaxCnt)
+		return;
+
+	CurrentUpperComboNum++;
+	const bool IsLastCombo = (CurrentUpperComboNum == UpperAttackComboMaxCnt);
+
+	AnimInstance->Montage_Play(UpperAttackMontage);
+	AnimInstance->Montage_JumpToSection(FName(FString::Printf(TEXT("Attack_%d"), CurrentUpperComboNum)));
+	Protagonist->FixLocation(true);
+
+	for (const auto Bot : LastGroundHitBots)
+	{
+		if (!Bot)
+			continue;
+		Bot->GetCharacterMovement()->Velocity = FVector::Zero();
+		Bot->GetCharacterMovement()->GravityScale = 0;
+
+		if (IsLastCombo == false)
 		{
-			ActorHit = HitResult.GetActor();
-			ImpactPoint = HitResult.ImpactPoint;
-			IsTrace = true;
+			AttackToBot(Bot, TOptional<FVector>());
 		}
 	}
 
-	FColor ColorDebugBox = IsTrace ? FColor::Orange : FColor::Green;
-	// DrawDebugBox(GetWorld(), Character->GetActorLocation() + TracingRelativePos * 0.5f,
-	//              BoxExtent, QuatBox, ColorDebugBox, false, 2.f);
-
-	bool ExistsTargetActor = ActorHit != nullptr;
-	if (IsTrace && ExistsTargetActor)
+	if (IsLastCombo)
 	{
-		UGameplayStatics::ApplyDamage(ActorHit, Damage, GetInstigatorController(),
-		                              this->GetOwner(), UDamageType::StaticClass());
+		UpperAttackSequencePlayer->Play();
+	}
+}
 
-		ensure(SlashParticleSystem != nullptr);
-		if (SlashParticleSystem != nullptr)
+void ASwordActor::LowerAttack()
+{
+	if (CurrentAttackType != Sword::None)
+		return;
+
+	AnimInstance->Montage_Play(LowerAttackMontage);
+	Protagonist->JumpCurrentCount = Protagonist->JumpMaxCount; // 추가 점프 불가
+	CurrentAttackType = Sword::Lower;
+	Protagonist->LaunchCharacter(FVector(0, 0, -2000), true, true);
+
+	constexpr float Radius = 300.0f;
+	constexpr float Height = 500.0f;
+
+
+	FHitResult HitResultGround;
+	UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), Protagonist->GetActorLocation(),
+	                                                Protagonist->GetActorLocation() + FVector::DownVector * 10000,
+	                                                {GroundObjectType}, false, {Protagonist}, EDrawDebugTrace::ForDuration, HitResultGround, true);
+	if (HitResultGround.bBlockingHit)
+	{
+		LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LowerAttackFX,
+		                                                                             HitResultGround.Location, FRotator::ZeroRotator,
+		                                                                             FVector(2, 2, 2));
+		UtilPlayground::PrintLog(FString::Printf(TEXT("HitGround Loc : %s"), *HitResultGround.Location.ToString()));
+	}
+
+	TArray<FHitResult> HitResults;
+	UKismetSystemLibrary::CapsuleTraceMulti(GetWorld(), Protagonist->GetActorLocation() - Protagonist->GetActorUpVector() * Height * 0.5f,
+	                                        Protagonist->GetActorLocation() - Protagonist->GetActorUpVector() * Height * 0.5f,
+	                                        Radius,
+	                                        Height,
+	                                        AttackTraceType,
+	                                        false,
+	                                        {Protagonist},
+	                                        EDrawDebugTrace::ForDuration,
+	                                        HitResults,
+	                                        true);
+
+	for (auto HitResult : HitResults)
+	{
+		ABotCharacter* Bot = Cast<ABotCharacter>(HitResult.GetActor());
+		if (Bot != nullptr)
 		{
-			auto Explosion = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,
-			                                                                SlashParticleSystem.Get(), ImpactPoint);
-			Explosion->SetRelativeScale3D(FVector(0.2f, 0.2f, 0.2f));
+			FVector Dir = (Bot->GetActorLocation() - Protagonist->GetActorLocation()).GetSafeNormal();
+			if (Dir == FVector::Zero())
+				Dir = Protagonist->GetActorForwardVector();
+			Dir.Z = 0;
+
+			const FVector LaunchVelocity = Dir * 2000;
+			Bot->LaunchCharacter(LaunchVelocity, true, true);
+			AttackToBot(Bot, TOptional<FVector>());
 		}
 	}
 }
 
-FName ASwordActor::GetSectionName(int32 SectionID) const
+void ASwordActor::AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint)
+{
+	UGameplayStatics::ApplyDamage(Bot, Damage, GetInstigatorController(),
+	                              this->GetOwner(), UDamageType::StaticClass());
+	ensure(SlashParticleSystem != nullptr);
+	if (SlashParticleSystem != nullptr)
+	{
+		const FVector ParticleLoc = HitPoint.IsSet() ? HitPoint.GetValue() : Bot->GetActorLocation();
+
+		const auto Explosion = UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,
+		                                                                      SlashParticleSystem.Get(),
+		                                                                      ParticleLoc);
+		Explosion->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+	}
+}
+
+
+FName ASwordActor::GetGroundAttackSectionName(int32 SectionID) const
 {
 	return FName(*FString::Printf(TEXT("Attack%d"), SectionID));
 }
 
 
-void ASwordActor::AttackMontageEndEvent(UAnimMontage* Montage, bool bInterrupted)
+void ASwordActor::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (Montage == AttackMontage)
+	if (AttackMontageEndEventMap.Contains(Montage) == false)
+		return;
+
+	if (AnimInstance->Montage_IsPlaying(Montage))
+		return;
+
+	AttackMontageEndEventMap[Montage].ExecuteIfBound();
+}
+
+void ASwordActor::GroundAttackMontageEndEvent()
+{
+	if (AnimInstance->Montage_IsPlaying(DefaultAttackMontage))
+		return;
+
+	Protagonist->SetMovable(true);
+	TrailComponent->DeactivateImmediate();
+}
+
+void ASwordActor::JumpUpperAttackMontageEndEvent()
+{
+	Protagonist->FixLocation(false);
+
+	Protagonist->GetCapsuleComponent()->BodyInstance.bLockXTranslation = false;
+	Protagonist->GetCapsuleComponent()->BodyInstance.bLockYTranslation = false;
+	Protagonist->GetCapsuleComponent()->BodyInstance.bLockZTranslation = false;
+
+	const bool IsLastCombo = (CurrentUpperComboNum == UpperAttackComboMaxCnt);
+	for (const auto Bot : LastGroundHitBots)
 	{
-		if (AnimInstance->Montage_IsPlaying(AttackMontage))
-			return;
+		if (!Bot)
+			continue;
 
-		Protagonist->SetMovable(true);
-		TrailComponent->DeactivateImmediate();
+		Bot->GetCharacterMovement()->GravityScale = 1;
+		if (IsLastCombo)
+		{
+			AttackToBot(Bot, TOptional<FVector>());
+			Bot->LaunchCharacter(FVector(0, 0, -2000), true, true);
+		}
+	}
 
-		AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::AttackMontageEndEvent);
+	if (IsLastCombo)
+	{
+		LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), UpperLastShotFX,
+		                                                                             GetActorLocation(), FRotator(0,0,90),
+		                                                                             FVector(3,3,3));
 	}
 }
 
@@ -133,4 +313,45 @@ void ASwordActor::Equip(AProtagonistCharacter* TargetCharacter)
 	{
 		SlashParticleSystem.LoadSynchronous();
 	}
+
+	Protagonist->MovementModeChangedDelegate.AddUniqueDynamic(this, &ASwordActor::OnChangedProtagonistMovementMode);
+	AnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::OnMontageEnd);
+}
+
+void ASwordActor::UnEquip()
+{
+	Super::UnEquip();
+
+	Protagonist->MovementModeChangedDelegate.RemoveDynamic(this, &ASwordActor::OnChangedProtagonistMovementMode);
+	AnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::OnMontageEnd);
+}
+
+void ASwordActor::OnChangedProtagonistMovementMode(ACharacter* Character, EMovementMode PrevMovementMode,
+                                                   uint8 PreviousCustomMode)
+{
+	ensure(Character == Protagonist);
+	switch (EMovementMode CurrentMovementMode = Protagonist->GetCharacterMovement()->MovementMode)
+	{
+	case MOVE_Walking:
+		if (CurrentAttackType == Sword::Lower)
+		{
+			SpawnLowerAttackLandingFX();
+		}
+
+		Protagonist->FixLocation(false);
+		CurrentAttackType = Sword::Default;
+		break;
+	case MOVE_Falling:
+		CurrentAttackType = Sword::None;
+		break;
+	}
+}
+
+void ASwordActor::SpawnLowerAttackLandingFX()
+{
+	const FVector LocationFX = Protagonist->GetTargetLocation() + FVector::DownVector * Protagonist->GetDefaultHalfHeight();
+	const FRotator RotatorFX = FRotator(90, 0, 0);
+	const FVector ScaleFX = FVector(1, 1, 2);
+	LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LowerLandingFX,
+	                                                                             LocationFX, RotatorFX, ScaleFX);
 }

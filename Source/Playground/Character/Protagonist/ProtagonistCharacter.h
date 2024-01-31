@@ -73,7 +73,6 @@ private:
 	class UInputMappingContext* DefaultMappingContext;
 
 	
-	
 	/** Jump Input Action */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
@@ -89,7 +88,6 @@ private:
 	bool IsLookingAround = false;
 	bool Movable = true;
 
-	
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FCharacterCurrentInfo CharacterCurrentInfo;
@@ -108,7 +106,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UFootIKComponent *FootIKComponent;
-	
+
 	void SetMovable(bool bEnable) { this->Movable = bEnable; }
 	bool GetMovable() { return this->Movable; }
 	void SetUsingControllerYaw(bool bActive) { bUseControllerRotationYaw = bActive; }
@@ -119,5 +117,5 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ZoomOnSlash();
 
-
+	void FixLocation(bool bFix) const;
 };
