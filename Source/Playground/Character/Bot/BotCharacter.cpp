@@ -16,6 +16,7 @@
 #include "PlaygroundGameMode.h"
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Item/DroppedItemTable.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -25,6 +26,8 @@ ABotCharacter::ABotCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
+	HpWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Hp Widget"));
+	HpWidgetComponent->SetupAttachment(GetRootComponent());
 }
 
 // Called when the game starts or when spawned
@@ -61,6 +64,11 @@ void ABotCharacter::PostInitializeComponents()
 void ABotCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	FVector HpLookDir = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation() - GetActorLocation();
+	HpLookDir.Z = 0;
+	const FRotator HpRotation = UKismetMathLibrary::MakeRotFromX(HpLookDir);
+	HpWidgetComponent->SetWorldRotation(HpRotation);
 }
 
 void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
@@ -81,10 +89,10 @@ void ABotCharacter::Attack()
 
 void ABotCharacter::BindUI()
 {
-	UWidgetComponent* WidgetComponent = Cast<UWidgetComponent>(GetComponentByClass(UWidgetComponent::StaticClass()));
-	WidgetComponent->InitWidget();
-	ensure(WidgetComponent != nullptr);
-	auto* BotWidget = Cast<UBotWidget>(WidgetComponent->GetWidget());
+	HpWidgetComponent->InitWidget();
+	ensure(HpWidgetComponent != nullptr);
+
+	auto* BotWidget = Cast<UBotWidget>(HpWidgetComponent->GetWidget());
 	ensureMsgf(BotWidget != nullptr, TEXT("Bot Widget not found"));
 	BotWidget->Bind(HealthComponent);
 }
@@ -130,7 +138,7 @@ void ABotCharacter::OnDeadCallback()
 	AiController->ActiveBehaviorTree(false);
 
 	// 드랍 아이템
-	{ 
+	{
 		const APlaygroundGameMode* PlaygroundGameMode = Cast<APlaygroundGameMode>(GetWorld()->GetAuthGameMode());
 		const auto Data = PlaygroundGameMode->DroppedItemTable->GetDroppedItemData();
 		const UItemData* ItemData = Data.Key;

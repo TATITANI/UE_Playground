@@ -34,6 +34,9 @@ public:
 
 	TSharedPtr<FOnAttackEnd> OnAttackEnd;
 
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+	class UWidgetComponent* HpWidgetComponent;
+
 private:
 	ABotGenerator* Generator;
 
@@ -43,7 +46,7 @@ private:
 	UPROPERTY()
 	class UHealthComponent* HealthComponent;
 
-
+	
 	UPROPERTY(VisibleAnywhere, Category="Attack")
 	int32 AttackDamage;
 
@@ -58,7 +61,6 @@ private:
 private:
 	UFUNCTION()
 	void BindUI();
-
 
 	virtual void CheckAttack();
 
