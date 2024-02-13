@@ -17,6 +17,7 @@
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Item/DroppedItemTable.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "UI/FloatingDamage.h"
 
 
 // Sets default values
@@ -153,6 +154,7 @@ void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, con
                                          AActor* DamageCauser)
 {
 	AnimInstance->PlayAttackedMontage();
+
 }
 
 bool ABotCharacter::IsAttacked()

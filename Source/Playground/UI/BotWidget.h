@@ -25,5 +25,5 @@ private:
 
 private:
 	UFUNCTION()
-	void UpdateHp(int32 Hp, int32 DeltadHp, int32 MaxHp);
+	void UpdateHp(int32 Hp, int32 DeltaHp, int32 MaxHp);
 };

@@ -4,8 +4,7 @@
 #include "HealthComponent.h"
 
 #include "Character/Bot/BotCharacter.h"
-#include "MyGameInstance.h"
-#include "Kismet/GameplayStatics.h"
+#include "UI/FloatingDamage.h"
 #include "Utils/UtilPlayground.h"
 
 // Sets default values for this component's properties
@@ -47,9 +46,9 @@ void UHealthComponent::Reset()
 
 float UHealthComponent::GetDamagedMontageLength() const
 {
-	if(!DamagedMontage)
+	if (!DamagedMontage)
 		return 0;
-	
+
 	return DamagedMontage->GetSectionLength(CurrentMontageSection);
 }
 
@@ -62,6 +61,9 @@ void UHealthComponent::PostInitProperties()
 void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
                                          AActor* DamageCauser)
 {
+	if (CurrentHp <= 0)
+		return;
+
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
 	OnHpChanged.Broadcast(CurrentHp, -Damage, MaxHp);
 
@@ -76,6 +78,11 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 		OnDead.Broadcast();
 	}
 
+	if (FloatingDamageClass!= nullptr)
+	{
+		AFloatingDamage* DamageTxt = GetWorld()->SpawnActor<AFloatingDamage>(FloatingDamageClass);
+		DamageTxt->Init(Damage, GetOwner()->GetActorLocation(), GetOwner()->GetActorRotation());
+	}
 
 	if (DamagedActor != nullptr && DamageCauser != nullptr)
 	{

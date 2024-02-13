@@ -43,7 +43,7 @@ private:
 	UPROPERTY()
 	class UBotAnimInstance* AnimInstance;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
 	class UHealthComponent* HealthComponent;
 
 	
