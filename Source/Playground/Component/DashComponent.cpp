@@ -65,7 +65,7 @@ void UDashComponent::StartDash(const FInputActionValue& Value)
 
 		ProtagonistCharacter->GetWorldTimerManager().ClearTimer(CooltimeTimerHandle);
 	}), CoolTime, false);
-
+	
 	AnimInstance->Montage_Play(DashMontage);
 	const double CurrentSeconds = GetWorld()->GetTimeSeconds();
 	OnCooldownDash.Broadcast(CurrentSeconds, CurrentSeconds+ CoolTime);
@@ -76,7 +76,7 @@ void UDashComponent::ProgressDash(float& dt)
 	const float DashCurrentDistance = DashDistance * dt/ (DashMontage->GetPlayLength()/ DashMontage->RateScale);
 	// const float DashCoefficent = DashPowerCurve->GetFloatValue(1 - RemainDistance / DashDistanceSquared);
 	const FVector Displacement = ProtagonistCharacter->GetActorForwardVector() * DashCurrentDistance;
-	ProtagonistCharacter->AddActorWorldOffset(Displacement);
+	ProtagonistCharacter->AddActorWorldOffset(Displacement, true);
 	RemainDistance -= DashCurrentDistance;
 
 }
