@@ -45,18 +45,18 @@ public:
 public:
 	FSimpleMulticastDelegate OnAttackEnd;
 
-	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditDefaultsOnly)
 	class UWidgetComponent* HpWidgetComponent;
 
+	UPROPERTY(EditDefaultsOnly)
+	class UHealthComponent* HealthComponent;
+	
 private:
 	ABotGenerator* Generator;
 
 	UPROPERTY()
 	class UBotAnimInstance* AnimInstance;
-
-	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
-	class UHealthComponent* HealthComponent;
-
+	
 	UPROPERTY(VisibleAnywhere, Category="Attack")
 	int32 AttackDamage;
 

@@ -11,6 +11,7 @@
 #include "NiagaraComponent.h"
 #include "Character/Bot/BotCharacter.h"
 #include "Character/Bot/DamageType_KnockOut.h"
+#include "Component/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Misc/KeyChainUtilities.h"
@@ -105,7 +106,7 @@ void ASwordActor::GroundAttackToBots()
 	                                    AttackTraceType,
 	                                    false,
 	                                    {Protagonist},
-	                                    EDrawDebugTrace::ForDuration,
+	                                    EDrawDebugTrace::None,
 	                                    HitResults,
 	                                    true);
 
@@ -201,20 +202,7 @@ void ASwordActor::LowerAttack()
 
 	constexpr float Radius = 300.0f;
 	constexpr float Height = 500.0f;
-
-
-	FHitResult HitResultGround;
-	UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), Protagonist->GetActorLocation(),
-	                                                Protagonist->GetActorLocation() + FVector::DownVector * 10000,
-	                                                {GroundObjectType}, false, {Protagonist}, EDrawDebugTrace::ForDuration, HitResultGround, true);
-	if (HitResultGround.bBlockingHit)
-	{
-		LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LowerAttackFX,
-		                                                                             HitResultGround.Location, FRotator::ZeroRotator,
-		                                                                             FVector(2, 2, 2));
-		// UtilPlayground::PrintLog(FString::Printf(TEXT("HitGround Loc : %s"), *HitResultGround.Location.ToString()));
-	}
-
+	
 	TArray<FHitResult> HitResults;
 	UKismetSystemLibrary::CapsuleTraceMulti(GetWorld(), Protagonist->GetActorLocation() - Protagonist->GetActorUpVector() * Height * 0.5f,
 	                                        Protagonist->GetActorLocation() - Protagonist->GetActorUpVector() * Height * 0.5f,
@@ -223,7 +211,7 @@ void ASwordActor::LowerAttack()
 	                                        AttackTraceType,
 	                                        false,
 	                                        {Protagonist},
-	                                        EDrawDebugTrace::ForDuration,
+	                                        EDrawDebugTrace::None,
 	                                        HitResults,
 	                                        true);
 
@@ -242,13 +230,32 @@ void ASwordActor::LowerAttack()
 			AttackToBot(Bot, TOptional<FVector>());
 		}
 	}
+
+	// FX
+	{
+		FHitResult HitResultGround;
+		UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), Protagonist->GetActorLocation(),
+														Protagonist->GetActorLocation() + FVector::DownVector * 10000,
+														{GroundObjectType}, false, {Protagonist}, EDrawDebugTrace::None, HitResultGround, true);
+		if (HitResultGround.bBlockingHit)
+		{
+			LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LowerAttackFX,
+																						 HitResultGround.Location, FRotator::ZeroRotator,
+																						 FVector(2, 2, 2));
+			// UtilPlayground::PrintLog(FString::Printf(TEXT("HitGround Loc : %s"), *HitResultGround.Location.ToString()));
+		}
+	}
 }
 
 void ASwordActor::AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint, bool bKnockOut)
 {
+	if (Bot->HealthComponent->GetCurrentHP() <= 0)
+		return;
+
 	const TSubclassOf<UDamageType> DamageType = bKnockOut ? UDamageType_KnockOut::StaticClass() : UDamageType::StaticClass();
 	UGameplayStatics::ApplyDamage(Bot, Damage, GetInstigatorController(),
 	                              this->GetOwner(), DamageType);
+
 
 	ensure(SlashParticleSystem != nullptr);
 	if (SlashParticleSystem != nullptr)
@@ -354,6 +361,7 @@ void ASwordActor::OnChangedProtagonistMovementMode(ACharacter* Character, EMovem
 		Protagonist->FixLocation(false);
 		CurrentAttackType = Sword::Default;
 		break;
+
 	case MOVE_Falling:
 		CurrentAttackType = Sword::None;
 		break;
