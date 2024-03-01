@@ -17,23 +17,19 @@ UBTTask_Attack::UBTTask_Attack()
 
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
-
 	Bot = Cast<ABotCharacter>(OwnerComp.GetAIOwner()->GetCharacter());
-	ensure(Bot);
-	if (Bot == nullptr)
+	if (ensure(Bot != nullptr) == false)
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	ensure(Bot->OnAttackEnd != nullptr);
-	AttackEndHandle = Bot->OnAttackEnd->AddLambda([this]()
+	AttackEndHandle = Bot->OnAttackEnd.AddLambda([this]()
 	{
 		IsAttacking = false;
-		Bot->OnAttackEnd->Remove(AttackEndHandle);
+		Bot->OnAttackEnd.Remove(AttackEndHandle);
 	});
-	
 	IsAttacking = true;
+
 	Bot->Attack();
 	return EBTNodeResult::InProgress;
 }

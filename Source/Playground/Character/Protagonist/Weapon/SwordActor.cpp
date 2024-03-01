@@ -10,8 +10,10 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Character/Bot/BotCharacter.h"
+#include "Character/Bot/DamageType_KnockOut.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Misc/KeyChainUtilities.h"
 #include "Utils/UtilPlayground.h"
 
 void ASwordActor::BeginPlay()
@@ -48,7 +50,6 @@ void ASwordActor::BeginPlay()
 	                                                                            UpperSequenceSettings, SequenceActor);
 }
 
-
 void ASwordActor::AttackInputStarted()
 {
 	switch (CurrentAttackType)
@@ -69,12 +70,19 @@ void ASwordActor::AttackOnGround()
 	{
 		if (AnimInstance != nullptr)
 		{
-			if (AnimInstance->Montage_IsPlaying(DefaultAttackMontage))
+			const double CurrentSec = GetWorld()->GetTimeSeconds();
+			const double AttackTimeGap = CurrentSec - LastAttackTime;
+			constexpr float AttackDelay = 0.5f;
+			constexpr float ComboLimitSec = 1.f;
+			if (AttackTimeGap < AttackDelay)
 				return;
+			LastAttackTime = CurrentSec;
+
+			const bool bFirstAttack = (AttackTimeGap > ComboLimitSec || CurrentAttackSectionID >= DefaultAttackSectionMaxID);
+			CurrentAttackSectionID = bFirstAttack ? 1 : CurrentAttackSectionID + 1;
 
 			AnimInstance->Montage_Play(DefaultAttackMontage, 1.f);
 			AnimInstance->Montage_JumpToSection(GetGroundAttackSectionName(CurrentAttackSectionID));
-			CurrentAttackSectionID = (CurrentAttackSectionID == DefaultAttackSectionMaxID) ? 1 : CurrentAttackSectionID + 1;
 
 			Protagonist->SetMovable(false);
 			Protagonist->ZoomOnSlash();
@@ -102,6 +110,8 @@ void ASwordActor::GroundAttackToBots()
 	                                    true);
 
 	LastGroundHitBots.Reset();
+
+	const bool bKnockOut = CurrentAttackSectionID == DefaultAttackSectionMaxID;
 	for (auto HitResult : HitResults)
 	{
 		ABotCharacter* Bot = Cast<ABotCharacter>(HitResult.GetActor());
@@ -109,7 +119,8 @@ void ASwordActor::GroundAttackToBots()
 			Bots.Add(Bot);
 
 		LastGroundHitBots.Add(Bot);
-		AttackToBot(Bot, HitResult.Location);
+		Bot->LaunchCharacter(Protagonist->GetActorForwardVector() * 1000, true, true);
+		AttackToBot(Bot, HitResult.Location, bKnockOut);
 	}
 }
 
@@ -201,7 +212,7 @@ void ASwordActor::LowerAttack()
 		LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LowerAttackFX,
 		                                                                             HitResultGround.Location, FRotator::ZeroRotator,
 		                                                                             FVector(2, 2, 2));
-		UtilPlayground::PrintLog(FString::Printf(TEXT("HitGround Loc : %s"), *HitResultGround.Location.ToString()));
+		// UtilPlayground::PrintLog(FString::Printf(TEXT("HitGround Loc : %s"), *HitResultGround.Location.ToString()));
 	}
 
 	TArray<FHitResult> HitResults;
@@ -233,10 +244,12 @@ void ASwordActor::LowerAttack()
 	}
 }
 
-void ASwordActor::AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint)
+void ASwordActor::AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint, bool bKnockOut)
 {
+	const TSubclassOf<UDamageType> DamageType = bKnockOut ? UDamageType_KnockOut::StaticClass() : UDamageType::StaticClass();
 	UGameplayStatics::ApplyDamage(Bot, Damage, GetInstigatorController(),
-	                              this->GetOwner(), UDamageType::StaticClass());
+	                              this->GetOwner(), DamageType);
+
 	ensure(SlashParticleSystem != nullptr);
 	if (SlashParticleSystem != nullptr)
 	{
@@ -293,7 +306,7 @@ void ASwordActor::JumpUpperAttackMontageEndEvent()
 		Bot->GetCharacterMovement()->GravityScale = 1;
 		if (IsLastCombo)
 		{
-			AttackToBot(Bot, TOptional<FVector>());
+			AttackToBot(Bot, TOptional<FVector>(), true);
 			Bot->LaunchCharacter(FVector(0, 0, -2000), true, true);
 		}
 	}
@@ -301,8 +314,8 @@ void ASwordActor::JumpUpperAttackMontageEndEvent()
 	if (IsLastCombo)
 	{
 		LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), UpperLastShotFX,
-		                                                                             GetActorLocation(), FRotator(0,0,90),
-		                                                                             FVector(3,3,3));
+		                                                                             GetActorLocation(), FRotator(0, 0, 90),
+		                                                                             FVector(3, 3, 3));
 	}
 }
 

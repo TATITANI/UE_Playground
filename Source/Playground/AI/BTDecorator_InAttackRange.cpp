@@ -5,6 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "Character/Bot/BotCharacter.h"
+#include "Utils/UtilPlayground.h"
 
 UBTDecorator_InAttackRange::UBTDecorator_InAttackRange()
 {
@@ -20,10 +21,8 @@ bool UBTDecorator_InAttackRange::CalculateRawConditionValue(UBehaviorTreeCompone
 	if(TargetProtagonist == nullptr)
 		return false;
 
-	// DrawDebugSphere(OwnerBot->GetWorld(), OwnerBot->GetActorLocation(),
-	//                 DistanceAttackable, 16, FColor::Cyan, false, 0.2f);
-
 	const bool InAttackRange = TargetProtagonist->GetDistanceTo(OwnerBot) <= DistanceAttackable;
+
 	return InAttackRange;
 	
 }

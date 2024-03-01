@@ -3,8 +3,10 @@
 #include "BTService_SearchTarget.h"
 
 #include "AIController.h"
-#include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Utils/UtilPlayground.h"
 
 UBTService_SearchTarget::UBTService_SearchTarget()
 {
@@ -15,48 +17,30 @@ UBTService_SearchTarget::UBTService_SearchTarget()
 void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
-	
+
 	const auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
-	
-	if (CurrentPawn == nullptr)
-		return;
-	
+	ensure(CurrentPawn != nullptr);
+
 	const UWorld* World = CurrentPawn->GetWorld();
-	const FVector Center = CurrentPawn->GetActorLocation();
-	
-	if (World == nullptr)
-		return;
-	
-	TArray<FOverlapResult> OverlapResults;
-	
-	const bool IsOverlap = World->OverlapMultiByChannel(
-		OverlapResults,
-		Center,
-		FQuat::Identity,
-		ECC_GameTraceChannel3, // "attack"채널. config/DefaultEngine.ini 에서 확인 가능
-		FCollisionShape::MakeSphere(SearchRadius),
-		FCollisionQueryParams(NAME_None, false, CurrentPawn)
-	);
-	
-	if (IsOverlap)
+	ensure(World != nullptr);
+
+	FHitResult HitResult;
+	const bool bOverlap = UKismetSystemLibrary::SphereTraceSingle(World, CurrentPawn->GetActorLocation(), CurrentPawn->GetActorLocation(),
+	                                                              SearchRadius, TraceTypeQuery, false, {},
+	                                                              EDrawDebugTrace::ForDuration, HitResult, true,
+	                                                              FLinearColor::Green, FLinearColor::Red,  0.5f);
+	if (bOverlap)
 	{
-		for (auto& OverlapResult : OverlapResults)
+		const auto TargetActor = HitResult.GetActor();
+		UE_LOG(LogTemp,Log,TEXT("SearchTarget Name :%s"), *TargetActor->GetName());
+		if (TargetActor->IsA(TargetClass))
 		{
-			auto TargetActor = OverlapResult.GetActor();
-			bool IsMatch = TargetActor->IsA(TargetClass);
-			if (IsMatch)
-			{
-				OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, TargetActor);
-				// DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Green, false, 0.2f);
-				return;
-			}
+			OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, TargetActor);
 		}
 	}
 	else
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, nullptr);
-		// DrawDebugSphere(World, Center, SearchRadius, 16, FColor::Red, false, 0.2f);
-
 	}
 
 }

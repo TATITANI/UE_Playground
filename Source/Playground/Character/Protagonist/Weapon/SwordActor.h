@@ -28,7 +28,7 @@ class PLAYGROUND_API ASwordActor : public AWeaponActor
 	GENERATED_BODY()
 
 private:
-	uint8 CurrentAttackSectionID = 1;
+	uint8 CurrentAttackSectionID = 0;
 	const uint8 DefaultAttackSectionMaxID = 3;
 
 	uint8 CurrentUpperComboNum = 1;
@@ -59,6 +59,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Animation, meta=(AllowPrivateAccess = "true"))
 	UAnimMontage* LowerAttackMontage;
 
+	double LastAttackTime = 0;
+	
 	UPROPERTY(EditDefaultsOnly, Category=Effect, meta=(AllowPrivateAccess))
 	TSoftObjectPtr<class UNiagaraSystem> SlashParticleSystem;
 
@@ -110,7 +112,7 @@ private:
 
 	void LowerAttack();
 
-	void AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint);
+	void AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint, bool bKnockOut = false);
 
 	FName GetGroundAttackSectionName(int32 SectionID) const;
 

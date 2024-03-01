@@ -28,14 +28,8 @@ private:
 	UPROPERTY(EditAnywhere, Category=Stat, meta=(AllowPrivateAccess=true))
 	ECharacterStatType StatType;
 
-	UPROPERTY(EditDefaultsOnly, Category=Animation, meta=(AllowPrivateAccess=true))
-	UAnimMontage* DamagedMontage;
-
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	TSubclassOf<class AFloatingDamage> FloatingDamageClass;
-	
-	UAnimInstance* AnimInstance;
-	int8 CurrentMontageSection = 0;
 
 	int32 MaxHp = 0;
 	int32 CurrentHp = 0;
@@ -53,5 +47,4 @@ public:
 	void Reset();
 	int32 GetCurrentHP() const { return CurrentHp; }
 	int32 GetMaxHP() const { return MaxHp; }
-	float GetDamagedMontageLength() const;
 };

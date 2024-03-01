@@ -16,14 +16,16 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 {
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
-	if (CurrentPawn == nullptr)
+
+	const auto CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
+
+	if(ensureMsgf( (CurrentPawn != nullptr), TEXT("Could not found Bot Pawn")) == false) 
 	{
 		return EBTNodeResult::Failed;
 	}
 
-	UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	if (NavSystem == nullptr)
+	const UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	if(ensureMsgf( (NavSystem != nullptr), TEXT("Could not found Bot NavSystem")) == false) 
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -31,13 +33,12 @@ EBTNodeResult::Type UBTTask_FindPatrolPos::ExecuteTask(UBehaviorTreeComponent& O
 	FNavLocation RandomLocation;
 	if (NavSystem->GetRandomPointInNavigableRadius(CurrentPawn->GetActorLocation(), 500.f, RandomLocation))
 	{
-		// UE_LOG(LogTemp, Log, TEXT("actorPos %s, randomPos : %s"),
-		//        *CurrentPawn->GetActorLocation().ToString(), *RandomLocation.Location.ToString());
+		UE_LOG(LogTemp, Log, TEXT("actorPos %s, randomPos : %s"),
+		       *CurrentPawn->GetActorLocation().ToString(), *RandomLocation.Location.ToString());
 
 		OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName(TEXT("PatrolPos")), RandomLocation.Location);
 		return EBTNodeResult::Succeeded;
 	}
-
 
 	return EBTNodeResult::Failed;
 }

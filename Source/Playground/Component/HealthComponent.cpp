@@ -28,8 +28,6 @@ void UHealthComponent::InitializeComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	const ACharacter* Character = Cast<ACharacter>(GetOwner());
-	AnimInstance = Cast<UAnimInstance>(Character->GetMesh()->GetAnimInstance());
 }
 
 void UHealthComponent::Init(int32 _MaxHp)
@@ -44,22 +42,14 @@ void UHealthComponent::Reset()
 	OnHpChanged.Broadcast(CurrentHp, 0, MaxHp);
 }
 
-float UHealthComponent::GetDamagedMontageLength() const
-{
-	if (!DamagedMontage)
-		return 0;
-
-	return DamagedMontage->GetSectionLength(CurrentMontageSection);
-}
-
 
 void UHealthComponent::PostInitProperties()
 {
 	Super::PostInitProperties();
 }
 
-void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
-                                         AActor* DamageCauser)
+void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+                                         AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (CurrentHp <= 0)
 		return;
@@ -67,18 +57,12 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 	CurrentHp = FMath::Max(CurrentHp - Damage, 0);
 	OnHpChanged.Broadcast(CurrentHp, -Damage, MaxHp);
 
-	if (AnimInstance)
-	{
-		if (DamagedMontage)
-			AnimInstance->Montage_Play(DamagedMontage);
-	}
-
 	if (CurrentHp <= 0)
 	{
 		OnDead.Broadcast();
 	}
 
-	if (FloatingDamageClass!= nullptr)
+	if (FloatingDamageClass != nullptr)
 	{
 		AFloatingDamage* DamageTxt = GetWorld()->SpawnActor<AFloatingDamage>(FloatingDamageClass);
 		DamageTxt->Init(Damage, GetOwner()->GetActorLocation(), GetOwner()->GetActorRotation());

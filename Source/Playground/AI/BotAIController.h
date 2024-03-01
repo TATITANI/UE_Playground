@@ -23,6 +23,7 @@ public:
 
 	void ActiveBehaviorTree(bool IsActive);
 private:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))
 	class UBehaviorTreeComponent* BehaviorTreeComponent;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))

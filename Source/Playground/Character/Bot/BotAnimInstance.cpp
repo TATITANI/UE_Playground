@@ -4,57 +4,55 @@
 #include "BotAnimInstance.h"
 
 #include "BotCharacter.h"
+#include "Utils/UtilPlayground.h"
 
 UBotAnimInstance::UBotAnimInstance()
 {
-	OnAttackEnded = MakeShared<FOnAttackEnded>();
 }
 
 void UBotAnimInstance::NativeBeginPlay()
 {
 	Super::NativeBeginPlay();
 	OnMontageEnded.AddUniqueDynamic(this, &UBotAnimInstance::MontageEnd);
-
+	OwnerBot = Cast<ABotCharacter>(TryGetPawnOwner());
+	ensure(OwnerBot!= nullptr);
 }
-
-void UBotAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
-{
-	Super::NativeUpdateAnimation(DeltaSeconds);
-	
-	if(auto &&Character = TryGetPawnOwner())
-	{
-		CurrentVelocity = Character->GetVelocity();
-	}
-}
-
 
 void UBotAnimInstance::AnimNotify_AttackHit()
 {
 	OnAttackHit.Broadcast();
 }
 
-void UBotAnimInstance::PlayAttackMontage()
+void UBotAnimInstance::AnimNotify_StandUp()
 {
-	if (Montage_IsPlaying(AttackMontage) == false)
-	{
-		Montage_Play(AttackMontage);
-	}
+	OwnerBot->SetState(EBotState::Idle);
 }
 
-void UBotAnimInstance::PlayAttackedMontage()
+void UBotAnimInstance::PlayBotMontage(UAnimMontage* Montage, EBotState::Type ResetState)
 {
-	if (Montage_IsPlaying(AttackedMontage) == false)
-	{
-		Montage_Play(AttackedMontage);
-	}
+	Montage_Play(Montage);
+	BotStateByMontage.FindOrAdd(Montage, ResetState);
 }
 
-
-void UBotAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted) 
+void UBotAnimInstance::PlayAttackMontage(EBotState::Type ResetState)
 {
-	if(Montage == AttackMontage)
-	{
-		OnAttackEnded->Broadcast();
-	}
+	PlayBotMontage(AttackMontage, ResetState);
 }
 
+void UBotAnimInstance::PlayAttackedMontage(EBotState::Type ResetState)
+{
+	PlayBotMontage(AttackedMontage, ResetState);
+}
+
+void UBotAnimInstance::MontageEnd(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (BotStateByMontage.Contains(Montage))
+	{
+		OwnerBot->ResetCurrentState(BotStateByMontage[Montage]);
+	}
+
+	if (Montage == AttackMontage)
+	{
+		OwnerBot->OnAttackEnd.Broadcast();
+	}
+}

@@ -17,17 +17,17 @@ private:
 	UPROPERTY(EditAnywhere, meta=(ClampMin="0.1", AllowPrivateAccess=true))
 	float SearchRadius = 500.f;
 
-
 	UPROPERTY(EditInstanceOnly, Category=BlackBoard, meta=(AllowPrivateAccess=true))
 	FBlackboardKeySelector TargetKeySelector;
-	
+
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
 	TSubclassOf<class ACharacter> TargetClass;
-	
+
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
+	TEnumAsByte<ETraceTypeQuery> TraceTypeQuery;
+
 public:
 	UBTService_SearchTarget();
-	
+
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
-
-
 };

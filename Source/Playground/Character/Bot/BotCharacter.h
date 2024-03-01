@@ -4,11 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Item/PlaygroundItem.h"
 #include "BotCharacter.generated.h"
 
+UENUM(BlueprintType)
+namespace EBotState
+{
+	enum Type
+	{
+		Idle,
+		Attacking,
+		Attacked,
+		KnockOut,
+		StandUp,
+	};
+}
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
 
 UCLASS()
 class PLAYGROUND_API ABotCharacter : public ACharacter
@@ -28,11 +38,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	void Init(class ABotGenerator* _Generator, FVector Loc);
 
-public:
 	virtual void Attack();
-	bool IsAttacked();
+	bool IsIdle();
+	void KnockOut();
 
-	TSharedPtr<FOnAttackEnd> OnAttackEnd;
+public:
+	FSimpleMulticastDelegate OnAttackEnd;
 
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess=true))
 	class UWidgetComponent* HpWidgetComponent;
@@ -46,18 +57,37 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
 	class UHealthComponent* HealthComponent;
 
-	
 	UPROPERTY(VisibleAnywhere, Category="Attack")
 	int32 AttackDamage;
 
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
-	float attackDistance = 100.f;
+	float AttackDistance = 100.f;
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
-	float attackRadius = 50.f;
+	float AttackRadius = 50.f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
-	TEnumAsByte<ECollisionChannel> AttackCollisionChannel;
-	
+	TEnumAsByte<ETraceTypeQuery> AttackTraceQuery;
+
+	FTimerHandle KnockOutTimerHandle;
+	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
+	float KnockOutDuration = 1;
+
+		
+protected:
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	TEnumAsByte<EBotState::Type> CurrentBotState = EBotState::Idle;
+
+public:
+	TEnumAsByte<EBotState::Type> GetCurrentState() const { return CurrentBotState; };
+	void SetState(EBotState::Type BotState);
+
+	/**
+	 * @brief  현재 상태가 파라미터 상태와 같으면 idle 상태로 초기화.
+	 * 다른 상태로 변경되었다면 현재 상태를 그대로 유지하는 목적. 
+	 * @param ResetConditionState 
+	 * @return 리셋 성공 
+	 */
+	bool ResetCurrentState(EBotState::Type ResetConditionState);
 private:
 	UFUNCTION()
 	void BindUI();

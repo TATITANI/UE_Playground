@@ -4,6 +4,7 @@
 #include "BotCharacter.h"
 
 #include "BotAnimInstance.h"
+#include "DamageType_KnockOut.h"
 #include "MyGameInstance.h"
 #include "AI/BotAIController.h"
 #include "AI/BotGenerator.h"
@@ -15,9 +16,12 @@
 #include "Logging/LogMacros.h"
 #include "PlaygroundGameMode.h"
 #include "Character/Protagonist/ProtagonistCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Item/DroppedItemTable.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "PhysicsEngine/ConstraintUtils.h"
 #include "UI/FloatingDamage.h"
+#include "Utils/UtilPlayground.h"
 
 
 // Sets default values
@@ -42,8 +46,8 @@ void ABotCharacter::BeginPlay()
 		(ECharacterStatType::Bot, "1");
 	HealthComponent->Init(BotStat->MaxHp);
 	HealthComponent->OnDead.AddUObject(this, &ABotCharacter::OnDeadCallback);
-
 	OnTakeAnyDamage.AddDynamic(this, &ABotCharacter::OnTakeDamageCallback);
+
 	AttackDamage = BotStat->Damage;
 }
 
@@ -54,8 +58,6 @@ void ABotCharacter::PostInitializeComponents()
 	AnimInstance = Cast<UBotAnimInstance>(GetMesh()->GetAnimInstance());
 	ensureMsgf(AnimInstance != nullptr, TEXT("Bot animinstance cast failed"));
 	AnimInstance->OnAttackHit.AddUObject(this, &ABotCharacter::CheckAttack);
-	OnAttackEnd = AnimInstance->OnAttackEnded;
-	ensure(OnAttackEnd != nullptr);
 
 	BindUI();
 }
@@ -79,14 +81,32 @@ void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
 	SetActorLocation(Loc);
 	ABotAIController* AiController = Cast<ABotAIController>(GetController());
 	AiController->ActiveBehaviorTree(true);
+	SetState(EBotState::Idle);
 }
 
 
 void ABotCharacter::Attack()
 {
-	AnimInstance->PlayAttackMontage();
+	SetState(EBotState::Attacking);
+	AnimInstance->PlayAttackMontage(GetCurrentState());
 }
 
+
+void ABotCharacter::SetState(EBotState::Type BotState)
+{
+	CurrentBotState = BotState;
+	// UtilPlayground::PrintLog(FString::Printf(TEXT("Bot SetState : %s"), *UEnum::GetValueAsString(BotState)));
+}
+
+bool ABotCharacter::ResetCurrentState(EBotState::Type ResetConditionState)
+{
+	if (CurrentBotState == ResetConditionState)
+	{
+		SetState(EBotState::Idle);
+		return true;
+	}
+	return false;
+}
 
 void ABotCharacter::BindUI()
 {
@@ -106,25 +126,13 @@ void ABotCharacter::CheckAttack()
 	FHitResult hitResult;
 	FCollisionQueryParams params(NAME_None, false, this);
 
-	const FVector TraceRelatviePos = GetActorForwardVector() * attackDistance;
-	// 트레이스 채널을 사용해 충돌 감지
-	GetWorld()->SweepSingleByChannel(
-		OUT hitResult,
-		GetActorLocation(),
-		GetActorLocation() + TraceRelatviePos,
-		FQuat::Identity,
-		AttackCollisionChannel,
-		FCollisionShape::MakeSphere(attackRadius),
-		params);
+	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorForwardVector() * AttackDistance,
+	                                        AttackRadius, AttackTraceQuery, false, {},
+	                                        EDrawDebugTrace::ForDuration, hitResult, true);
+
 
 	AActor* ActorHit = hitResult.GetActor();
-	bool IsHit = ActorHit != nullptr && ActorHit->IsA(AProtagonistCharacter::StaticClass());
-
-	FColor ColorDebugCapsule = IsHit ? FColor::Orange : FColor::Green;
-	const FQuat QuatDebugCapsule = FRotationMatrix::MakeFromZ(TraceRelatviePos).ToQuat();
-	// DrawDebugCapsule(GetWorld(), GetActorLocation() + TraceRelatviePos * 0.5f,
-	// attackDistance * 0.5f, attackRadius, QuatDebugCapsule, ColorDebugCapsule, false, 2.f);
-
+	const bool IsHit = ActorHit != nullptr && ActorHit->IsA(AProtagonistCharacter::StaticClass());
 	if (IsHit)
 	{
 		UGameplayStatics::ApplyDamage(ActorHit, AttackDamage, this->GetController(),
@@ -153,11 +161,27 @@ void ABotCharacter::OnDeadCallback()
 void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
                                          AActor* DamageCauser)
 {
-	AnimInstance->PlayAttackedMontage();
-
+	if(GetCurrentState() == EBotState::KnockOut)
+		return;
+	
+	if (DamageType->IsA(UDamageType_KnockOut::StaticClass()))
+	{
+		KnockOut();
+	}
+	else
+	{
+		SetState(EBotState::Attacked);
+		AnimInstance->PlayAttackedMontage(GetCurrentState());
+	}
 }
 
-bool ABotCharacter::IsAttacked()
+void ABotCharacter::KnockOut()
 {
-	return AnimInstance->IsPlayingAttackedMontage();
+	SetState(EBotState::KnockOut);
+	AnimInstance->StopAllMontages(0);
+	
+	GetWorldTimerManager().SetTimer(KnockOutTimerHandle, FTimerDelegate::CreateLambda([this]
+	{
+		SetState(EBotState::StandUp);
+	}), KnockOutDuration, false);
 }

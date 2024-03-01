@@ -91,10 +91,19 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	UPROPERTY()
+	class UProtagonistAnimInstance* AnimInstance;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Animation, meta=(AllowPrivateAccess=true))
+	UAnimMontage* DamagedMontage;
+
+	int8 CurrentMontageSection = 0;
+
 	FTimerHandle DamageTriggerTimerHandle;
 
-
 	bool IsLookingAround = false;
+	
+	UPROPERTY(VisibleAnywhere)
 	bool Movable = true;
 
 public:

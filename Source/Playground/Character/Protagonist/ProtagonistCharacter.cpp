@@ -7,6 +7,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "MyGameInstance.h"
+#include "ProtagonistAnimInstance.h"
 
 #include "Character/CharacterCurrentInfo.h"
 #include "Component/CharacterWeaponComponent.h"
@@ -75,6 +76,8 @@ void AProtagonistCharacter::PostInitializeComponents()
 void AProtagonistCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AnimInstance = Cast<UProtagonistAnimInstance>(GetMesh()->GetAnimInstance());
 
 	const APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
@@ -157,7 +160,6 @@ void AProtagonistCharacter::GroundMove(const FInputActionValue& Value)
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * CharacterCurrentInfo.InputDir.X;
 		FVector Direction = ForwardDirection + RightDirection;
 		Direction.Normalize();
-
 		AddMovementInput(Direction);
 	}
 }
@@ -205,14 +207,20 @@ void AProtagonistCharacter::TriggerDamagedState(bool bOn)
 void AProtagonistCharacter::OnHpChanged(int32 CurrentHp, int32 DeltaHp, int32 MaxHp)
 {
 	if (DeltaHp < 0)
-		TriggerDamagedState(true);
-
-	const float FreezingDelay = HealthComponent->GetDamagedMontageLength() * 0.6f;
-	GetWorldTimerManager().SetTimer(DamageTriggerTimerHandle, FTimerDelegate::CreateLambda([this]()
 	{
-		TriggerDamagedState(false);
-	}), FreezingDelay, false);
-	
+		TriggerDamagedState(true);
+		if (DamagedMontage)
+		{
+			AnimInstance->Montage_Play(DamagedMontage);
+
+			const float DamagedMontageLength = DamagedMontage->GetSectionLength(CurrentMontageSection);
+			const float FreezingDelay = DamagedMontageLength * 0.6f;
+			GetWorldTimerManager().SetTimer(DamageTriggerTimerHandle, FTimerDelegate::CreateLambda([this]()
+			{
+				TriggerDamagedState(false);
+			}), FreezingDelay, false);
+		}
+	}
 }
 
 void AProtagonistCharacter::FixLocation(bool bFix) const
