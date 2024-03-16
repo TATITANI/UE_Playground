@@ -3,7 +3,9 @@
 
 #include "BotAIController.h"
 
+#include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Utils/UtilPlayground.h"
 
 ABotAIController::ABotAIController()
 {
@@ -19,26 +21,24 @@ void ABotAIController::BeginPlay()
 void ABotAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	
-	// UE_LOG(LogTemp, Log, TEXT("ai OnPossess %s"), *InPawn->GetName());
 
-	UBlackboardComponent* _Blackboard = Blackboard;
-	if (UseBlackboard(BlackboardData, _Blackboard))
-	{
-		
-	}
+	BehaviorTreeComponent->StartLogic();
+	RunBehaviorTree(BehaviorTreeComponent->GetCurrentTree());
+
 }
 
 void ABotAIController::OnUnPossess()
 {
 	Super::OnUnPossess();
-
 }
 
-void ABotAIController::ActiveBehaviorTree(bool IsActive)
+void ABotAIController::StartBehaviorTreeLogic()
 {
-	if(IsActive)
-		BehaviorTreeComponent->StartTree(*BehaviorTree);
-	else
-		BehaviorTreeComponent->StopTree();	
+	BehaviorTreeComponent->StartLogic();
+	
+}
+
+void ABotAIController::StopBehaviorTree(FString Reason)
+{
+	BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
 }

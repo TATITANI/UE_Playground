@@ -21,16 +21,11 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
-	void ActiveBehaviorTree(bool IsActive);
+	void StartBehaviorTreeLogic();
+	void StopBehaviorTree(FString Reason);
+	
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))
 	class UBehaviorTreeComponent* BehaviorTreeComponent;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))
-	class UBehaviorTree* BehaviorTree;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=AI, meta=(AllowPrivateAccess))
-	class UBlackboardData* BlackboardData;
-
 	
 };

@@ -56,6 +56,15 @@ private:
 
 	UPROPERTY()
 	class UBotAnimInstance* AnimInstance;
+
+	UPROPERTY()
+	class ABotAIController* AIController;
+
+	/**
+	 * @brief 캐릭터 회전값을 기준으로 한 이동각도
+	 */
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	float CurrentVelocityAngle;
 	
 	UPROPERTY(VisibleAnywhere, Category="Attack")
 	int32 AttackDamage;
@@ -72,7 +81,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess=true))
 	float KnockOutDuration = 1;
 
-		
+
+	
 protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TEnumAsByte<EBotState::Type> CurrentBotState = EBotState::Idle;

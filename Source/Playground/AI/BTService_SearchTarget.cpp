@@ -3,6 +3,7 @@
 #include "BTService_SearchTarget.h"
 
 #include "AIController.h"
+#include "BotAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -27,20 +28,23 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	FHitResult HitResult;
 	const bool bOverlap = UKismetSystemLibrary::SphereTraceSingle(World, CurrentPawn->GetActorLocation(), CurrentPawn->GetActorLocation(),
 	                                                              SearchRadius, TraceTypeQuery, false, {},
-	                                                              EDrawDebugTrace::None, HitResult, true,
-	                                                              FLinearColor::Green, FLinearColor::Red,  0.5f);
+	                                                              EDrawDebugTrace::ForDuration, HitResult, true,
+	                                                              FLinearColor::Green, FLinearColor::Red, 0.5f);
+
+	AActor* TargetActor = nullptr;
 	if (bOverlap)
 	{
-		const auto TargetActor = HitResult.GetActor();
-		UE_LOG(LogTemp,Log,TEXT("SearchTarget Name :%s"), *TargetActor->GetName());
-		if (TargetActor->IsA(TargetClass))
+		if (AActor* OverlappedActor = HitResult.GetActor(); OverlappedActor->IsA(TargetClass))
 		{
-			OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, TargetActor);
+			TargetActor = OverlappedActor;
+			UE_LOG(LogTemp, Log, TEXT("SearchTarget Name :%s"), *TargetActor->GetName());
 		}
 	}
-	else
-	{
-		OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, nullptr);
-	}
 
+	OwnerComp.GetBlackboardComponent()->SetValueAsObject(TargetKeySelector.SelectedKeyName, TargetActor);
+
+	if (ABotAIController* BotAIController = Cast<ABotAIController>(OwnerComp.GetAIOwner()))
+	{
+		BotAIController->SetFocus(TargetActor);
+	}
 }

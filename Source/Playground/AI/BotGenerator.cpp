@@ -3,7 +3,11 @@
 
 #include "AI/BotGenerator.h"
 
+#include "BotAIController.h"
 #include "Character/Bot/BotCharacter.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 // Sets default values
 ABotGenerator::ABotGenerator()
@@ -33,6 +37,14 @@ void ABotGenerator::SetActiveBot(ABotCharacter* Bot, bool IsActive)
 	Bot->SetActorHiddenInGame(!IsActive);
 	Bot->SetActorEnableCollision(IsActive);
 	Bot->SetActorTickEnabled(IsActive);
+
+	Bot->GetCharacterMovement()->GravityScale = IsActive ? 1 : 0 ;
+	if(!IsActive)
+	{
+		ABotAIController* BotAIController = Bot->GetController<ABotAIController>();
+		BotAIController->StopBehaviorTree("Inactive");
+	}
+	
 }
 
 void ABotGenerator::TakeBot()

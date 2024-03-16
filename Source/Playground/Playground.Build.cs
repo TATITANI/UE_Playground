@@ -12,7 +12,7 @@ public class Playground : ModuleRules
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "UMG",
 			"NavigationSystem", "AIModule", "GameplayTasks", "Slate", "SlateCore", "LevelSequence",
-			"MovieScene", "Niagara", "ComputeShader"
+			"MovieScene", "Niagara", "ComputeShader", "AnimGraphRuntime"
 		});
 	}
 }

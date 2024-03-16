@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "KismetAnimationLibrary.h"
 #include "MyGameInstance.h"
 #include "ProtagonistAnimInstance.h"
 
@@ -131,6 +132,7 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 void AProtagonistCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
 }
 
 

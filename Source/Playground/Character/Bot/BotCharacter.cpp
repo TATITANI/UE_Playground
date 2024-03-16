@@ -5,6 +5,7 @@
 
 #include "BotAnimInstance.h"
 #include "DamageType_KnockOut.h"
+#include "KismetAnimationLibrary.h"
 #include "MyGameInstance.h"
 #include "AI/BotAIController.h"
 #include "AI/BotGenerator.h"
@@ -19,6 +20,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Item/DroppedItemTable.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Logging/LogMacros.h"
 #include "PhysicsEngine/ConstraintUtils.h"
 #include "UI/FloatingDamage.h"
 #include "Utils/UtilPlayground.h"
@@ -27,7 +29,7 @@
 // Sets default values
 ABotCharacter::ABotCharacter()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve p0erformance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
@@ -42,8 +44,13 @@ void ABotCharacter::BeginPlay()
 
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
+
+	AIController = Cast<ABotAIController>(GetController());
+	ensure(AIController);
+	
 	auto BotStat = GameInstance->GetCharacterStat<FBotStat>
 		(ECharacterStatType::Bot, "1");
+	
 	HealthComponent->Init(BotStat->MaxHp);
 	HealthComponent->OnDead.AddUObject(this, &ABotCharacter::OnDeadCallback);
 	OnTakeAnyDamage.AddDynamic(this, &ABotCharacter::OnTakeDamageCallback);
@@ -72,6 +79,8 @@ void ABotCharacter::Tick(float DeltaTime)
 	HpLookDir.Z = 0;
 	const FRotator HpRotation = UKismetMathLibrary::MakeRotFromX(HpLookDir);
 	HpWidgetComponent->SetWorldRotation(HpRotation);
+
+	CurrentVelocityAngle = (AIController->GetFocusActor() == nullptr) ? 0 : UKismetAnimationLibrary::CalculateDirection(GetVelocity(), GetActorRotation());
 }
 
 void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
@@ -79,8 +88,7 @@ void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
 	Generator = _Generator;
 	HealthComponent->Reset();
 	SetActorLocation(Loc);
-	ABotAIController* AiController = Cast<ABotAIController>(GetController());
-	AiController->ActiveBehaviorTree(true);
+	AIController->StartBehaviorTreeLogic();
 	SetState(EBotState::Idle);
 }
 
@@ -105,6 +113,7 @@ bool ABotCharacter::ResetCurrentState(EBotState::Type ResetConditionState)
 		SetState(EBotState::Idle);
 		return true;
 	}
+	
 	return false;
 }
 
@@ -143,8 +152,7 @@ void ABotCharacter::CheckAttack()
 void ABotCharacter::OnDeadCallback()
 {
 	Generator->ReturnBot(this);
-	ABotAIController* AiController = this->GetController<ABotAIController>();
-	AiController->ActiveBehaviorTree(false);
+	AIController->StopBehaviorTree(FString("Bot Dead"));
 
 	// 드랍 아이템
 	{
