@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ItemData.h"
+#include "../../../../../../../../Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.37.32822/INCLUDE/mmintrin.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "PlaygroundItem.generated.h"
@@ -21,6 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void PostInitProperties() override;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -39,6 +41,10 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	USphereComponent* SphereComponent;
 
+public:
+	UPROPERTY(VisibleDefaultsOnly, Category= Sound, meta=(AllowPrivateAccess))
+	USoundBase* ObtainSound;
+	
 protected:
 	UFUNCTION()
 	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,

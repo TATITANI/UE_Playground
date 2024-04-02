@@ -51,8 +51,7 @@ void UIngameWidget::NativeConstruct()
 	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Img_HP_Gauge->Brush.GetResourceObject());
 	HPMaterialInstanceDynamic = UMaterialInstanceDynamic::Create(MaterialInterface, nullptr);
 	HPMaterialInstanceDynamic->AddToRoot(); // GC 삭제 방지
-	Img_HP_Gauge->SetBrushFromMaterial(HPMaterialInstanceDynamic);1
-
+	Img_HP_Gauge->SetBrushFromMaterial(HPMaterialInstanceDynamic);
 	
 }
 

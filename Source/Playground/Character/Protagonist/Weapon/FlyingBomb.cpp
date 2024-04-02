@@ -66,6 +66,11 @@ void AFlyingBomb::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		UGameplayStatics::SpawnEmitterAtLocation(this, ExplodeParticleSystem, HitLocation);
 	}
 
+	if(ExplodeSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ExplodeSound,  HitLocation);
+	}
+
 	Destroy();
 }
 

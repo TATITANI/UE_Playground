@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
+
 #include "SwordActor.generated.h"
 
 
@@ -60,7 +61,7 @@ private:
 	UAnimMontage* LowerAttackMontage;
 
 	double LastAttackTime = 0;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category=Effect, meta=(AllowPrivateAccess))
 	TSoftObjectPtr<class UNiagaraSystem> SlashParticleSystem;
 
@@ -75,7 +76,7 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category=Effect)
 	class UNiagaraSystem* UpperLastShotFX;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category= Effect, meta=(AllowPrivateAccess))
 	FName TrailSocketTopName = "Top";
 
@@ -89,7 +90,7 @@ private:
 	class ULevelSequence* UpperAttackSequence;
 
 	class ULevelSequencePlayer* UpperAttackSequencePlayer;
-	
+
 	class UNiagaraComponent* TrailComponent;
 	UNiagaraComponent* LowerAttackNiagaraComponent;
 
@@ -135,5 +136,4 @@ public:
 	virtual void Equip(AProtagonistCharacter* TargetCharacter) override;
 	virtual void UnEquip() override;
 	virtual void BeginPlay() override;
-
 };

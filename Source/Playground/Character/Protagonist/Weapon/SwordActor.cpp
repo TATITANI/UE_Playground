@@ -14,7 +14,6 @@
 #include "Component/HealthComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Misc/KeyChainUtilities.h"
 #include "Utils/UtilPlayground.h"
 
 void ASwordActor::BeginPlay()
@@ -63,6 +62,8 @@ void ASwordActor::AttackInputStarted()
 		UpperAttackCombo();
 		break;
 	}
+
+
 }
 
 void ASwordActor::AttackOnGround()
@@ -88,8 +89,9 @@ void ASwordActor::AttackOnGround()
 			Protagonist->SetMovable(false);
 			Protagonist->ZoomOnSlash();
 
-			TrailComponent->Activate();
 			GroundAttackToBots();
+			
+			TrailComponent->Activate();
 		}
 	}
 }
@@ -116,9 +118,10 @@ void ASwordActor::GroundAttackToBots()
 	for (auto HitResult : HitResults)
 	{
 		ABotCharacter* Bot = Cast<ABotCharacter>(HitResult.GetActor());
-		if (Bot != nullptr)
-			Bots.Add(Bot);
-
+		if (Bot == nullptr)
+			continue;
+		
+		Bots.Add(Bot);
 		LastGroundHitBots.Add(Bot);
 		Bot->LaunchCharacter(Protagonist->GetActorForwardVector() * 1000, true, true);
 		AttackToBot(Bot, HitResult.Location, bKnockOut);
@@ -142,6 +145,8 @@ void ASwordActor::TriggerUpperAttack()
 	Protagonist->GetCapsuleComponent()->BodyInstance.bLockXTranslation = true;
 	Protagonist->GetCapsuleComponent()->BodyInstance.bLockYTranslation = true;
 	Protagonist->GetCapsuleComponent()->BodyInstance.bLockZTranslation = true;
+
+	TrailComponent->Activate();
 
 	for (const auto Bot : LastGroundHitBots)
 	{
@@ -183,11 +188,13 @@ void ASwordActor::UpperAttackCombo()
 			AttackToBot(Bot, TOptional<FVector>());
 		}
 	}
-
+	
 	if (IsLastCombo)
 	{
 		UpperAttackSequencePlayer->Play();
 	}
+
+
 }
 
 void ASwordActor::LowerAttack()
@@ -283,7 +290,7 @@ void ASwordActor::OnMontageEnd(UAnimMontage* Montage, bool bInterrupted)
 
 	if (AnimInstance->Montage_IsPlaying(Montage))
 		return;
-
+	
 	AttackMontageEndEventMap[Montage].ExecuteIfBound();
 }
 
@@ -293,7 +300,10 @@ void ASwordActor::GroundAttackMontageEndEvent()
 		return;
 
 	Protagonist->SetMovable(true);
-	TrailComponent->DeactivateImmediate();
+
+	if(CurrentAttackType == Sword::Default)	
+		TrailComponent->DeactivateImmediate();
+
 }
 
 void ASwordActor::JumpUpperAttackMontageEndEvent()
@@ -323,6 +333,8 @@ void ASwordActor::JumpUpperAttackMontageEndEvent()
 		LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), UpperLastShotFX,
 		                                                                             GetActorLocation(), FRotator(0, 0, 90),
 		                                                                             FVector(3, 3, 3));
+
+		TrailComponent->DeactivateImmediate();
 	}
 }
 
@@ -366,6 +378,8 @@ void ASwordActor::OnChangedProtagonistMovementMode(ACharacter* Character, EMovem
 		CurrentAttackType = Sword::None;
 		break;
 	}
+
+	
 }
 
 void ASwordActor::SpawnLowerAttackLandingFX()

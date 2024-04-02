@@ -11,13 +11,14 @@
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Utils/UtilPlayground.h"
 
 // Sets default values
 APlaygroundItem::APlaygroundItem()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-	
+
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
 	SphereComponent->SetupAttachment(RootComponent);
 	SphereComponent->SetSimulatePhysics(true);
@@ -26,8 +27,10 @@ APlaygroundItem::APlaygroundItem()
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	StaticMeshComponent->SetupAttachment(SphereComponent);
 
-}
+	ObtainSound = UtilPlayground::LoadAsset<USoundBase>("/Script/Engine.SoundWave'/Game/Audio/pop-up-something-160353.pop-up-something-160353'");
 	
+}
+
 void APlaygroundItem::PostInitProperties()
 {
 	Super::PostInitProperties();
@@ -40,8 +43,7 @@ void APlaygroundItem::BeginPlay()
 	Super::BeginPlay();
 
 	SphereComponent->OnComponentBeginOverlap.AddUniqueDynamic(this, &APlaygroundItem::OnSphereBeginOverlap);
-	ItemStatus.Count= 1;
-	
+	ItemStatus.Count = 1;
 }
 
 
@@ -65,7 +67,12 @@ void APlaygroundItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedCompon
 	{
 		UMyGameInstance* GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 		GameInstance->ItemInventory->AddItem(this->ItemData, ItemStatus.Count);
-		
+
+		if (ObtainSound != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ObtainSound, GetActorLocation());
+		}
+
 		UE_LOG(LogTemp, Log, TEXT("Obtain Item %d"), ItemStatus.Count);
 
 		Destroy();

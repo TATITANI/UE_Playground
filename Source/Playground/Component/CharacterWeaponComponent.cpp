@@ -48,6 +48,7 @@ void UCharacterWeaponComponent::BeginPlay()
 
 	AWeaponActor* DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
 	ensure(DefaultWeaponActor != nullptr);
+	
 	ObtainWeapon(DefaultWeaponActor);
 	
 }
@@ -79,6 +80,11 @@ void UCharacterWeaponComponent::ObtainWeapon(AWeaponActor* WeaponActor)
 	WeaponInventory->AddWeapon(WeaponActor);
 
 	ChangeWeapon(WeaponActor);
+
+	if (ObtainSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ObtainSound, WeaponActor->GetActorLocation());
+	}
 }
 
 void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)

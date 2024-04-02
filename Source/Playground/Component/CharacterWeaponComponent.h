@@ -41,7 +41,9 @@ private:
 	class UInputAction* ChangeWeaponAction;
 	
 	void ClickChangeWeapon(const FInputActionValue& Value);
-
+	
+	UPROPERTY(EditDefaultsOnly, Category= Sound, meta=(AllowPrivateAccess))
+	USoundBase* ObtainSound;
 
 public:
 	FOnChangeWeapon OnChangeWeapon;

@@ -30,6 +30,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
 	class UParticleSystem* ExplodeParticleSystem;
 
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess))
+	USoundBase* ExplodeSound;
+
+	
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
 	           UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

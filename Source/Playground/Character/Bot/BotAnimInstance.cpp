@@ -16,6 +16,7 @@ void UBotAnimInstance::NativeBeginPlay()
 	OnMontageEnded.AddUniqueDynamic(this, &UBotAnimInstance::MontageEnd);
 	OwnerBot = Cast<ABotCharacter>(TryGetPawnOwner());
 	ensure(OwnerBot!= nullptr);
+	
 }
 
 void UBotAnimInstance::AnimNotify_AttackHit()

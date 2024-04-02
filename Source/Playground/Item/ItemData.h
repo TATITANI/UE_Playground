@@ -60,9 +60,7 @@ public:
 	/** Returns the logical name, equivalent to the primary asset id */
 	UFUNCTION(BlueprintCallable, Category = Item)
 	FString GetIdentifierString() const;
-
 	
-
 	/** Overridden to use saved type */
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 };
