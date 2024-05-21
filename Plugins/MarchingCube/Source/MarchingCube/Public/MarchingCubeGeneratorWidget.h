@@ -34,12 +34,15 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Param", meta=(AllowPrivateAccess))
 	TEnumAsByte<ETraceTypeQuery> TraceTypeQuery;
-	
+
+	UPROPERTY(EditAnywhere, Category="Param", meta=(AllowPrivateAccess))
+	FVector3d BoundSize = FVector3d(500, 500, 1000);
+
 	UPROPERTY(EditAnywhere, Category="Generate", meta=(AllowPrivateAccess))
 	FMarchingCubeProperty MarchingCubeProperty;
 
 	UPROPERTY(EditAnywhere, Category="Sculpt", meta=(AllowPrivateAccess))
-	float SculptBrushRadius = 30;
+	FMarchingCubeSculptProperty SculptProperty;
 	
 	float AccumulatedTime = 0;
 

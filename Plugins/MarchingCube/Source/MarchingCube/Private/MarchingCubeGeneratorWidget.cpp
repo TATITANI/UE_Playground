@@ -24,7 +24,7 @@ void UMarchingCubeGeneratorWidget::NativeConstruct()
 	DrawBtnMap.Add(Btn_Menu_Sculpt, EDrawType::Sculpt);
 	DrawBtnMap.GetKeys(DrawBtns);
 	SetDrawType(EDrawType::Generate);
-
+	
 	UE_LOG(LogTemp, Log, TEXT("UMarchingCubeGeneratorWidget::NativeConstruct"));
 }
 
@@ -32,16 +32,17 @@ void UMarchingCubeGeneratorWidget::NativeDestruct()
 {
 	UE_LOG(LogTemp, Log, TEXT("UMarchingCubeGeneratorWidget::NativeDestruct"));
 
-	GLevelEditorModeTools().DeactivateMode(FMarchingCubeEdMode::EM_MarchingCubeViewport);
-
 	Super::NativeDestruct();
+
+	GLevelEditorModeTools().DeactivateMode(FMarchingCubeEdMode::EM_MarchingCubeViewport);
 }
 
 
 void UMarchingCubeGeneratorWidget::SpawnWorld()
 {
 	AMarchingCubeWorld* MarchingCubeWorld = GetWorld()->SpawnActor<AMarchingCubeWorld>(MarchingCubeWorldClass);
-	MarchingCubeWorld->Init(MarchingCubeProperty);
+	MarchingCubeWorld->Init(MarchingCubeProperty, BoundSize);
+
 }
 
 void UMarchingCubeGeneratorWidget::OnClickDrawBtn(UButton* Button)
@@ -90,10 +91,14 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	const FHitResult HitResult = MouseTraceToObject();
 	if (HitResult.bBlockingHit == false)
 		return;
+	
+	AMarchingCubeWorld* MarchingCubeWorld = Cast<AMarchingCubeWorld>(HitResult.GetActor());
+	if (MarchingCubeWorld == nullptr)
+		return;
 
 	if (CheckBrushMode(CurrentDrawType))
 	{
-		DrawDebugSphere(GetWorld(), HitResult.Location, SculptBrushRadius, 32, FColor::Green, false);
+		DrawDebugSphere(GetWorld(), HitResult.Location, SculptProperty.BrushRadius, 32, FColor::Green, false);
 	}
 
 	if (EdMode->IsPressingMouseLeft() == false)
@@ -106,14 +111,11 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	else
 		return;
 
-	AMarchingCubeWorld* MarchingCubeWorld = Cast<AMarchingCubeWorld>(HitResult.GetActor());
-	if (MarchingCubeWorld == nullptr)
-		return;
-
+	
 	switch (CurrentDrawType)
 	{
 	case EDrawType::Sculpt:
-		MarchingCubeWorld->Sculpt(HitResult.Location, SculptBrushRadius);
+		MarchingCubeWorld->Sculpt(HitResult.Location, SculptProperty);
 		break;
 	}
 }

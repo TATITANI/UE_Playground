@@ -10,7 +10,6 @@
 #include "ProceduralMeshComponent/Public/ProceduralMeshComponent.h"
 #include "ProceduralMeshComponent/Public/KismetProceduralMeshLibrary.h"
 #include "GeometryCore/Public/IndexTypes.h"
-#include "DynamicMesh/Public/DynamicMeshEditor.h"
 
 FIntVector& FMarchingCubeProperty::GetSeedGap()
 {
@@ -42,6 +41,7 @@ AMarchingCubeWorld::AMarchingCubeWorld()
 	DynamicMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	DynamicMeshComponent->bEnableComplexCollision = true;
 
+
 #pragma region ProceduralMeshComponent
 	// ProceduralMeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	// ProceduralMeshComponent->SetupAttachment(GetRootComponent());
@@ -49,8 +49,7 @@ AMarchingCubeWorld::AMarchingCubeWorld()
 	// ProceduralMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	// ProceduralMeshComponent->SetGenerateOverlapEvents(true);
 	// ProceduralMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);F#
-#pragma endregion 
-	
+#pragma endregion
 }
 
 void AMarchingCubeWorld::OnConstruction(const FTransform& Transform)
@@ -82,14 +81,14 @@ void AMarchingCubeWorld::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
-void AMarchingCubeWorld::Init(FMarchingCubeProperty& InMarchingCubeProperty)
+void AMarchingCubeWorld::Init(FMarchingCubeProperty& MarchingCubeProperty, const FVector3d& InBoundSize)
 {
-	this->MarchingCubeProperty = MakeShared<FMarchingCubeProperty>(InMarchingCubeProperty);
-
 	UE::Geometry::FMarchingCubes MarchingCubes;
 
-	const TFunction<double(UE::Math::TVector<double>)> Implicit = ImplicitTerrain();
-	GenerateMarchingCubeData(MarchingCubes, Implicit);
+	BoundSize = InBoundSize;
+
+	const TFunction<double(UE::Math::TVector<double>)> Implicit = ImplicitTerrain(MarchingCubeProperty.NoiseScale, MarchingCubeProperty.Height);
+	GenerateMarchingCubeData(MarchingCubes, Implicit, MarchingCubeProperty.GetSeedGap());
 
 	// CreateProceduralMesh(MarchingCubes);
 
@@ -98,15 +97,14 @@ void AMarchingCubeWorld::Init(FMarchingCubeProperty& InMarchingCubeProperty)
 
 	DynamicMeshComponent->FastNotifyUVsUpdated();
 	DynamicMeshComponent->NotifyMeshUpdated();
-	DynamicMeshComponent->SetMaterial(0, MarchingCubeProperty->Material);
+	DynamicMeshComponent->SetMaterial(0, MarchingCubeProperty.Material);
 
-	SetActorLocation(MarchingCubeProperty->Location);
+	SetActorLocation(MarchingCubeProperty.Location);
 }
 
-void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& MarchingCubes,
-                                                  TFunction<double(UE::Math::TVector<double>)> Implicit)
+void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& MarchingCubes, TFunction<double(UE::Math::TVector<double>)> Implicit,
+                                                  FIntVector& SeedGap, double CubeSize)
 {
-	const FVector3d& BoundSize = MarchingCubeProperty->BoundSize;
 	// 계산 편의상 z는 0부터 시작
 	const FVector3d MinBound = BoundSize * -0.5f;
 	const FVector3d MaxBound = BoundSize * 0.5f;
@@ -116,13 +114,12 @@ void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& 
 	MarchingCubes.Bounds = UE::Geometry::TAxisAlignedBox3(MinBound, MaxBound);
 	MarchingCubes.RootMode = UE::Geometry::ERootfindingModes::SingleLerp;
 	MarchingCubes.RootModeSteps = 4;
-	MarchingCubes.CubeSize = 10;
+	MarchingCubes.CubeSize = CubeSize;
 
 	// 내부면 음수, 외부면 양수 리턴
 	MarchingCubes.Implicit = Implicit;
 
 	TArray<FVector3d> Seeds;
-	const FIntVector& SeedGap = MarchingCubeProperty->GetSeedGap();
 	for (int X = MarchingCubes.Bounds.Min.X; X <= MarchingCubes.Bounds.Max.X; X += SeedGap.X)
 	{
 		for (int Y = MarchingCubes.Bounds.Min.Y; Y <= MarchingCubes.Bounds.Max.Y; Y += SeedGap.Y)
@@ -148,8 +145,8 @@ void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& 
 			const int32 VID3 = MarchingCubes.Triangles[i].C;
 			FVector3d EdgeA = MarchingCubes.Vertices[VID2] - MarchingCubes.Vertices[VID1];
 			FVector3d EdgeB = MarchingCubes.Vertices[VID3] - MarchingCubes.Vertices[VID1];
-			FVector3f TriangleNormal = FVector3f(EdgeB.Cross(EdgeA));
-
+			FVector3f TriangleNormal = FVector3f(EdgeB.Cross(EdgeA)).GetSafeNormal();
+			
 			MarchingCubes.Normals[VID1] += TriangleNormal;
 			MarchingCubes.Normals[VID2] += TriangleNormal;
 			MarchingCubes.Normals[VID3] += TriangleNormal;
@@ -228,7 +225,7 @@ FDynamicMesh3* AMarchingCubeWorld::CreateDynamicMesh(UE::Geometry::FMarchingCube
 }
 
 // draw로 메시를 덧붙이려면 section을 추가하거나, 기존 section 다시 모두 계산해야하는 비효율 때문에 사용 x 
-void AMarchingCubeWorld::CreateProceduralMesh(UE::Geometry::FMarchingCubes& MarchingCubes, int32 SectionID)
+void AMarchingCubeWorld::CreateProceduralMesh(UE::Geometry::FMarchingCubes& MarchingCubes, UMaterial* Material, int32 SectionID)
 {
 	TArray<FVector> Vertices(MarchingCubes.Vertices);
 	TArray<FVector2D> UVs(MarchingCubes.UVs);
@@ -246,21 +243,21 @@ void AMarchingCubeWorld::CreateProceduralMesh(UE::Geometry::FMarchingCubes& Marc
 	UE_LOG(LogTemp, Log, TEXT("%d, %d, %d, %d"), Vertices.Num(), UVs.Num(), Normals.Num(), Triangles.Num());
 
 	ProceduralMeshComponent->CreateMeshSection(SectionID, Vertices, Triangles, Normals, UVs, TArray<FColor>(), Tangents, true);
-	if (MarchingCubeProperty->Material)
+	if (Material)
 	{
-		ProceduralMeshComponent->SetMaterial(SectionID, MarchingCubeProperty->Material);
+		ProceduralMeshComponent->SetMaterial(SectionID, Material);
 	}
 }
 
-TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitTerrain()
+TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitTerrain(float NoiseScale, float Height)
 {
-	return [this](UE::Math::TVector<double> Pt)
+	return [&](UE::Math::TVector<double> Pt)
 	{
 		// 펄린노이즈 입력이 정수면 0을 리턴하기 때문에 0.1을 더함
 		// return -1~ 1
-		const float NoiseValue = FMath::PerlinNoise2D(FVector2d(Pt.X, Pt.Y) * MarchingCubeProperty->NoiseScale + 0.1f);
+		const float NoiseValue = FMath::PerlinNoise2D(FVector2d(Pt.X, Pt.Y) * NoiseScale + 0.1f);
 
-		const double TerrainHeight = NoiseValue * MarchingCubeProperty->Height;
+		const double TerrainHeight = NoiseValue * Height;
 
 		double Result = TerrainHeight - Pt.Z;
 
@@ -280,18 +277,19 @@ TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitSphere(
 }
 
 
-void AMarchingCubeWorld::Sculpt(FVector Location, float BrushRadius)
+void AMarchingCubeWorld::Sculpt(FVector Location, FMarchingCubeSculptProperty& SculptProperty)
 {
 	UE::Geometry::FMarchingCubes MarchingCubes;
 
-	const TFunction<double(UE::Math::TVector<double>)> Implicit = ImplicitSphere(BrushRadius, Location);
+	const TFunction<double(UE::Math::TVector<double>)> Implicit = ImplicitSphere(SculptProperty.BrushRadius, Location);
 
-	GenerateMarchingCubeData(MarchingCubes, Implicit);
+	GenerateMarchingCubeData(MarchingCubes, Implicit,SculptProperty.SeedGap);
 	FDynamicMesh3* SphereMesh = CreateDynamicMesh(MarchingCubes);
 
 	UE::Geometry::FDynamicMeshEditor MeshEditor(DynamicMeshComponent->GetMesh());
-	UE::Geometry::FMeshIndexMappings IndexMappings;
 	MeshEditor.AppendMesh(SphereMesh, IndexMappings);
 
 	DynamicMeshComponent->NotifyMeshUpdated();
+	DynamicMeshComponent->UpdateCollision(false);
+
 }

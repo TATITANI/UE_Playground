@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "PreviewMesh.h"
 #include "Generators/MarchingCubes.h"
+#include "DynamicMesh/Public/DynamicMeshEditor.h"
+
 #include "MarchingCubeWorld.generated.h"
 
 
@@ -21,11 +23,8 @@ public:
 	UPROPERTY(EditAnywhere, meta=( ClampMin= 0.001f))
 	float NoiseScale = 0.01f;
 
-	UPROPERTY(EditAnywhere )
-	float Height = 100;
-
 	UPROPERTY(EditAnywhere)
-	FVector3d BoundSize = FVector3d(500, 500, 1000);
+	float Height = 100;
 
 	UPROPERTY(EditAnywhere)
 	FVector Location;
@@ -34,6 +33,22 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess))
+	FIntVector SeedGap = FIntVector(20, 20, 20);
+};
+
+USTRUCT(BlueprintType)
+struct FMarchingCubeSculptProperty
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+	UMaterialInstance* Material;
+
+	UPROPERTY(EditAnywhere)
+	float BrushRadius = 30;
+
+	UPROPERTY(EditAnywhere)
 	FIntVector SeedGap = FIntVector(20, 20, 20);
 };
 
@@ -47,7 +62,6 @@ public:
 	// Sets default values for this actor's properties
 	AMarchingCubeWorld();
 	virtual void OnConstruction(const FTransform& Transform) override;
-	
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess))
@@ -58,7 +72,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="New MarchingCube")
 	FVector Position;
-
 
 protected:
 	// Called when the game starts or when spawned
@@ -71,22 +84,22 @@ public:
 	virtual void PostInitProperties() override;
 	virtual void PostInitializeComponents() override;
 
-	UFUNCTION(BlueprintCallable)
-	void Init(FMarchingCubeProperty& InMarchingCubeProperty);
+	void Init(FMarchingCubeProperty& MarchingCubeProperty, const FVector3d& InBoundSize);
 
-	void Sculpt(FVector Location, float BrushRadius);
-
+	void Sculpt(FVector Location, FMarchingCubeSculptProperty& SculptProperty);
 
 private:
-	void GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& MarchingCubes, TFunction<double(UE::Math::TVector<double>)> Implicit);
+	void GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& MarchingCubes, TFunction<double(UE::Math::TVector<double>)> Implicit,
+	FIntVector& SeedGap, double CubeSize = 10);
 
 	FDynamicMesh3* CreateDynamicMesh(UE::Geometry::FMarchingCubes& MarchingCubes);
-	void CreateProceduralMesh(UE::Geometry::FMarchingCubes& MarchingCubes, int32 SectionID = 0);
+	void CreateProceduralMesh(UE::Geometry::FMarchingCubes& MarchingCubes, UMaterial* Material, int32 SectionID = 0);
 
-
-	TFunction<double(UE::Math::TVector<double>)>  ImplicitTerrain();
+	TFunction<double(UE::Math::TVector<double>)> ImplicitTerrain(float NoiseScale, float Height);
 	TFunction<double(UE::Math::TVector<double>)> ImplicitSphere(float Radius, FVector Location = FVector::ZeroVector);
 
 private:
-	TSharedPtr<FMarchingCubeProperty> MarchingCubeProperty;
+	UE::Geometry::FMeshIndexMappings IndexMappings;
+	FVector3d BoundSize; 
+
 };
