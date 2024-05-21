@@ -53,6 +53,20 @@ public:
 };
 
 
+USTRUCT(BlueprintType)
+struct FMarchingCubeErodeProperty
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+	float BrushRadius = 10;
+
+	UPROPERTY(EditAnywhere)
+	double Strength = 2;
+};
+
+
 UCLASS()
 class MARCHINGCUBE_API AMarchingCubeWorld : public AActor
 {
@@ -87,19 +101,19 @@ public:
 	void Init(FMarchingCubeProperty& MarchingCubeProperty, const FVector3d& InBoundSize);
 
 	void Sculpt(FVector Location, FMarchingCubeSculptProperty& SculptProperty);
+	void Erode(FVector BrushLocation, FMarchingCubeErodeProperty& ErodeProperty, FVector3d ErodeDir);
 
 private:
 	void GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& MarchingCubes, TFunction<double(UE::Math::TVector<double>)> Implicit,
-	FIntVector& SeedGap, double CubeSize = 10);
+	                              FIntVector& SeedGap, double CubeSize = 10);
 
 	FDynamicMesh3* CreateDynamicMesh(UE::Geometry::FMarchingCubes& MarchingCubes);
 	void CreateProceduralMesh(UE::Geometry::FMarchingCubes& MarchingCubes, UMaterial* Material, int32 SectionID = 0);
 
 	TFunction<double(UE::Math::TVector<double>)> ImplicitTerrain(float NoiseScale, float Height);
-	TFunction<double(UE::Math::TVector<double>)> ImplicitSphere(float Radius, FVector Location = FVector::ZeroVector);
+	TFunction<double(UE::Math::TVector<double>)> ImplicitSphere(float Radius, FVector BrushLocation = FVector::ZeroVector);
 
 private:
 	UE::Geometry::FMeshIndexMappings IndexMappings;
-	FVector3d BoundSize; 
-
+	FVector3d BoundSize;
 };

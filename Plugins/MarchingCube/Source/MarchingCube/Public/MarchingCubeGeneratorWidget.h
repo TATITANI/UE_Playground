@@ -20,6 +20,7 @@ enum class EDrawType : uint8
 	// None,
 	Generate,
 	Sculpt,
+	Erode
 };
 
 
@@ -29,20 +30,23 @@ class MARCHINGCUBE_API UMarchingCubeGeneratorWidget : public UEditorUtilityWidge
 	GENERATED_BODY()
 
 private:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Param", meta=(AllowPrivateAccess))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Generate", meta=(AllowPrivateAccess))
 	TSubclassOf<class AMarchingCubeWorld> MarchingCubeWorldClass;
-
-	UPROPERTY(EditAnywhere, Category="Param", meta=(AllowPrivateAccess))
-	TEnumAsByte<ETraceTypeQuery> TraceTypeQuery;
-
-	UPROPERTY(EditAnywhere, Category="Param", meta=(AllowPrivateAccess))
+	
+	UPROPERTY(EditAnywhere, Category="Generate", meta=(AllowPrivateAccess))
 	FVector3d BoundSize = FVector3d(500, 500, 1000);
 
 	UPROPERTY(EditAnywhere, Category="Generate", meta=(AllowPrivateAccess))
 	FMarchingCubeProperty MarchingCubeProperty;
 
+	UPROPERTY(EditAnywhere, meta=(AllowPrivateAccess))
+	TEnumAsByte<ETraceTypeQuery> TraceTypeQuery;
+
 	UPROPERTY(EditAnywhere, Category="Sculpt", meta=(AllowPrivateAccess))
 	FMarchingCubeSculptProperty SculptProperty;
+
+	UPROPERTY(EditAnywhere, Category="Erode", meta=(AllowPrivateAccess))
+	FMarchingCubeErodeProperty ErodeProperty;
 	
 	float AccumulatedTime = 0;
 
@@ -51,6 +55,9 @@ private:
 	
 	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, BindWidget))
 	UButton* Btn_Menu_Sculpt;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess, BindWidget))
+	UButton* Btn_Menu_Erode;
 
 	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess))
 	EDrawType CurrentDrawType = EDrawType::Generate;
@@ -67,6 +74,8 @@ private:
 	TMap<UButton*, EDrawType> DrawBtnMap;
 
 	FMarchingCubeEdMode* EdMode;
+
+	
 	
 public:
 	virtual void NativeConstruct() override;
@@ -86,6 +95,6 @@ private:
 	void SetDrawType(EDrawType DrawType);
 	bool CheckBrushMode(EDrawType DrawType);
 	
-	FHitResult MouseTraceToObject();
+	FHitResult MouseTraceToObject(FVector& TraceWorldDir);
 
 };

@@ -146,7 +146,7 @@ void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& 
 			FVector3d EdgeA = MarchingCubes.Vertices[VID2] - MarchingCubes.Vertices[VID1];
 			FVector3d EdgeB = MarchingCubes.Vertices[VID3] - MarchingCubes.Vertices[VID1];
 			FVector3f TriangleNormal = FVector3f(EdgeB.Cross(EdgeA)).GetSafeNormal();
-			
+
 			MarchingCubes.Normals[VID1] += TriangleNormal;
 			MarchingCubes.Normals[VID2] += TriangleNormal;
 			MarchingCubes.Normals[VID3] += TriangleNormal;
@@ -265,14 +265,14 @@ TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitTerrain
 	};
 }
 
-TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitSphere(float Radius, FVector Location)
+TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitSphere(float Radius, FVector BrushLocation)
 {
-	FVector LocalLocation = Location - GetActorLocation();
+	const FVector BrushLocalLocation = BrushLocation - GetActorLocation();
 
 	return [&](UE::Math::TVector<double> Pt)
 	{
-		FVector Loc = Pt - LocalLocation;
-		return Radius * Radius - Loc.SizeSquared();
+		const FVector PointLocalLocation = Pt - BrushLocalLocation;
+		return Radius * Radius - PointLocalLocation.SizeSquared();
 	};
 }
 
@@ -283,7 +283,7 @@ void AMarchingCubeWorld::Sculpt(FVector Location, FMarchingCubeSculptProperty& S
 
 	const TFunction<double(UE::Math::TVector<double>)> Implicit = ImplicitSphere(SculptProperty.BrushRadius, Location);
 
-	GenerateMarchingCubeData(MarchingCubes, Implicit,SculptProperty.SeedGap);
+	GenerateMarchingCubeData(MarchingCubes, Implicit, SculptProperty.SeedGap);
 	FDynamicMesh3* SphereMesh = CreateDynamicMesh(MarchingCubes);
 
 	UE::Geometry::FDynamicMeshEditor MeshEditor(DynamicMeshComponent->GetMesh());
@@ -291,5 +291,30 @@ void AMarchingCubeWorld::Sculpt(FVector Location, FMarchingCubeSculptProperty& S
 
 	DynamicMeshComponent->NotifyMeshUpdated();
 	DynamicMeshComponent->UpdateCollision(false);
+}
 
+void AMarchingCubeWorld::Erode(FVector BrushLocation, FMarchingCubeErodeProperty& ErodeProperty, FVector3d ErodeDir)
+{
+	FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
+
+	const FVector BrushLocalLoc = BrushLocation - GetActorLocation();
+
+	ErodeDir.Normalize();
+	for (int VertexID : Mesh->VertexIndicesItr())
+	{
+		FVector3d Vertex = Mesh->GetVertex(VertexID);
+
+		const bool InSphere = FVector3d::DistSquared(Vertex, BrushLocalLoc) <= ErodeProperty.BrushRadius * ErodeProperty.BrushRadius;
+		if (InSphere)
+		{
+			// UE_LOG(LogTemp,Log,TEXT("Brush : %s, BrushLoc : %s, Vertex : %s"),
+			// 	*BrushLocation.ToString(), *BrushLocalLoc.ToString(), *Vertex.ToString());
+
+			FVector3d NewVertexLoc = Vertex + ErodeDir * ErodeProperty.Strength;
+			Mesh->SetVertex(VertexID, NewVertexLoc);
+		}
+	}
+
+	DynamicMeshComponent->NotifyMeshUpdated();
+	DynamicMeshComponent->UpdateCollision(false);
 }

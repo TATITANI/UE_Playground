@@ -20,11 +20,13 @@ void UMarchingCubeGeneratorWidget::NativeConstruct()
 		UE_LOG(LogTemp, Error, TEXT("MarchingCube EditorMode is nullptr"));
 		return;
 	}
+
 	DrawBtnMap.Add(Btn_Menu_Generate, EDrawType::Generate);
 	DrawBtnMap.Add(Btn_Menu_Sculpt, EDrawType::Sculpt);
+	DrawBtnMap.Add(Btn_Menu_Erode, EDrawType::Erode);
 	DrawBtnMap.GetKeys(DrawBtns);
 	SetDrawType(EDrawType::Generate);
-	
+
 	UE_LOG(LogTemp, Log, TEXT("UMarchingCubeGeneratorWidget::NativeConstruct"));
 }
 
@@ -42,7 +44,6 @@ void UMarchingCubeGeneratorWidget::SpawnWorld()
 {
 	AMarchingCubeWorld* MarchingCubeWorld = GetWorld()->SpawnActor<AMarchingCubeWorld>(MarchingCubeWorldClass);
 	MarchingCubeWorld->Init(MarchingCubeProperty, BoundSize);
-
 }
 
 void UMarchingCubeGeneratorWidget::OnClickDrawBtn(UButton* Button)
@@ -60,11 +61,11 @@ void UMarchingCubeGeneratorWidget::OnClickDrawBtn(UButton* Button)
 void UMarchingCubeGeneratorWidget::SetDrawType(EDrawType DrawType)
 {
 	CurrentDrawType = DrawType;
-	
+
 	// 뷰포트 제어 잠금
 	const bool bLockViewportMoving = CheckBrushMode(CurrentDrawType);
 	EdMode->LockViewportMoving(bLockViewportMoving);
-	
+
 	for (auto DrawBtn : DrawBtns)
 	{
 		const bool bSelected = DrawBtnMap[DrawBtn] == CurrentDrawType;
@@ -77,9 +78,10 @@ bool UMarchingCubeGeneratorWidget::CheckBrushMode(EDrawType DrawType)
 	switch (DrawType)
 	{
 	case EDrawType::Sculpt:
+	case EDrawType::Erode:
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -88,7 +90,11 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	const FHitResult HitResult = MouseTraceToObject();
+	if (CheckBrushMode(CurrentDrawType) == false)
+		return;
+
+	FVector TraceWorldDir;
+	const FHitResult HitResult = MouseTraceToObject(TraceWorldDir);
 	if (HitResult.bBlockingHit == false)
 		return;
 	
@@ -96,11 +102,12 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	if (MarchingCubeWorld == nullptr)
 		return;
 
-	if (CheckBrushMode(CurrentDrawType))
-	{
-		DrawDebugSphere(GetWorld(), HitResult.Location, SculptProperty.BrushRadius, 32, FColor::Green, false);
-	}
+	const float BrushRadius = CurrentDrawType== EDrawType::Sculpt ? SculptProperty.BrushRadius : ErodeProperty.BrushRadius;
+	// preview
+	DrawDebugSphere(GetWorld(), HitResult.Location, BrushRadius, 32, FColor::Green, false);
 
+
+	// 브러시 동작
 	if (EdMode->IsPressingMouseLeft() == false)
 		return;
 
@@ -111,13 +118,16 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	else
 		return;
 
-	
 	switch (CurrentDrawType)
 	{
 	case EDrawType::Sculpt:
 		MarchingCubeWorld->Sculpt(HitResult.Location, SculptProperty);
 		break;
+	case EDrawType::Erode:
+		MarchingCubeWorld->Erode(HitResult.Location, ErodeProperty, TraceWorldDir);
+		break;
 	}
+	
 }
 
 void UMarchingCubeGeneratorWidget::SetVisibility(ESlateVisibility InVisibility)
@@ -126,7 +136,7 @@ void UMarchingCubeGeneratorWidget::SetVisibility(ESlateVisibility InVisibility)
 }
 
 
-FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject()
+FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject(FVector& TraceWorldDir)
 {
 	FHitResult HitResult;
 
@@ -150,14 +160,14 @@ FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject()
 
 		FSceneView* SceneView = ViewportClient->CalcSceneView(&ViewFamily);
 
-		FVector WorldMouseLocation, WorldDirection;
+		FVector WorldMouseLocation;
 
 		if (SceneView)
 		{
-			SceneView->DeprojectFVector2D(MousePosition, WorldMouseLocation, WorldDirection);
+			SceneView->DeprojectFVector2D(MousePosition, WorldMouseLocation, TraceWorldDir);
 		}
 
-		const bool bHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), WorldMouseLocation, WorldMouseLocation + WorldDirection * 9876543210,
+		const bool bHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), WorldMouseLocation, WorldMouseLocation + TraceWorldDir * 9876543210,
 		                                                        TraceTypeQuery, true, {},
 		                                                        EDrawDebugTrace::None, HitResult, true,
 		                                                        FLinearColor::Green, FLinearColor::Red);
