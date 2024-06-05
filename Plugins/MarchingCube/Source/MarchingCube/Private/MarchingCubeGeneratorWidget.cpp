@@ -40,10 +40,18 @@ void UMarchingCubeGeneratorWidget::NativeDestruct()
 }
 
 
-void UMarchingCubeGeneratorWidget::SpawnWorld()
+void UMarchingCubeGeneratorWidget::SpawnCubeWorld()
 {
+	ensure(MarchingCubeWorldClass != nullptr);
 	AMarchingCubeWorld* MarchingCubeWorld = GetWorld()->SpawnActor<AMarchingCubeWorld>(MarchingCubeWorldClass);
-	MarchingCubeWorld->Init(MarchingCubeProperty, BoundSize);
+	MarchingCubeWorld->GenerateCubeWorld(MarchingCubeProperty, BoundSize);
+}
+
+void UMarchingCubeGeneratorWidget::SpawnTerrainWorld()
+{
+	ensure(MarchingCubeWorldClass != nullptr);
+	AMarchingCubeWorld* MarchingCubeWorld = GetWorld()->SpawnActor<AMarchingCubeWorld>(MarchingCubeWorldClass);
+	MarchingCubeWorld->GenerateTerrainWorld(MarchingCubeProperty, BoundSize);
 }
 
 void UMarchingCubeGeneratorWidget::OnClickDrawBtn(UButton* Button)
@@ -97,12 +105,12 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	const FHitResult HitResult = MouseTraceToObject(TraceWorldDir);
 	if (HitResult.bBlockingHit == false)
 		return;
-	
+
 	AMarchingCubeWorld* MarchingCubeWorld = Cast<AMarchingCubeWorld>(HitResult.GetActor());
 	if (MarchingCubeWorld == nullptr)
 		return;
 
-	const float BrushRadius = CurrentDrawType== EDrawType::Sculpt ? SculptProperty.BrushRadius : ErodeProperty.BrushRadius;
+	const float BrushRadius = CurrentDrawType == EDrawType::Sculpt ? SculptProperty.BrushRadius : ErodeProperty.BrushRadius;
 	// preview
 	DrawDebugSphere(GetWorld(), HitResult.Location, BrushRadius, 32, FColor::Green, false);
 
@@ -118,16 +126,21 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	else
 		return;
 
+	const uint64 StartTime = FPlatformTime::Cycles64();
 	switch (CurrentDrawType)
 	{
 	case EDrawType::Sculpt:
 		MarchingCubeWorld->Sculpt(HitResult.Location, SculptProperty);
 		break;
 	case EDrawType::Erode:
+		// MarchingCubeWorld->ErodeLegacy(HitResult.Location, ErodeProperty, TraceWorldDir);
 		MarchingCubeWorld->Erode(HitResult.Location, ErodeProperty, TraceWorldDir);
 		break;
 	}
-	
+
+	const uint64 EndTime = FPlatformTime::Cycles64();
+	const double ElapsedTime = FPlatformTime::ToSeconds64(EndTime - StartTime);
+	UE_LOG(LogTemp, Log, TEXT("Draw ElapsedTime %f sec"), ElapsedTime);
 }
 
 void UMarchingCubeGeneratorWidget::SetVisibility(ESlateVisibility InVisibility)
@@ -167,10 +180,14 @@ FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject(FVector& TraceWorldD
 			SceneView->DeprojectFVector2D(MousePosition, WorldMouseLocation, TraceWorldDir);
 		}
 
-		const bool bHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), WorldMouseLocation, WorldMouseLocation + TraceWorldDir * 9876543210,
-		                                                        TraceTypeQuery, true, {},
-		                                                        EDrawDebugTrace::None, HitResult, true,
-		                                                        FLinearColor::Green, FLinearColor::Red);
+		const FVector TraceStartLoc = WorldMouseLocation;
+		const FVector TraceEndLoc = WorldMouseLocation + TraceWorldDir * 9876543210;
+
+		bool bHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStartLoc, TraceEndLoc,
+		                                                  TraceTypeQuery, true, {},
+		                                                  EDrawDebugTrace::None, HitResult, true,
+		                                                  FLinearColor::Green, FLinearColor::Red);
+
 
 		// UE_LOG(LogTemp, Log, TEXT("MousePos %s / WorldMousePos %s / WorldDir %s / hit : %d"),
 		//        *MousePosition.ToString(), *WorldMouseLocation.ToString(), *WorldDirection.ToString(), bHit);

@@ -18,7 +18,7 @@ public:
 	// 클릭 뗐을 때
 	virtual bool HandleClick(FEditorViewportClient* InViewportClient, HHitProxy* HitProxy, const FViewportClick& Click) override;
 
-	// 마우스가 뷰포트 영역에 들어왔을때
+	// 마우스가 뷰포트 영역에 들어왔을때 
 	virtual bool MouseEnter(FEditorViewportClient* ViewportClient, FViewport* Viewport, int32 x, int32 y) override;
 
 	// 마우스가 뷰포트 영역에 나갔을 때
@@ -34,7 +34,7 @@ private:
 	bool bMouseLeftPress = false;
 	bool bLockViewportMoving = false;
 	
-public:
+public: 
 	bool IsPressingMouseLeft() const {return bMouseLeftPress;}
 
 	void LockViewportMoving(bool bLock);

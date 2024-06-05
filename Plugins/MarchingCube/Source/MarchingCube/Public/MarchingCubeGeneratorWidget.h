@@ -87,8 +87,11 @@ public:
 
 private:
 	UFUNCTION(BlueprintCallable)
-	void SpawnWorld();
+	void SpawnCubeWorld();
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnTerrainWorld();
+	
 	UFUNCTION(BlueprintCallable)
 	void OnClickDrawBtn(UButton* Button);
 
