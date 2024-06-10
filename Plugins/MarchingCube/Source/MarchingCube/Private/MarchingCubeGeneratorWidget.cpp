@@ -8,6 +8,9 @@
 #include "MarchingCubeEdMode.h"
 #include "MarchingCubeWorld.h"
 
+DECLARE_STATS_GROUP(TEXT("MarchingCube"), STATGROUP_MarchingCube, STATCAT_Advanced);
+DECLARE_CYCLE_STAT(TEXT("MarchingCube Brush"), STAT_MarchingCube_Brush, STATGROUP_MarchingCube);
+
 
 void UMarchingCubeGeneratorWidget::NativeConstruct()
 {
@@ -51,8 +54,7 @@ void UMarchingCubeGeneratorWidget::OnActorAdded(AActor* Actor)
 	{
 		AMarchingCubeWorld* MCWorld = Cast<AMarchingCubeWorld>(Actor);
 		MCWorlds.Add(MCWorld);
-		UE_LOG(LogTemp,Log,TEXT("Add MCWorld Success"));
-
+		UE_LOG(LogTemp, Log, TEXT("Add MCWorld Success"));
 	}
 }
 
@@ -64,7 +66,7 @@ void UMarchingCubeGeneratorWidget::OnActorDeleted(AActor* Actor)
 		if (MCWorlds.Contains(MCWorld))
 		{
 			MCWorlds.Remove(MCWorld);
-			UE_LOG(LogTemp,Log,TEXT("Remove MCWorld Success"));
+			UE_LOG(LogTemp, Log, TEXT("Remove MCWorld Success"));
 		}
 	}
 }
@@ -161,17 +163,20 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 		return;
 
 	const uint64 StartTime = FPlatformTime::Cycles64();
-	switch (CurrentDrawType)
-	{
-	case EDrawType::Sculpt:
-		HitMCWorld->Sculpt(BrushLocation, SculptProperty);
-		break;
-	case EDrawType::Erode:
-		// MarchingCubeWorld->ErodeLegacy(BrushLocation, ErodeProperty, TraceWorldDir);
-		HitMCWorld->Erode(BrushLocation, ErodeProperty, TraceWorldDir);
-		break;
-	}
 
+	{
+		SCOPE_CYCLE_COUNTER(STAT_MarchingCube_Brush);
+		switch (CurrentDrawType)
+		{
+		case EDrawType::Sculpt:
+			HitMCWorld->Sculpt(BrushLocation, SculptProperty);
+			break;
+		case EDrawType::Erode:
+			// MarchingCubeWorld->ErodeLegacy(BrushLocation, ErodeProperty, TraceWorldDir);
+			HitMCWorld->Erode(BrushLocation, ErodeProperty, TraceWorldDir);
+			break;
+		}
+	}
 	const uint64 EndTime = FPlatformTime::Cycles64();
 	const double ElapsedTime = FPlatformTime::ToSeconds64(EndTime - StartTime);
 	UE_LOG(LogTemp, Log, TEXT("Draw ElapsedTime %f sec"), ElapsedTime);
@@ -239,6 +244,9 @@ TOptional<FRay3d> UMarchingCubeGeneratorWidget::GetCursorRay()
 bool UMarchingCubeGeneratorWidget::TraceBrush(AMarchingCubeWorld*& HitMCWorld, FVector& HitPoint, FVector& TraceWorldDir)
 {
 	auto CursorRay = GetCursorRay();
+	if(!CursorRay.IsSet())
+		return false;
+	
 	TraceWorldDir = CursorRay->Direction;
 	bool bTrace = false;
 

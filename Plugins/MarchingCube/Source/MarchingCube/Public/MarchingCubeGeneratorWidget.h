@@ -23,7 +23,6 @@ enum class EDrawType : uint8
 	Erode
 };
 
-
 UCLASS()
 class MARCHINGCUBE_API UMarchingCubeGeneratorWidget : public UEditorUtilityWidget
 {
