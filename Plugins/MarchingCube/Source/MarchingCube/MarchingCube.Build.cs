@@ -25,7 +25,7 @@ public class MarchingCube : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
+				"Core", "GeometryCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -52,10 +52,10 @@ public class MarchingCube : ModuleRules
 				"ModelingComponentsEditorOnly",
 				"Blutility",
 				"UMG",
-				"GeometryCore",
 				"ProceduralMeshComponent",
 				"DynamicMesh",
-				"EditorScriptingUtilities"
+				"EditorScriptingUtilities",
+				
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

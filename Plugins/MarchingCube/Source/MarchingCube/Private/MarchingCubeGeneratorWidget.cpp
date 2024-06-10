@@ -4,9 +4,10 @@
 #include "MarchingCubeGeneratorWidget.h"
 
 #include "EditorModeManager.h"
+#include "EngineUtils.h"
 #include "MarchingCubeEdMode.h"
 #include "MarchingCubeWorld.h"
-#include "Kismet/KismetSystemLibrary.h"
+
 
 void UMarchingCubeGeneratorWidget::NativeConstruct()
 {
@@ -27,7 +28,9 @@ void UMarchingCubeGeneratorWidget::NativeConstruct()
 	DrawBtnMap.GetKeys(DrawBtns);
 	SetDrawType(EDrawType::Generate);
 
-	UE_LOG(LogTemp, Log, TEXT("UMarchingCubeGeneratorWidget::NativeConstruct"));
+	CollectMCWorlds();
+	OnActorAddedHandle = GEngine->OnLevelActorAdded().AddUObject(this, &UMarchingCubeGeneratorWidget::OnActorAdded);
+	OnActorRemovedHandle = GEngine->OnLevelActorDeleted().AddUObject(this, &UMarchingCubeGeneratorWidget::OnActorDeleted);
 }
 
 void UMarchingCubeGeneratorWidget::NativeDestruct()
@@ -36,22 +39,55 @@ void UMarchingCubeGeneratorWidget::NativeDestruct()
 
 	Super::NativeDestruct();
 
+	GEngine->OnLevelActorAdded().Remove(OnActorAddedHandle);
+	GEngine->OnLevelActorDeleted().Remove(OnActorAddedHandle);
+
 	GLevelEditorModeTools().DeactivateMode(FMarchingCubeEdMode::EM_MarchingCubeViewport);
+}
+
+void UMarchingCubeGeneratorWidget::OnActorAdded(AActor* Actor)
+{
+	if (Actor->IsA(AMarchingCubeWorld::StaticClass()))
+	{
+		AMarchingCubeWorld* MCWorld = Cast<AMarchingCubeWorld>(Actor);
+		MCWorlds.Add(MCWorld);
+		UE_LOG(LogTemp,Log,TEXT("Add MCWorld Success"));
+
+	}
+}
+
+void UMarchingCubeGeneratorWidget::OnActorDeleted(AActor* Actor)
+{
+	if (Actor->IsA(AMarchingCubeWorld::StaticClass()))
+	{
+		AMarchingCubeWorld* MCWorld = Cast<AMarchingCubeWorld>(Actor);
+		if (MCWorlds.Contains(MCWorld))
+		{
+			MCWorlds.Remove(MCWorld);
+			UE_LOG(LogTemp,Log,TEXT("Remove MCWorld Success"));
+		}
+	}
 }
 
 
 void UMarchingCubeGeneratorWidget::SpawnCubeWorld()
 {
-	ensure(MarchingCubeWorldClass != nullptr);
-	AMarchingCubeWorld* MarchingCubeWorld = GetWorld()->SpawnActor<AMarchingCubeWorld>(MarchingCubeWorldClass);
+	AMarchingCubeWorld* MarchingCubeWorld = SpawnMarchingCubeWorld();
 	MarchingCubeWorld->GenerateCubeWorld(MarchingCubeProperty, BoundSize);
 }
 
 void UMarchingCubeGeneratorWidget::SpawnTerrainWorld()
 {
+	AMarchingCubeWorld* MarchingCubeWorld = SpawnMarchingCubeWorld();
+	MarchingCubeWorld->GenerateTerrainWorld(MarchingCubeProperty, BoundSize);
+}
+
+AMarchingCubeWorld* UMarchingCubeGeneratorWidget::SpawnMarchingCubeWorld()
+{
 	ensure(MarchingCubeWorldClass != nullptr);
 	AMarchingCubeWorld* MarchingCubeWorld = GetWorld()->SpawnActor<AMarchingCubeWorld>(MarchingCubeWorldClass);
-	MarchingCubeWorld->GenerateTerrainWorld(MarchingCubeProperty, BoundSize);
+	MCWorlds.Add(MarchingCubeWorld);
+	return MarchingCubeWorld;
 }
 
 void UMarchingCubeGeneratorWidget::OnClickDrawBtn(UButton* Button)
@@ -101,23 +137,21 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	if (CheckBrushMode(CurrentDrawType) == false)
 		return;
 
-	FVector TraceWorldDir;
-	const FHitResult HitResult = MouseTraceToObject(TraceWorldDir);
-	if (HitResult.bBlockingHit == false)
+	AMarchingCubeWorld* HitMCWorld = nullptr;
+	FVector BrushLocation, TraceWorldDir;
+	const bool bTraceMCWorld = TraceBrush(HitMCWorld, BrushLocation, TraceWorldDir);
+	if (!bTraceMCWorld)
 		return;
 
-	AMarchingCubeWorld* MarchingCubeWorld = Cast<AMarchingCubeWorld>(HitResult.GetActor());
-	if (MarchingCubeWorld == nullptr)
-		return;
-
+	// draw brush
 	const float BrushRadius = CurrentDrawType == EDrawType::Sculpt ? SculptProperty.BrushRadius : ErodeProperty.BrushRadius;
-	// preview
-	DrawDebugSphere(GetWorld(), HitResult.Location, BrushRadius, 32, FColor::Green, false);
-
+	DrawDebugSphere(GetWorld(), BrushLocation, BrushRadius, 32, FColor::Green, false);
 
 	// 브러시 동작
 	if (EdMode->IsPressingMouseLeft() == false)
+	{
 		return;
+	}
 
 	constexpr float BrushIntervalSec = 0.02f;
 	AccumulatedTime += InDeltaTime;
@@ -130,11 +164,11 @@ void UMarchingCubeGeneratorWidget::NativeTick(const FGeometry& MyGeometry, float
 	switch (CurrentDrawType)
 	{
 	case EDrawType::Sculpt:
-		MarchingCubeWorld->Sculpt(HitResult.Location, SculptProperty);
+		HitMCWorld->Sculpt(BrushLocation, SculptProperty);
 		break;
 	case EDrawType::Erode:
-		// MarchingCubeWorld->ErodeLegacy(HitResult.Location, ErodeProperty, TraceWorldDir);
-		MarchingCubeWorld->Erode(HitResult.Location, ErodeProperty, TraceWorldDir);
+		// MarchingCubeWorld->ErodeLegacy(BrushLocation, ErodeProperty, TraceWorldDir);
+		HitMCWorld->Erode(BrushLocation, ErodeProperty, TraceWorldDir);
 		break;
 	}
 
@@ -149,18 +183,33 @@ void UMarchingCubeGeneratorWidget::SetVisibility(ESlateVisibility InVisibility)
 }
 
 
-FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject(FVector& TraceWorldDir)
+void UMarchingCubeGeneratorWidget::CollectMCWorlds()
 {
-	FHitResult HitResult;
+	UWorld* EditorWorld = GEditor->GetEditorWorldContext().World();
+	if (!EditorWorld)
+		return;
+	for (TActorIterator<AMarchingCubeWorld> It(EditorWorld); It; ++It)
+	{
+		AMarchingCubeWorld* MCWorld = *It;
+		if (MCWorld)
+			MCWorlds.Add(MCWorld);
+	}
 
+	UE_LOG(LogTemp, Log, TEXT("MCWorlds num : %d"), MCWorlds.Num());
+}
+
+
+TOptional<FRay3d> UMarchingCubeGeneratorWidget::GetCursorRay()
+{
 	const bool bPlayLevel = GEditor->PlayWorld != nullptr;
 
+	TOptional<FRay3d> Ray;
 	if (GEditor && GEditor->GetActiveViewport() && !bPlayLevel)
 	{
 		FViewport* Viewport = GEditor->GetActiveViewport();
 		FEditorViewportClient* ViewportClient = static_cast<FEditorViewportClient*>(Viewport->GetClient());
 		if (ViewportClient == nullptr)
-			return HitResult;
+			return Ray;
 
 		FIntPoint MousePosition;
 		Viewport->GetMousePos(MousePosition);
@@ -173,8 +222,7 @@ FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject(FVector& TraceWorldD
 
 		FSceneView* SceneView = ViewportClient->CalcSceneView(&ViewFamily);
 
-		FVector WorldMouseLocation;
-
+		FVector WorldMouseLocation, TraceWorldDir;
 		if (SceneView)
 		{
 			SceneView->DeprojectFVector2D(MousePosition, WorldMouseLocation, TraceWorldDir);
@@ -182,16 +230,41 @@ FHitResult UMarchingCubeGeneratorWidget::MouseTraceToObject(FVector& TraceWorldD
 
 		const FVector TraceStartLoc = WorldMouseLocation;
 		const FVector TraceEndLoc = WorldMouseLocation + TraceWorldDir * 9876543210;
-
-		bool bHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), TraceStartLoc, TraceEndLoc,
-		                                                  TraceTypeQuery, true, {},
-		                                                  EDrawDebugTrace::None, HitResult, true,
-		                                                  FLinearColor::Green, FLinearColor::Red);
-
-
-		// UE_LOG(LogTemp, Log, TEXT("MousePos %s / WorldMousePos %s / WorldDir %s / hit : %d"),
-		//        *MousePosition.ToString(), *WorldMouseLocation.ToString(), *WorldDirection.ToString(), bHit);
+		Ray = FRay3d(TraceStartLoc, TraceEndLoc);
 	}
 
-	return HitResult;
+	return Ray;
+}
+
+bool UMarchingCubeGeneratorWidget::TraceBrush(AMarchingCubeWorld*& HitMCWorld, FVector& HitPoint, FVector& TraceWorldDir)
+{
+	auto CursorRay = GetCursorRay();
+	TraceWorldDir = CursorRay->Direction;
+	bool bTrace = false;
+
+	if (ensureMsgf(CursorRay.IsSet(), TEXT("Cursor Ray invalid")))
+	{
+		double MinDistanceSquared = DBL_MAX;
+		for (AMarchingCubeWorld* MCWorld : MCWorlds)
+		{
+			if (MCWorld == nullptr)
+				continue;
+
+			TOptional<FVector> CurrentHitPoint = MCWorld->GetRayHitPoint(CursorRay.GetValue());
+			if (CurrentHitPoint.IsSet())
+			{
+				const double DistanceSquared = CursorRay->DistSquared(CurrentHitPoint.GetValue());
+				if (DistanceSquared < MinDistanceSquared)
+				{
+					MinDistanceSquared = DistanceSquared;
+					HitPoint = CurrentHitPoint.GetValue();
+
+					HitMCWorld = MCWorld;
+					bTrace = true;
+				}
+			}
+		}
+	}
+
+	return bTrace;
 }

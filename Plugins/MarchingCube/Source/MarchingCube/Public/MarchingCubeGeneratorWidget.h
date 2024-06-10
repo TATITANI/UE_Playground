@@ -75,7 +75,15 @@ private:
 
 	FMarchingCubeEdMode* EdMode;
 
+	UPROPERTY()
+	TSet<AMarchingCubeWorld*> MCWorlds;
+
+	UFUNCTION()
+	void OnActorAdded(AActor* Actor);
 	
+	UFUNCTION()
+	void OnActorDeleted(AActor* Actor);
+
 	
 public:
 	virtual void NativeConstruct() override;
@@ -91,13 +99,21 @@ private:
 
 	UFUNCTION(BlueprintCallable)
 	void SpawnTerrainWorld();
+
+	AMarchingCubeWorld* SpawnMarchingCubeWorld();
 	
 	UFUNCTION(BlueprintCallable)
 	void OnClickDrawBtn(UButton* Button);
 
 	void SetDrawType(EDrawType DrawType);
 	bool CheckBrushMode(EDrawType DrawType);
-	
-	FHitResult MouseTraceToObject(FVector& TraceWorldDir);
 
+	FDelegateHandle OnActorAddedHandle;
+	FDelegateHandle OnActorRemovedHandle;
+	
+	
+	void CollectMCWorlds();
+	TOptional<FRay3d> GetCursorRay();
+	bool TraceBrush(AMarchingCubeWorld*& HitMCWorld, FVector& HitPoint, FVector& TraceWorldDir);
+	
 };

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "PreviewMesh.h"
+#include "DynamicMesh/DynamicMeshOctree3.h"
 #include "Generators/MarchingCubes.h"
 #include "DynamicMesh/Public/DynamicMeshEditor.h"
 #include "Math/GenericOctree.h"
@@ -119,7 +120,7 @@ struct FMarchingCubeOctreeSemantics
 	FORCEINLINE static void SetElementId(const FMarchingCubeMeshVertex& Element, FOctreeElementId2 Id)
 	{
 		Element.MapID->Add(Element.VertexID, Id);
-		
+
 		// UE_LOG(LogTemp,Log,TEXT("Set nodeID : %d"), Id.GetNodeIndex());
 	}
 };
@@ -137,6 +138,8 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
+	virtual bool ShouldTickIfViewportsOnly() const override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(AllowPrivateAccess))
 	class UDynamicMeshComponent* DynamicMeshComponent;
 
@@ -153,9 +156,7 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	virtual void PostInitProperties() override;
-	virtual void PostInitializeComponents() override;
+	
 
 	void GenerateCubeWorld(FMarchingCubeProperty& MarchingCubeProperty, const FVector3d& InBoundSize);
 
@@ -165,6 +166,8 @@ public:
 	void Sculpt(FVector BrushLocation, FMarchingCubeSculptProperty& SculptProperty);
 	void Erode(FVector BrushLocation, FMarchingCubeErodeProperty& ErodeProperty, FVector3d ErodeDir);
 	void ErodeLegacy(FVector BrushLocation, FMarchingCubeErodeProperty& ErodeProperty, FVector3d ErodeDir);
+
+	TOptional<FVector> GetRayHitPoint(FRay3d Ray3d);
 
 private:
 	void Init(FMarchingCubeProperty& MarchingCubeProperty, const FVector3d& InBoundSize,
@@ -184,9 +187,11 @@ private:
 	UE::Geometry::FMeshIndexMappings IndexMappings;
 	FVector3d BoundSize;
 
-	using MarchingCubeMeshOctree = TOctree2<FMarchingCubeMeshVertex, FMarchingCubeOctreeSemantics>;
-	MarchingCubeMeshOctree MeshOctree;
-	MapOctreeID OctreeIdMap;
-	
+	// using MarchingCubeMeshOctree = TOctree2<FMarchingCubeMeshVertex, FMarchingCubeOctreeSemantics>;
+	// MarchingCubeMeshOctree MeshOctree;
+	// MapOctreeID OctreeIdMap;
+
+	UE::Geometry::FDynamicMeshOctree3 DynamicMeshOctree;
 	void InitOctree();
+	
 };

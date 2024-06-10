@@ -27,6 +27,8 @@ AMarchingCubeWorld::AMarchingCubeWorld()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+
 	//
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
@@ -34,18 +36,18 @@ AMarchingCubeWorld::AMarchingCubeWorld()
 	DynamicMeshComponent = CreateDefaultSubobject<UDynamicMeshComponent>(TEXT("Dynamic"));
 	DynamicMeshComponent->SetupAttachment(RootComponent);
 
+	// collision setting
 	DynamicMeshComponent->bUseAsyncCooking = true;
 	DynamicMeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	DynamicMeshComponent->EnableComplexAsSimpleCollision();
 	DynamicMeshComponent->SetGenerateOverlapEvents(true);
 	DynamicMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	DynamicMeshComponent->bEnableComplexCollision = true;
-	
-	DynamicMeshComponent->GetBodySetup()->bDoubleSidedGeometry = true;
-	
 
-	MeshOctree = MarchingCubeMeshOctree(FVector::ZeroVector, BoundSize.GetMax());
-	
+	DynamicMeshComponent->GetBodySetup()->bDoubleSidedGeometry = true;
+
+	// MeshOctree = MarchingCubeMeshOctree(FVector::ZeroVector, BoundSize.GetMax());
+
 #pragma region ProceduralMeshComponent
 	// ProceduralMeshComponent = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Procedural Mesh"));
 	// ProceduralMeshComponent->SetupAttachment(GetRootComponent());
@@ -61,6 +63,11 @@ void AMarchingCubeWorld::OnConstruction(const FTransform& Transform)
 	Super::OnConstruction(Transform);
 }
 
+bool AMarchingCubeWorld::ShouldTickIfViewportsOnly() const
+{
+	return true;
+}
+
 
 // Called when the game starts or when spawned
 void AMarchingCubeWorld::BeginPlay()
@@ -69,21 +76,13 @@ void AMarchingCubeWorld::BeginPlay()
 	DynamicMeshComponent->UpdateCollision(false);
 }
 
+
 // Called every frame
 void AMarchingCubeWorld::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AMarchingCubeWorld::PostInitProperties()
-{
-	Super::PostInitProperties();
-}
-
-void AMarchingCubeWorld::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-}
 
 void AMarchingCubeWorld::GenerateCubeWorld(FMarchingCubeProperty& MarchingCubeProperty, const FVector3d& InBoundSize)
 {
@@ -109,13 +108,13 @@ void AMarchingCubeWorld::Init(FMarchingCubeProperty& MarchingCubeProperty, const
 	// CreateProceduralMesh(MarchingCubes);
 
 	FDynamicMesh3* Mesh = CreateDynamicMesh(MarchingCubes);
-	DynamicMeshComponent->SetMesh(MoveTemp(*Mesh));
 
+	DynamicMeshComponent->SetMesh(MoveTemp(*Mesh));
 	DynamicMeshComponent->FastNotifyUVsUpdated();
 	DynamicMeshComponent->NotifyMeshUpdated();
 	DynamicMeshComponent->SetMaterial(0, MarchingCubeProperty.Material);
-	DynamicMeshComponent->UpdateCollision(false);
-	
+
+
 	SetActorLocation(MarchingCubeProperty.Location);
 
 	InitOctree();
@@ -156,7 +155,8 @@ void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& 
 	// normal과 uv 정보는 비어있어서 직접 설정
 	{
 		// set normal
-		MarchingCubes.Normals.SetNum(MarchingCubes.Vertices.Num());
+		// MarchingCubes.Normals.SetNum(MarchingCubes.Vertices.Num());
+		MarchingCubes.Normals.Init(FVector3f(0, 0, 0), MarchingCubes.Vertices.Num());
 		for (int i = 0; i < MarchingCubes.Triangles.Num(); i++)
 		{
 			const int32 VID1 = MarchingCubes.Triangles[i].A;
@@ -164,15 +164,16 @@ void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& 
 			const int32 VID3 = MarchingCubes.Triangles[i].C;
 			FVector3d EdgeA = MarchingCubes.Vertices[VID2] - MarchingCubes.Vertices[VID1];
 			FVector3d EdgeB = MarchingCubes.Vertices[VID3] - MarchingCubes.Vertices[VID1];
+
 			FVector3f TriangleNormal = FVector3f(EdgeB.Cross(EdgeA)).GetSafeNormal();
 
 			MarchingCubes.Normals[VID1] += TriangleNormal;
 			MarchingCubes.Normals[VID2] += TriangleNormal;
 			MarchingCubes.Normals[VID3] += TriangleNormal;
 		}
-		for (auto& Normal : MarchingCubes.Normals)
+		for (int i = 0; i < MarchingCubes.Normals.Num(); i++)
 		{
-			Normal.Normalize();
+			MarchingCubes.Normals[i] = MarchingCubes.Normals[i].GetSafeNormal();
 		}
 
 		// set uv
@@ -196,12 +197,10 @@ void AMarchingCubeWorld::GenerateMarchingCubeData(UE::Geometry::FMarchingCubes& 
 
 FDynamicMesh3* AMarchingCubeWorld::CreateDynamicMesh(UE::Geometry::FMarchingCubes& MarchingCubes)
 {
-	// mesh set
-	// FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
 	FDynamicMesh3* Mesh = new FDynamicMesh3();
 
 	Mesh->Clear();
-	Mesh->EnableVertexNormals(FVector3f());
+	Mesh->EnableVertexNormals(FVector3f(0, 0, 1));
 	Mesh->EnableVertexColors(FVector4f());
 	Mesh->EnableAttributes();
 	Mesh->Attributes()->EnablePrimaryColors();
@@ -222,6 +221,7 @@ FDynamicMesh3* AMarchingCubeWorld::CreateDynamicMesh(UE::Geometry::FMarchingCube
 		int32 VID = Mesh->AppendVertex(MarchingCubes.Vertices[i]);
 		Mesh->SetVertexNormal(VID, MarchingCubes.Normals[i]);
 	}
+
 
 	for (auto UV : MarchingCubes.UVs)
 	{
@@ -296,17 +296,39 @@ TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitCube(fl
 	};
 }
 
-void AMarchingCubeWorld::InitOctree()
+TOptional<FVector> AMarchingCubeWorld::GetRayHitPoint(FRay3d Ray3d)
 {
-	const FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
-	
-	for (const int VertexID : Mesh->VertexIndicesItr())
+	TOptional<FVector> Result;
+	int32 ID = DynamicMeshOctree.FindNearestHitObject(Ray3d);
+	if (ID == -1)
 	{
-		FMarchingCubeMeshVertex Vertex(VertexID, Mesh->GetVertex(VertexID), &OctreeIdMap);
-		MeshOctree.AddElement(Vertex);
+		// UE_LOG(LogTemp, Log, TEXT("Cursor Ray not hit"));
+		return Result;
 	}
+	FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
+	auto Tri = Mesh->GetTriangle(ID);
+	FVector3d Vtx0 = Mesh->GetVertex(Tri.A);
+	FVector3d Vtx1 = Mesh->GetVertex(Tri.B);
+	FVector3d Vtx2 = Mesh->GetVertex(Tri.C);
+
+	Result = (Vtx0 + Vtx1 + Vtx2) * 0.33f;
+	return Result;
 }
 
+void AMarchingCubeWorld::InitOctree()
+{
+	FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
+	DynamicMeshOctree.Initialize(Mesh);
+
+	////////
+	// const FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
+	//
+	// for (const int VertexID : Mesh->VertexIndicesItr())
+	// {
+	// 	FMarchingCubeMeshVertex Vertex(VertexID, Mesh->GetVertex(VertexID), &OctreeIdMap);
+	// 	MeshOctree.AddElement(Vertex);
+	// }
+}
 
 TFunction<double(UE::Math::TVector<double>)> AMarchingCubeWorld::ImplicitSphere(float Radius, FVector BrushLocation)
 {
@@ -326,66 +348,82 @@ void AMarchingCubeWorld::Sculpt(FVector BrushLocation, FMarchingCubeSculptProper
 	const TFunction<double(UE::Math::TVector<double>)> Implicit = ImplicitSphere(SculptProperty.BrushRadius, BrushLocation);
 
 	GenerateMarchingCubeData(MarchingCubes, Implicit, SculptProperty.SeedGap);
-	FDynamicMesh3* SphereMesh = CreateDynamicMesh(MarchingCubes);
 
 	UE::Geometry::FDynamicMeshEditor MeshEditor(DynamicMeshComponent->GetMesh());
+	FDynamicMesh3* SphereMesh = CreateDynamicMesh(MarchingCubes);
 	MeshEditor.AppendMesh(SphereMesh, IndexMappings);
 
 	DynamicMeshComponent->NotifyMeshUpdated();
-	DynamicMeshComponent->UpdateCollision(false);
 
-	// update octree
-	const auto Mesh = DynamicMeshComponent->GetMesh();
-	MeshOctree.Destroy();
-	for (const int VertexID : Mesh->VertexIndicesItr())
 	{
 		FMarchingCubeMeshVertex Vertex(VertexID, Mesh->GetVertex(VertexID), &OctreeIdMap);
 		MeshOctree.AddElement(Vertex);
 	}
+
+	for (int FromTriID : SphereMesh->TriangleIndicesItr())
+	{
+		// update octree
+		// 합쳐진 메시에서 SphereMesh의 TriangleID를 구해서 옥트리에 업데이트 
+		const int32 ToTriID = IndexMappings.GetNewTriangle(FromTriID);
+		DynamicMeshOctree.InsertTriangle(ToTriID);
+	}
+	
 }
 
 void AMarchingCubeWorld::Erode(FVector BrushLocation, FMarchingCubeErodeProperty& ErodeProperty, FVector3d ErodeDir)
 {
 	FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
 
+	ErodeDir.Normalize();
 	const FVector BrushLocalLoc = BrushLocation - GetActorLocation();
 
-	TArray<FMarchingCubeMeshVertex> OctreeVerticesInBrush;
-	MeshOctree.FindElementsWithBoundsTest(FBoxCenterAndExtent(FVector::ZeroVector, FVector(BoundSize)),
-	                                      [&](const FMarchingCubeMeshVertex& CurrentVertex)
-	                                      {
-		                                      const bool InSphere = FVector3d::DistSquared(CurrentVertex.Location, BrushLocalLoc) <= ErodeProperty.
-			                                      BrushRadius * ErodeProperty.BrushRadius;
-		                                      if (InSphere)
-		                                      {
-			                                      OctreeVerticesInBrush.Add(CurrentVertex);
-		                                      }
-	                                      });
+
+	FVector3d BoundMin = BrushLocation - FVector::One() * ErodeProperty.BrushRadius;
+	FVector3d BoundMax = BrushLocation + FVector::One() * ErodeProperty.BrushRadius;
+	UE::Geometry::FAxisAlignedBox3d Bounds(BoundMin, BoundMax);
 
 
-	ErodeDir.Normalize();
+	TArray<int> TriIdsInBounds;
+	DynamicMeshOctree.ParallelRangeQuery(Bounds, TriIdsInBounds);
 
-	for (FMarchingCubeMeshVertex& VertexInBrush : OctreeVerticesInBrush)
+	TSet<int> VtxIdsInBrush;
+	for (int TriID : TriIdsInBounds)
 	{
-		FVector3d Vertex = Mesh->GetVertex(VertexInBrush.VertexID);
-		FVector3d NewVertexLoc = Vertex + ErodeDir * ErodeProperty.Strength;
-		Mesh->SetVertex(VertexInBrush.VertexID, NewVertexLoc);
-
-		VertexInBrush.Location = NewVertexLoc;
-
-		// update octree vertex
-		auto OctreeElementID = OctreeIdMap[VertexInBrush.VertexID];
-		if(ensureMsgf(OctreeElementID.IsValidId(), TEXT("invalid Octree Elment id")))
+		if (Mesh->IsTriangle(TriID) == false)
 		{
-			FMarchingCubeMeshVertex& OctreeElement = MeshOctree.GetElementById(OctreeElementID);
-			OctreeElement.Location = NewVertexLoc;
+			UE_LOG(LogTemp, Warning, TEXT("Not MC Triangle %d"), TriID);
+			continue;
 		}
+		auto CurrentTri = Mesh->GetTriangle(TriID);
+		for (int i = 0; i < 3; i++)
+		{
+			int VtxId = CurrentTri[i];
+			if (Mesh->IsVertex(VtxId) == false)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Not MC Vertex %d"), VtxId);
+				continue;
+			}
 
+			FVector3d CurrentVertex = Mesh->GetVertex(VtxId);
+			const bool InSphere = FVector3d::DistSquared(CurrentVertex, BrushLocalLoc)
+				<= ErodeProperty.BrushRadius * ErodeProperty.BrushRadius;
+			if (InSphere)
+			{
+				VtxIdsInBrush.Add(VtxId);
+			}
+		}
 	}
 
+	for (int VtxId : VtxIdsInBrush)
+	{
+		FVector3d CurrentVertex = Mesh->GetVertex(VtxId);
+		FVector3d UpdatedVertexLoc = CurrentVertex + ErodeDir * ErodeProperty.Strength;
+		Mesh->SetVertex(VtxId, UpdatedVertexLoc);
+	}
+	// update octree
+	DynamicMeshOctree.ReinsertTriangles(TriIdsInBounds);
+
 	DynamicMeshComponent->NotifyMeshUpdated();
-	DynamicMeshComponent->UpdateCollision(false);
-	
 }
 
 void AMarchingCubeWorld::ErodeLegacy(FVector BrushLocation, FMarchingCubeErodeProperty& ErodeProperty, FVector3d ErodeDir)
@@ -393,7 +431,6 @@ void AMarchingCubeWorld::ErodeLegacy(FVector BrushLocation, FMarchingCubeErodePr
 	FDynamicMesh3* Mesh = DynamicMeshComponent->GetMesh();
 
 	const FVector BrushLocalLoc = BrushLocation - GetActorLocation();
-
 
 	ErodeDir.Normalize();
 	for (const int VertexID : Mesh->VertexIndicesItr())
@@ -410,5 +447,4 @@ void AMarchingCubeWorld::ErodeLegacy(FVector BrushLocation, FMarchingCubeErodePr
 
 	DynamicMeshComponent->NotifyMeshUpdated();
 	DynamicMeshComponent->UpdateCollision(false);
-
 }
