@@ -355,9 +355,14 @@ void AMarchingCubeWorld::Sculpt(FVector BrushLocation, FMarchingCubeSculptProper
 
 	DynamicMeshComponent->NotifyMeshUpdated();
 
+	
+	UE::Geometry::FDynamicMeshMaterialAttribute* MaterialAttribute = DynamicMeshComponent->GetMesh()->Attributes()->GetMaterialID();
+	const auto Materials = DynamicMeshComponent->GetMaterials();
+	int32 SculptMaterialID = 0;
+	if(Materials.Find(SculptProperty.Material, SculptMaterialID) == false)
 	{
-		FMarchingCubeMeshVertex Vertex(VertexID, Mesh->GetVertex(VertexID), &OctreeIdMap);
-		MeshOctree.AddElement(Vertex);
+		SculptMaterialID = Materials.Num();
+		DynamicMeshComponent->SetMaterial(SculptMaterialID, SculptProperty.Material);
 	}
 
 	for (int FromTriID : SphereMesh->TriangleIndicesItr())
@@ -366,6 +371,9 @@ void AMarchingCubeWorld::Sculpt(FVector BrushLocation, FMarchingCubeSculptProper
 		// 합쳐진 메시에서 SphereMesh의 TriangleID를 구해서 옥트리에 업데이트 
 		const int32 ToTriID = IndexMappings.GetNewTriangle(FromTriID);
 		DynamicMeshOctree.InsertTriangle(ToTriID);
+
+		// apply sculpt material
+		MaterialAttribute->SetValue(ToTriID, SculptMaterialID);
 	}
 	
 }
