@@ -28,7 +28,7 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 	FHitResult HitResult;
 	const bool bOverlap = UKismetSystemLibrary::SphereTraceSingle(World, CurrentPawn->GetActorLocation(), CurrentPawn->GetActorLocation(),
 	                                                              SearchRadius, TraceTypeQuery, false, {},
-	                                                              EDrawDebugTrace::ForDuration, HitResult, true,
+	                                                              EDrawDebugTrace::None, HitResult, true,
 	                                                              FLinearColor::Green, FLinearColor::Red, 0.5f);
 
 	AActor* TargetActor = nullptr;
@@ -48,3 +48,4 @@ void UBTService_SearchTarget::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 		BotAIController->SetFocus(TargetActor);
 	}
 }
+ 

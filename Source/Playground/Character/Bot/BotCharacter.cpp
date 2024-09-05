@@ -137,7 +137,7 @@ void ABotCharacter::CheckAttack()
 
 	UKismetSystemLibrary::SphereTraceSingle(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorForwardVector() * AttackDistance,
 	                                        AttackRadius, AttackTraceQuery, false, {},
-	                                        EDrawDebugTrace::ForDuration, hitResult, true);
+	                                        EDrawDebugTrace::None, hitResult, true);
 
 
 	AActor* ActorHit = hitResult.GetActor();

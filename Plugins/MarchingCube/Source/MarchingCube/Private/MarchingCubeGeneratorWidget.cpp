@@ -234,8 +234,7 @@ TOptional<FRay3d> UMarchingCubeGeneratorWidget::GetCursorRay()
 		}
 
 		const FVector TraceStartLoc = WorldMouseLocation;
-		const FVector TraceEndLoc = WorldMouseLocation + TraceWorldDir * 9876543210;
-		Ray = FRay3d(TraceStartLoc, TraceEndLoc);
+		Ray = FRay3d(TraceStartLoc, TraceWorldDir);
 	}
 
 	return Ray;
@@ -273,6 +272,7 @@ bool UMarchingCubeGeneratorWidget::TraceBrush(AMarchingCubeWorld*& HitMCWorld, F
 			}
 		}
 	}
+
 
 	return bTrace;
 }
