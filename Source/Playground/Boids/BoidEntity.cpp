@@ -3,6 +3,8 @@
 
 #include "Boids/BoidEntity.h"
 #include "BoidsGenerator.h"
+#include "Engine/OverlapResult.h"
+#include "Engine/World.h"
 
 // Sets default values
 ABoidEntity::ABoidEntity()

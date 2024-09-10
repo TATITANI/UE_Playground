@@ -8,7 +8,6 @@
 #include "Kismet/BlueprintAsyncActionBase.h"
 #include "BoidsComputeShader.generated.h"
 
-
 // 유니폼 버퍼(Uniform Buffers) 는 파라미터를 RHI 리소스로 그룹화합니다.
 // 이 리소스는 그 자체로 셰이더 파라미터로서 바인딩됩니다
 // BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT or  BEGIN_UNIFORM_BUFFER_STRUCT(FBoidsInfo,)

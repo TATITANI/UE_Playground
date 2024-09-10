@@ -5,8 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/SplineComponent.h"
 #include "GameFramework/Actor.h"
-#include "Core/Public/HAL/Runnable.h"
 #include "ComputeShader/Public/BoidsComputeShader.h"
+#include "HAL/Runnable.h"
 #include "BoidsGenerator.generated.h"
 
 

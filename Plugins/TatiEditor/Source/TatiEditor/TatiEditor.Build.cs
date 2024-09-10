@@ -20,7 +20,8 @@ public class TatiEditor : ModuleRules
 		PrivateIncludePaths.AddRange(
 			new string[]
 			{
-				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/Blutility/Private"
+				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/Blutility/Private",
+				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/SceneOutliner/Private"
 				// ... add other private include paths required here ...
 			}
 		);
@@ -43,6 +44,7 @@ public class TatiEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"SceneOutliner"
 				// ... add private dependencies that you statically link with here ...	
 			}
 		);

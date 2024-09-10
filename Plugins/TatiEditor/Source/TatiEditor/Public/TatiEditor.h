@@ -6,8 +6,9 @@
 #include "TatiEditorOutlinerSave.h"
 #include "Modules/ModuleManager.h"
 #include "Slate/CustomTabSpawner.h"
+#include "Widgets/Docking/SDockTab.h"
 
-class FTatiEditorModule : public IModuleInterface
+class TATIEDITOR_API FTatiEditorModule : public IModuleInterface
 {
 public:
 	/** IModuleInterface implementation */

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SceneOutliner/Private/SceneOutlinerActorSCCColumn.h"
-
+// #include "SceneOutliner/Private/SceneOutlinerActorSCCColumn.h"
+#include "SceneOutlinerActorSCCColumn.h"
 class UTatiEditorOutlinerSave;
 /**
  * 
@@ -15,11 +15,9 @@ class TATIEDITOR_API FOutlinerExtension
 public:
 	FOutlinerExtension();
 	~FOutlinerExtension();
-
 public:
 	UPROPERTY()
 	UTatiEditorOutlinerSave* SavingData;
-
 private:
 	FString GetSaveKey(FString LevelName);
 	// fstring GenerateSaveKey()

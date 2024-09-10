@@ -3,6 +3,11 @@
 
 #include "BoidsGenerator.h"
 #include "BoidEntity.h"
+#include "Async/ParallelFor.h"
+#include "Engine/World.h"
+#include "Engine/OverlapResult.h"
+#include "HAL/RunnableThread.h"
+
 // Sets default values
 ABoidsGenerator::ABoidsGenerator()
 {

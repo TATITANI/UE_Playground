@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-
+#include "Widgets/SCompoundWidget.h"
+#include "Widgets/Docking/SDockTab.h"
 /**
  * 
  */
@@ -21,7 +22,6 @@ public:
 	void RegisterCustomTab(FName TabID, FOnConstructSlate OnConstructSlate, FOnCloseTab OnCloseTab);
 
 private:
-	template <class T>
 	TSharedRef<SDockTab> OnSpawnTab(const FSpawnTabArgs& SpawnTabArgs, FOnConstructSlate OnConstructSlate, FOnCloseTab OnCloseTab);
 };
 
@@ -31,30 +31,6 @@ void FCustomTabSpawner::RegisterCustomTab(FName TabID, FOnConstructSlate OnConst
 {
 	// 사용자 설정 탭 등록
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(
-		                        TabID, FOnSpawnTab::CreateRaw(this, &FCustomTabSpawner::OnSpawnTab<T>, OnConstructSlate, OnCloseTab))
+		                        TabID, FOnSpawnTab::CreateRaw(this, &FCustomTabSpawner::OnSpawnTab, OnConstructSlate, OnCloseTab))
 	                        .SetDisplayName(FText::FromString(FString::Printf(TEXT("Open %s"), *TabID.ToString())));
-}
-
-template <class T>
-TSharedRef<SDockTab> FCustomTabSpawner::OnSpawnTab(const FSpawnTabArgs& SpawnTabArgs, FOnConstructSlate OnConstructSlate, FOnCloseTab OnCloseTab)
-{
-	FTatiEditorModule& TatiEditorModule = FModuleManager::LoadModuleChecked<FTatiEditorModule>(TEXT("TatiEditor"));
-
-	// SNew - 슬레이트 위젯 생성
-	TatiEditorModule.ConstructedDockTab = SNew(SDockTab).TabRole(NomadTab)
-	[
-		OnConstructSlate.Execute()
-	];
-
-	TatiEditorModule.ConstructedDockTab->SetOnTabClosed(SDockTab::FOnTabClosedCallback::CreateLambda([&](TSharedRef<SDockTab>)
-	{
-		if (TatiEditorModule.ConstructedDockTab.IsValid())
-		{
-			TatiEditorModule.ConstructedDockTab.Reset();
-			OnCloseTab.ExecuteIfBound();
-		}
-	}));
-
-
-	return TatiEditorModule.ConstructedDockTab.ToSharedRef();
 }

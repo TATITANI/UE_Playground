@@ -4,12 +4,12 @@
 #include "MarchingCubeWorld.h"
 
 #include "Generators/SphereGenerator.h"
-#include "GeometryFramework/Public/Components/DynamicMeshComponent.h"
+// #include "GeometryFramework/Public/Components/DynamicMeshComponent.h"
 #include "Materials/MaterialInstance.h"
 #include "ModelingComponentsEditorOnly/Public/EditorModelingObjectsCreationAPI.h"
 #include "ProceduralMeshComponent/Public/ProceduralMeshComponent.h"
 #include "ProceduralMeshComponent/Public/KismetProceduralMeshLibrary.h"
-#include "GeometryCore/Public/IndexTypes.h"
+// #include "GeometryCore/Public/IndexTypes.h"
 
 FIntVector& FMarchingCubeProperty::GetSeedGap()
 {

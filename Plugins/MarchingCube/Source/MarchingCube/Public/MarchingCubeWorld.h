@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DynamicMeshEditor.h"
 #include "GameFramework/Actor.h"
 #include "PreviewMesh.h"
 #include "DynamicMesh/DynamicMeshOctree3.h"
 #include "Generators/MarchingCubes.h"
-#include "DynamicMesh/Public/DynamicMeshEditor.h"
 #include "Math/GenericOctree.h"
 
 #include "MarchingCubeWorld.generated.h"

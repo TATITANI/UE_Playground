@@ -20,6 +20,7 @@
 #include "Slate/AdvanceDeletionWidget.h"
 #include "Subsystems/EditorActorSubsystem.h"
 #include "Subsystems/UnrealEditorSubsystem.h"
+#include "Slate/CustomTabSpawner.h"
 
 #define LOCTEXT_NAMESPACE "FTatiEditorModule"
 

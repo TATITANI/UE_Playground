@@ -28,8 +28,6 @@ void FCBMenuExtension::Init()
 	TArray<FContentBrowserMenuExtender_SelectedPaths>& CBModuleMenuExtenders = ContentBrowserModule.GetAllPathViewContextMenuExtenders();
 	// 컨텍스트 메뉴가 열리면 호출됨
 	CBModuleMenuExtenders.Add(FContentBrowserMenuExtender_SelectedPaths::CreateRaw(this, &FCBMenuExtension::CustomCBMenuExtender));
-
-	
 }
 
 
@@ -85,12 +83,12 @@ void FCBMenuExtension::AddCBMenuEntry(FMenuBuilder& MenuBuilder)
 void FCBMenuExtension::OnDeleteUnusedAssetButtonClicked()
 {
 	// advance deletionTab이 열린채로 에셋을 삭제하면, 탭에는 삭제한 내용이 반영되지 않기 때문에 생기는 문제를 차단 
-	if(FTatiEditorModule::ConstructedDockTab.IsValid())
+	if (FTatiEditorModule::ConstructedDockTab.IsValid())
 	{
 		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("Please Close AdvanceDeletionTab"));
 		return;
 	}
-	
+
 	DebugHeader::Print(TEXT("Working"), FColor::Green);
 	if (FolderPathsSelected.Num() != 1)
 	{
@@ -146,12 +144,12 @@ void FCBMenuExtension::OnDeleteUnusedAssetButtonClicked()
 
 void FCBMenuExtension::OnDeleteEmtpyFoldersButtonClicked()
 {
-	if(FTatiEditorModule::ConstructedDockTab.IsValid())
+	if (FTatiEditorModule::ConstructedDockTab.IsValid())
 	{
 		DebugHeader::ShowMsgDialog(EAppMsgType::Ok, TEXT("Please Close AdvanceDeletionTab"));
 		return;
 	}
-	
+
 	FTatiEditorModule::FixUpRedirectors();
 
 	if (FolderPathsSelected.Num() != 1)
@@ -207,7 +205,14 @@ void FCBMenuExtension::OnDeleteEmtpyFoldersButtonClicked()
 	for (auto EmptyFolderPath : EmptyFolderPaths)
 	{
 		const bool bDelete = UEditorAssetLibrary::DeleteDirectory(EmptyFolderPath);
-		bDelete ? DeleteCnt++ : DebugHeader::Print(TEXT("폴더 삭제 실패 : ") + EmptyFolderPath, FColor::Red);
+		if (bDelete)
+		{
+			DeleteCnt++;
+		}
+		else
+		{
+			DebugHeader::Print(TEXT("폴더 삭제 실패 : ") + EmptyFolderPath, FColor::Red);
+		}
 	}
 
 	DebugHeader::ShowMsgDialog(EAppMsgType::Ok, FString::Printf(TEXT("폴더 %d 개 삭제"), DeleteCnt), false);
@@ -217,7 +222,7 @@ void FCBMenuExtension::OnAdvanceDeleteButtonClicked()
 {
 	FTatiEditorModule::FixUpRedirectors();
 
-	FGlobalTabmanager::Get()->TryInvokeTab( SAdvanceDeletionTab::AdvanceDeletionName);
+	FGlobalTabmanager::Get()->TryInvokeTab(SAdvanceDeletionTab::AdvanceDeletionName);
 	DebugHeader::PrintLog(TEXT("OnAdvanceDeleteButtonClicked"));
 }
 
@@ -237,7 +242,7 @@ TArray<TSharedPtr<FAssetData>> FCBMenuExtension::GetAllAssetDatasUnderSelectedFo
 		{
 			continue;
 		}
-		
+
 
 		if (!UEditorAssetLibrary::DoesAssetExist(AssetPathName))
 			continue;

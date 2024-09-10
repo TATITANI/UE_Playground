@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
+#include "Materials/MaterialExpressionTextureSample.h"
 #include "QuickMaterialCreationWidget.generated.h"
 
 UENUM()

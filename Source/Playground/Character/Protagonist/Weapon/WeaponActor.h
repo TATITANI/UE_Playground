@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "InputTriggers.h"
-#include "WeaponActor.h"
 #include "Character/Protagonist/ProtagonistAnimInstance.h"
 #include "Character/Protagonist/ProtagonistCharacter.h"
 #include "WeaponActor.generated.h"

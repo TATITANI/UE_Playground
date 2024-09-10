@@ -1,9 +1,10 @@
-#include "ComputeShader/Public/BoidsComputeShader.h"
-
+#include "BoidsComputeShader.h"
 #include <string>
 
 #include "PixelShaderUtils.h"
-#include "RenderCore/Public/RenderGraphUtils.h"
+#include "RenderGraphUtils.h"
+#include "RenderGraphUtils.h"
+
 #include "StaticMeshResources.h"
 #include "DynamicMeshBuilder.h"
 #include "RenderGraphResources.h"
@@ -12,13 +13,10 @@
 #include "CanvasTypes.h"
 #include "MaterialShader.h"
 #include "ShaderParameterMacros.h"
-#include "ShaderParameterMacros.h"
-#include "ShaderParameterMacros.h"
-#include "ShaderParameterMacros.h"
-#include "ShaderParameterMacros.h"
-#include "ShaderParameterMacros.h"
+#include "RHIGPUReadback.h"
 #include "Misc/KeyChainUtilities.h"
 #include "Serialization/MemoryLayout.h"
+
 
 
 // DECLARE_STATS_GROUP(TEXT("BoidComputeShader"), STATGROUP_BoidsComputeShader, STATCAT_Advanced);
@@ -192,7 +190,6 @@ void FBoidsComputeShaderInterface::DispatchRenderThread(FRHICommandListImmediate
 				{
 					FComputeShaderUtils::Dispatch(RHICmdList, BoidsComputeShader, *PassParameters, GroupCount);
 				});
-
 			FRHIGPUBufferReadback* GPUBufferReadback = new FRHIGPUBufferReadback(TEXT("ExecuteBoidsComputeShaderOutput"));
 			AddEnqueueCopyPass(GraphBuilder, GPUBufferReadback, OutputBuffer, 0u);
 
