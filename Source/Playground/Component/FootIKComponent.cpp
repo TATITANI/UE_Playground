@@ -34,17 +34,17 @@ void UFootIKComponent::BeginPlay()
 void UFootIKComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	const auto LeftTraceResult = TraceFromFoot(LeftFootSocketName);
 	const auto RightTraceResult = TraceFromFoot(RightFootSocketName);
-
+	
 	const float CurrentHipDisplacement = FMath::Min(LeftTraceResult.Displacement, RightTraceResult.Displacement);
 	HipDisplacement = FMath::FInterpTo(HipDisplacement, CurrentHipDisplacement, DeltaTime, 10);
-
+	
 	OffsetLeft = (-LeftTraceResult.Displacement + HipDisplacement) * -1;
 	OffsetRight = (-RightTraceResult.Displacement + HipDisplacement) * -1;
 	// UE_LOG(LogTemp,Log,TEXT("offset : %f, %f"), OffsetLeft, OffsetRight);
-
+	
 	RotLeft = FMath::RInterpTo(RotLeft, LeftTraceResult.Rot, DeltaTime, 10);
 	RotRight = FMath::RInterpTo(RotRight, RightTraceResult.Rot, DeltaTime, 10);
 }

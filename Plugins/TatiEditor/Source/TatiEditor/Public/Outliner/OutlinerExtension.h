@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 // #include "SceneOutliner/Private/SceneOutlinerActorSCCColumn.h"
-#include "SceneOutlinerActorSCCColumn.h"
+// #include "SceneOutlinerActorSCCColumn.h"
 class UTatiEditorOutlinerSave;
 /**
  * 

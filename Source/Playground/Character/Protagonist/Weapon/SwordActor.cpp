@@ -20,37 +20,34 @@ void ASwordActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority() == false) // 클라에서만
+	//FX
 	{
-		//FX
-		{
-			const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->
-				GetSocketLocation(TrailSocketBotName));
-			const FRotator TrailRot = FRotationMatrix::MakeFromZ(
-				MeshComponent->GetSocketLocation(TrailSocketTopName) - MeshComponent->GetSocketLocation(TrailSocketBotName)).Rotator();
-
-			TrailComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailSystem, MeshComponent, TrailSocketBotName, TrailPos, TrailRot,
-			                                                              EAttachLocation::KeepWorldPosition, false);
-
-			ensure(TrailComponent != nullptr);
-			TrailComponent->SetRenderCustomDepth(true);
-			TrailComponent->SetCustomDepthStencilValue(1 << 1);
-			TrailComponent->Deactivate();
-		}
-
-		const APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
-		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
-		EnhancedInputComponent->BindAction(UpperAttackTriggerInputAction, ETriggerEvent::Triggered, this, &ASwordActor::TriggerUpperAttack);
-		EnhancedInputComponent->BindAction(LowerAttackTriggerInputAction, ETriggerEvent::Triggered, this, &ASwordActor::LowerAttack);
-
-		AttackMontageEndEventMap.Add(DefaultAttackMontage, FSimpleDelegate::CreateUObject(this, &ASwordActor::GroundAttackMontageEndEvent));
-		AttackMontageEndEventMap.Add(UpperAttackMontage, FSimpleDelegate::CreateUObject(this, &ASwordActor::JumpUpperAttackMontageEndEvent));
-
-		ALevelSequenceActor* SequenceActor;
-		FMovieSceneSequencePlaybackSettings UpperSequenceSettings;
-		UpperAttackSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), UpperAttackSequence,
-		                                                                            UpperSequenceSettings, SequenceActor);
+		const auto TrailPos = 0.5f * (MeshComponent->GetSocketLocation(TrailSocketTopName) + MeshComponent->
+			GetSocketLocation(TrailSocketBotName));
+		const FRotator TrailRot = FRotationMatrix::MakeFromZ(
+			MeshComponent->GetSocketLocation(TrailSocketTopName) - MeshComponent->GetSocketLocation(TrailSocketBotName)).Rotator();
+	
+		TrailComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(TrailSystem, MeshComponent, TrailSocketBotName, TrailPos, TrailRot,
+		                                                              EAttachLocation::KeepWorldPosition, false);
+		
+		ensure(TrailComponent != nullptr);
+		TrailComponent->SetRenderCustomDepth(true);
+		TrailComponent->SetCustomDepthStencilValue(1 << 1);
+		TrailComponent->Deactivate();
 	}
+	
+	const APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
+	EnhancedInputComponent->BindAction(UpperAttackTriggerInputAction, ETriggerEvent::Triggered, this, &ASwordActor::TriggerUpperAttack);
+	EnhancedInputComponent->BindAction(LowerAttackTriggerInputAction, ETriggerEvent::Triggered, this, &ASwordActor::LowerAttack);
+	
+	AttackMontageEndEventMap.Add(DefaultAttackMontage, FSimpleDelegate::CreateUObject(this, &ASwordActor::GroundAttackMontageEndEvent));
+	AttackMontageEndEventMap.Add(UpperAttackMontage, FSimpleDelegate::CreateUObject(this, &ASwordActor::JumpUpperAttackMontageEndEvent));
+	
+	ALevelSequenceActor* SequenceActor;
+	FMovieSceneSequencePlaybackSettings UpperSequenceSettings;
+	UpperAttackSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), UpperAttackSequence,
+	                                                                            UpperSequenceSettings, SequenceActor);
 }
 
 void ASwordActor::AttackInputStarted()

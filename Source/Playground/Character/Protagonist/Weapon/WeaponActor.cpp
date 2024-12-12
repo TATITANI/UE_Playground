@@ -111,7 +111,9 @@ void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 	AnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
 	ensure(AnimInstance!=nullptr);
 
-	SetupInput();
+	// test
+	// SetupInput();
+	
 	SetActorHiddenInGame(false);
 }
 
@@ -139,6 +141,9 @@ void AWeaponActor::SetupInput()
 	if (PlayerController == nullptr)
 		return;
 
+	if(PlayerController->IsLocalController() == false)
+		return;
+	
 	AddInputMappingContext(PlayerController);
 
 	if (IsBindInputAction == false)

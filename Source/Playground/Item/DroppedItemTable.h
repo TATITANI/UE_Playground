@@ -18,7 +18,7 @@ struct FDroppingData
 	
 public:
 	UPROPERTY(EditAnywhere)
-	class UItemData* ItemData;
+	class UItemData* ItemData = nullptr;
 	
 	UPROPERTY(EditAnywhere)
 	float AppearanceWeight = 1;

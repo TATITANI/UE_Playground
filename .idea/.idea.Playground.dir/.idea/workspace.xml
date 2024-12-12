@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="57b2e89f-5974-443b-8f45-6d7de6714032" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.vsconfig" beforeDir="false" afterPath="$PROJECT_DIR$/.vsconfig" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultEditor.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEditor.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultGame.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultGame.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultInput.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultInput.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ArtResources/Mixamo/Protagonist/Rootbone/ABP_ProtagonistAnim_Root.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ArtResources/Mixamo/Protagonist/Rootbone/ABP_ProtagonistAnim_Root.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/ArtResources/Mixamo/Protagonist/Rootbone/Ch19_nonPBR_Rootbone.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ArtResources/Mixamo/Protagonist/Rootbone/Ch19_nonPBR_Rootbone.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_MainMenuMode.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_MainMenuMode.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_PlaygroundGameMode.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_PlaygroundGameMode.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_ProtagonistCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_ProtagonistCharacter.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/MI_PrototypeGrid_Gray.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/MI_PrototypeGrid_Gray.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/MI_Solid_Blue.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/MI_Solid_Blue.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/M_PrototypeGrid.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/M_PrototypeGrid.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/M_Solid.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/LevelPrototyping/Materials/M_Solid.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/LevelPrototyping/Meshes/SM_Cube.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/LevelPrototyping/Meshes/SM_Cube.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Maps/Asian_Villiage/Asian_Village_Demo_WP.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Maps/Asian_Villiage/Asian_Village_Demo_WP.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Maps/MainMenuMap.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Maps/MainMenuMap.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Maps/ServerMap.umap" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StarterContent/Maps/StarterMap.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StarterContent/Maps/StarterMap.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UI/WBP_Menu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UI/WBP_Menu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/1/J4/DVCXZW1V1UFBU4L0FDOP95.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/1/J4/DVCXZW1V1UFBU4L0FDOP95.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/2/ZN/V12MKUH0LPJPHN7IN4AGIO.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/2/ZN/V12MKUH0LPJPHN7IN4AGIO.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/3/9O/EAJLOF6QTN3MXXBSIDIHB4.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/3/9O/EAJLOF6QTN3MXXBSIDIHB4.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/7/Y9/7HWBNJRY7MYWVI5A7OE4VV.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/__ExternalActors__/Maps/PlaygroundMap_WP/7/Y9/7HWBNJRY7MYWVI5A7OE4VV.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Playground.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/Playground.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Playground.uproject" beforeDir="false" afterPath="$PROJECT_DIR$/Playground.uproject" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugins/ComputeShader/Source/ComputeShader/ComputeShader.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Plugins/ComputeShader/Source/ComputeShader/ComputeShader.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugins/MarchingCube/Source/MarchingCube/MarchingCube.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Plugins/MarchingCube/Source/MarchingCube/MarchingCube.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugins/MarchingCube/Source/MarchingCube/Private/MarchingCubeModule.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Plugins/MarchingCube/Source/MarchingCube/Private/MarchingCubeModule.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugins/TatiEditor/Source/TatiEditor/Public/Outliner/OutlinerExtension.h" beforeDir="false" afterPath="$PROJECT_DIR$/Plugins/TatiEditor/Source/TatiEditor/Public/Outliner/OutlinerExtension.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Plugins/TatiEditor/Source/TatiEditor/TatiEditor.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Plugins/TatiEditor/Source/TatiEditor/TatiEditor.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ServerLauncher/LaunchServerLog.bat" beforeDir="false" afterPath="$PROJECT_DIR$/ServerLauncher/LaunchServerLog.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ServerLauncher/PlaygroundServer_log.exe.lnk" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ServerLauncher/server_log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/ServerLauncher/server_log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground.Target.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Character/CharacterCurrentInfo.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Character/CharacterCurrentInfo.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/ProtagonistCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/ProtagonistCharacter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/ProtagonistCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/ProtagonistCharacter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/Weapon/SwordActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/Weapon/SwordActor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/Weapon/SwordActor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/Weapon/SwordActor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/Weapon/WeaponActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Character/Protagonist/Weapon/WeaponActor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Component/CharacterWeaponComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Component/CharacterWeaponComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Component/ClimbComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Component/ClimbComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Component/FootIKComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Component/FootIKComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Item/DroppedItemTable.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Item/DroppedItemTable.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Playground.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Playground.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Playground/Utils/UtilPlayground.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Playground/Utils/UtilPlayground.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/PlaygroundEditor.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/PlaygroundEditor.Target.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/PlaygroundServer.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/PlaygroundServer.Target.cs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="2pwDN3mXcoapTWBWXWq4uUy0LD8" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;DedicatedServer&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;rider.external.source.directories&quot;: [
+      &quot;C:\\Users\\Woong\\AppData\\Roaming\\JetBrains\\Rider2023.3\\resharper-host\\DecompilerCache&quot;,
+      &quot;C:\\Users\\Woong\\AppData\\Roaming\\JetBrains\\Rider2023.3\\resharper-host\\SourcesCache&quot;,
+      &quot;C:\\Users\\Woong\\AppData\\Local\\Symbols\\src&quot;
+    ]
+  }
+}</component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="57b2e89f-5974-443b-8f45-6d7de6714032" name="Changes" comment="" />
+      <created>1733668200502</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1733668200502</updated>
+      <workItem from="1733668201568" duration="26000" />
+      <workItem from="1733802761860" duration="2000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+  </component>
+</project>

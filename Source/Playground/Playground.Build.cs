@@ -8,7 +8,7 @@ public class Playground : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PrivateIncludePaths.Add("Playground");
-		PublicDependencyModuleNames.AddRange(new string[]
+		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "UMG",
 			"NavigationSystem", "AIModule", "GameplayTasks", "Slate", "SlateCore", "LevelSequence",

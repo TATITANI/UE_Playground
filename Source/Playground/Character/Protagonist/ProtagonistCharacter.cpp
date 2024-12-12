@@ -19,13 +19,13 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Net/UnrealNetwork.h"
 #include "Utils/UtilPlayground.h"
 
 //////////////////////////////////////////////////////////////////////////
 AProtagonistCharacter::AProtagonistCharacter()
 {
-
-	
 	///// Set size for collision capsule
 	// GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	// Don't rotate when the controller rotates. Let that just affect the camera.
@@ -62,11 +62,18 @@ AProtagonistCharacter::AProtagonistCharacter()
 	DashComponent = CreateDefaultSubobject<UDashComponent>(TEXT("Dash"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health"));
 	FootIKComponent = CreateDefaultSubobject<UFootIKComponent>(TEXT("FootIK"));
+
 }
 
 void AProtagonistCharacter::PostInitProperties()
 {
 	Super::PostInitProperties();
+}
+
+void AProtagonistCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	PG_LOG(LogNet, Warning, TEXT("PossessedBy"));
 }
 
 void AProtagonistCharacter::PostInitializeComponents()
@@ -79,12 +86,15 @@ void AProtagonistCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PG_LOG(LogTemp, Warning, TEXT("authority %s : %d"), *GetName(), HasAuthority());
+
 	AnimInstance = Cast<UProtagonistAnimInstance>(GetMesh()->GetAnimInstance());
 
 	const APlayerController* PlayerController = Cast<APlayerController>(Controller);
 	//Add Input Mapping Context
-	if (PlayerController)
+	if (PlayerController && PlayerController->IsLocalController())
 	{
+		PG_LOG(LogTemp, Warning, TEXT("??"));
 		Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
 		ensure(Subsystem!=nullptr);
 		if (Subsystem != nullptr)
@@ -100,6 +110,7 @@ void AProtagonistCharacter::BeginPlay()
 		}
 	}
 
+
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
 	const auto ProtaonistStat = GameInstance->GetCharacterStat<FProtagonistStat>(ECharacterStatType::Protagonist, "1");
@@ -108,6 +119,11 @@ void AProtagonistCharacter::BeginPlay()
 	HealthComponent->OnHpChanged.AddUObject(this, &AProtagonistCharacter::OnHpChanged);
 	MovementModeChangedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnChangedMovementMode);
 	LandedDelegate.AddUniqueDynamic(this, &AProtagonistCharacter::OnLand);
+
+	// CharacterCurrentInfo.BindOnChangedCharacterCurrentInfo(this, FOnChangedCharacterCurrentInfo::CreateUObject(this,
+	// 	&AProtagonistCharacter::ServerSetCurrentInfo));
+
+	CharacterCurrentInfo.BindOnChangedCharacterCurrentInfo(this, &AProtagonistCharacter::ServerSetCurrentInfo);
 }
 
 
@@ -115,6 +131,8 @@ void AProtagonistCharacter::BeginPlay()
 
 void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
+	PG_LOG(LogTemp, Warning, TEXT("SetupPlayerInputComponent"));
+
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent))
 	{
@@ -133,45 +151,49 @@ void AProtagonistCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 void AProtagonistCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
 }
 
 
 void AProtagonistCharacter::GroundMove(const FInputActionValue& Value)
 {
-	CharacterCurrentInfo.InputDir = FVector2D::Zero();
+	CharacterCurrentInfo.SetInputDir(FVector2D::Zero());
 
 	if (!Movable)
 		return;
 
 	// input is a Vector2D
-	CharacterCurrentInfo.InputDir = Value.Get<FVector2D>();
+	CharacterCurrentInfo.SetInputDir(Value.Get<FVector2D>());
+
 	check(Controller != nullptr);
 	if (Controller != nullptr)
 	{
 		// 좌우키 입력시 회전하면서 이동. 후진/카메라 회전하는 중에는 제외.
-		if (CharacterCurrentInfo.InputDir.X != 0 && CharacterCurrentInfo.InputDir.Y != -1 && !IsLookingAround)
+		if (CharacterCurrentInfo.GetInputDir().X != 0 && CharacterCurrentInfo.GetInputDir().Y != -1 && !IsLookingAround)
 		{
-			const auto SideAdjustedRot = GetControlRotation().Add(0, 0.5f * CharacterCurrentInfo.InputDir.X, 0);
+			const auto SideAdjustedRot = GetControlRotation().Add(0, 0.5f * CharacterCurrentInfo.GetInputDir().X, 0);
 			Controller->SetControlRotation(SideAdjustedRot);
+			
 		}
-
+	
 		const FRotator YawRotation(0, Controller->GetControlRotation().Yaw, 0);
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * CharacterCurrentInfo.InputDir.Y;
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X) * CharacterCurrentInfo.GetInputDir().Y;
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * CharacterCurrentInfo.InputDir.X;
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y) * CharacterCurrentInfo.GetInputDir().X;
 		FVector Direction = ForwardDirection + RightDirection;
 		Direction.Normalize();
 		AddMovementInput(Direction);
+		
+		
 	}
+
 }
 
 
 void AProtagonistCharacter::Stop(const FInputActionValue& Value)
 {
 	// UE_LOG(LogTemp, Log, TEXT("STOP"));
-	CharacterCurrentInfo.InputDir = {0, 0};
+	CharacterCurrentInfo.SetInputDir({0, 0});
 	GetCharacterMovement()->StopMovementImmediately();
 }
 
@@ -198,12 +220,12 @@ void AProtagonistCharacter::StopLookAround(const FInputActionValue& Value)
 void AProtagonistCharacter::Jump()
 {
 	Super::Jump();
-	CharacterCurrentInfo.OnBeginJump = true;
+	CharacterCurrentInfo.SetOnBeginJump(true);
 }
 
 void AProtagonistCharacter::TriggerDamagedState(bool bOn)
 {
-	CharacterCurrentInfo.OnHit = bOn;
+	CharacterCurrentInfo.SetOnHit(bOn);
 	SetMovable(!bOn);
 }
 
@@ -235,6 +257,24 @@ void AProtagonistCharacter::FixLocation(bool bFix) const
 	GetCharacterMovement()->GravityScale = bFix ? 0 : 4;
 }
 
+void AProtagonistCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AProtagonistCharacter, CharacterCurrentInfo);
+}
+
+void AProtagonistCharacter::ServerSetCurrentInfo_Implementation(FCharacterCurrentInfo CurrentInfo)
+{
+	this->CharacterCurrentInfo = CurrentInfo;
+}
+
+bool AProtagonistCharacter::ServerSetCurrentInfo_Validate(FCharacterCurrentInfo CurrentInfo)
+{
+	return true;
+}
+
+
 void AProtagonistCharacter::ZoomOnSlash_Implementation()
 {
 }
@@ -260,7 +300,7 @@ void AProtagonistCharacter::OnChangedMovementMode(ACharacter* Character, EMoveme
 	if (Character != this)
 		return;
 
-	CharacterCurrentInfo.CurrentMovementMode = GetCharacterMovement()->MovementMode;
+	CharacterCurrentInfo.SetCurrentMovementMode(GetCharacterMovement()->MovementMode);
 	// UE_LOG(LogTemp, Log, TEXT("change moveMode : %s  -> %s"),
 	//        *UEnum::GetValueAsString(PrevMovementMode), *UEnum::GetValueAsString(CharacterCurrentInfo.CurrentMovementMode));
 }

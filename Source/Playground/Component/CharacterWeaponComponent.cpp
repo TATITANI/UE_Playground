@@ -29,6 +29,8 @@ void UCharacterWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	return;	
+	
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(GetOwner());
 	if (ProtagonistCharacter == nullptr)
 	{

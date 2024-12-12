@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{7D8CB883-4FCC-27CB-0435-C0880155FD57}",
+	"EngineAssociation": "{ACF18919-4C2D-8515-6FA6-DEB680F7AA2D}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -39,6 +39,20 @@
 			"Name": "ComputeShader",
 			"Enabled": true
 		},
-		
+		{
+			"Name": "LiveLinkControlRig",
+			"Enabled": true
+		},
+		{
+			"Name": "AppleARKitFaceSupport",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"IOS",
+				"Win64",
+				"Mac",
+				"Linux",
+				"Android"
+			]
+		}
 	]
 }

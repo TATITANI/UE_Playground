@@ -136,4 +136,7 @@ public:
 	virtual void Equip(AProtagonistCharacter* TargetCharacter) override;
 	virtual void UnEquip() override;
 	virtual void BeginPlay() override;
+
+	FTimerHandle TimerHandle;
+
 };

@@ -36,6 +36,8 @@ public:
 private:
 	virtual void BeginPlay() override;
 	virtual void PostInitProperties() override;
+	virtual void PossessedBy(AController* NewController) override;
+	
 	virtual void PostInitializeComponents() override;
 	UFUNCTION()
 	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
@@ -43,7 +45,7 @@ private:
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-
+	
 	UFUNCTION()
 	void OnLand(const FHitResult& Hit);
 	/** Called for movement input */
@@ -107,7 +109,7 @@ private:
 	bool Movable = true;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FCharacterCurrentInfo CharacterCurrentInfo;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
@@ -136,4 +138,11 @@ public:
 	void ZoomOnSlash();
 
 	void FixLocation(bool bFix) const;
+
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void ServerSetCurrentInfo(FCharacterCurrentInfo CurrentInfo);
+	
 };
