@@ -29,7 +29,7 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_StandUp();
-	
+
 	void PlayBotMontage(UAnimMontage* Montage, EBotState::Type ResetState);
 	
 public:

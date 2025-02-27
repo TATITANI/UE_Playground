@@ -25,6 +25,7 @@ public:
 	~FCharacterCurrentInfo();
 
 private:
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON, meta=(AllowPrivateAccess=true))
 	EWeaponType CurrentWeaponType = EWeaponType::WEAPON_None;
 

@@ -70,7 +70,7 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 
 	if (DamagedActor != nullptr && DamageCauser != nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
+		PG_SUBLOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
 		       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
 	}
 }

@@ -22,7 +22,7 @@ void UIngameWidget::NativeConstruct()
 
 	const auto PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(PlayerPawn);
-	ensure(ProtagonistCharacter!= nullptr);
+	ensureAlways(ProtagonistCharacter!= nullptr);
 	ProtagonistCharacter->WeaponComponent->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
 	ProtagonistCharacter->WeaponComponent->OnCooldownWeapon.AddUObject(this, &UIngameWidget::Cooldown);
 	ProtagonistCharacter->WeaponComponent->OnUseWeapon.AddUObject(this, &UIngameWidget::UseWeapon);
@@ -34,18 +34,19 @@ void UIngameWidget::NativeConstruct()
 		}
 	});
 	
-	const auto WeaponInventory = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->WeaponInventory;
-	ensure(WeaponInventory != nullptr);
-	WeaponInventory->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
-	auto Weapons = WeaponInventory->GetWeapons();
-	for(const auto Weapon: Weapons)
-	{
-		AddWeapon(Weapon);
-	}
+	// const auto WeaponInventory = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->WeaponInventory;
+	// ensureAlways(WeaponInventory != nullptr);
+	// WeaponInventory->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
+	//
+	// auto Weapons = WeaponInventory->GetWeapons();
+	// for(const auto Weapon: Weapons)
+	// {
+	// 	AddWeapon(Weapon);
+	// }
 
 
 	UHealthComponent* HealthComponent = Cast<UHealthComponent>(ProtagonistCharacter->FindComponentByClass(UHealthComponent::StaticClass()));
-	ensure(HealthComponent!= nullptr);
+	ensureAlways(HealthComponent!= nullptr);
 	HealthComponent->OnHpChanged.AddUObject(this, &UIngameWidget::UpdateHp);
 
 	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Img_HP_Gauge->Brush.GetResourceObject());

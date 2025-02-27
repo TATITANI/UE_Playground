@@ -19,4 +19,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=Item, meta=(AllowPrivateAccess=true))
 	class UDroppedItemTable* DroppedItemTable;
 
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 };

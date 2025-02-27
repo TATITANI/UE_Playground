@@ -10,6 +10,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Component/CharacterWeaponComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Utils/UtilPlayground.h"
 
 
@@ -17,23 +18,28 @@
 AWeaponActor::AWeaponActor()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	bReplicates = true;
 }
 
 void AWeaponActor::BeginPlay()
 {
 	Super::BeginPlay();
-	SetActorTickEnabled(false);
 	MeshComponent = Cast<UMeshComponent>(FindComponentByClass(UMeshComponent::StaticClass()));
 	MeshComponent->SetRenderCustomDepth(true);
 
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	ensure(GameInstance != nullptr);
+	ensureAlways(GameInstance != nullptr);
 	auto WeaponStat = GameInstance->GetWeaponStat<FWeaponStat>(GetWeaponType(), FName("1"));
 
-	ensureMsgf(WeaponStat.IsSet(), TEXT("Weapon Stat is Null"));
+	ensureAlwaysMsgf(WeaponStat.IsSet(), TEXT("Weapon Stat is Null"));
 	this->Damage = WeaponStat->Damage;
 	this->CoolTime = WeaponStat->CoolTime;
 	ReusableCnt = ReusableMaxCnt;
+}
+
+void AWeaponActor::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 }
 
 
@@ -52,7 +58,7 @@ void AWeaponActor::OnAttackInputTriggered()
 {
 	if (!IsAttack)
 		return;
-	
+
 	AttackInputTrigger();
 
 	AttackTriggerIfPossible(ETriggerEvent::Triggered);
@@ -73,7 +79,7 @@ void AWeaponActor::AttackTriggerIfPossible(ETriggerEvent TriggerEvent)
 {
 	if (GetAttackTriggerEvent() == TriggerEvent)
 	{
-		if(ReusableMaxCnt >0)
+		if (ReusableMaxCnt > 0)
 		{
 			ReusableCnt--;
 			Protagonist->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
@@ -96,6 +102,25 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 	}
 }
 
+void AWeaponActor::ServerSetProtagonist_Implementation(AProtagonistCharacter* InProtagonist)
+{
+	SetProtagonist(InProtagonist);
+	PG_LOG(LogPGNetwork,Log,TEXT("Pro null :%d"),(Protagonist == nullptr));
+}
+
+
+void AWeaponActor::SetProtagonist(AProtagonistCharacter* InProtagonist)
+{
+	this->Protagonist = InProtagonist;
+	this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
+
+}
+
+void AWeaponActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWeaponActor, Protagonist);
+}
 
 void AWeaponActor::OnRefill()
 {
@@ -106,14 +131,20 @@ void AWeaponActor::OnRefill()
 
 void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 {
-	Protagonist = TargetCharacter;
-	ensure(Protagonist != nullptr);
-	AnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
-	ensure(AnimInstance!=nullptr);
+	PG_LOG(LogPGNetwork, Log, TEXT(""));
 
-	// test
-	// SetupInput();
-	
+	if (ensureAlwaysMsgf(TargetCharacter, TEXT("Protagonist nullptr")) == false)
+	{
+		return;
+	}
+
+	SetProtagonist(TargetCharacter);
+	if (TargetCharacter->IsLocallyControlled())
+	{
+		ServerSetProtagonist(TargetCharacter);
+	}
+
+	SetupInput();
 	SetActorHiddenInGame(false);
 }
 
@@ -135,30 +166,44 @@ void AWeaponActor::UnEquip()
 
 void AWeaponActor::SetupInput()
 {
-	// Set up action bindings
-	const APlayerController* const PlayerController = Cast<APlayerController>(Protagonist->GetController());
-	ensure(PlayerController != nullptr);
-	if (PlayerController == nullptr)
+	if (ensureAlwaysMsgf(Protagonist != nullptr, TEXT("Protagonist Null")) == false)
+	{
+		return;
+	}
+
+	if (Protagonist->IsLocallyControlled() == false)
 		return;
 
-	if(PlayerController->IsLocalController() == false)
+	// Set up action bindings
+	const APlayerController* const PlayerController = Cast<APlayerController>(Protagonist->GetController());
+	ensureAlways(PlayerController != nullptr);
+	if (PlayerController == nullptr)
+	{
+		PG_LOG(LogTemp, Log, TEXT("PlayerController is nullptr"));
 		return;
-	
+	}
+
+
 	AddInputMappingContext(PlayerController);
 
 	if (IsBindInputAction == false)
 	{
 		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
-		ensure(EnhancedInputComponent != nullptr);
-		BindInputActions(EnhancedInputComponent);
-		IsBindInputAction = true;
+		if (ensureAlwaysMsgf(EnhancedInputComponent != nullptr, TEXT("EnhancedInputComponent is nullptr")))
+		{
+			PG_LOG(LogPGNetwork, Log, TEXT("Bind Input"));
+			BindInputActions(EnhancedInputComponent);
+			BindInputActionsImpl(EnhancedInputComponent);
+
+			IsBindInputAction = true;
+		}
 	}
 }
 
 void AWeaponActor::AddInputMappingContext(const APlayerController* PlayerController)
 {
 	Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	ensure(Subsystem != nullptr);
+	ensureAlways(Subsystem != nullptr);
 	if (Subsystem->HasMappingContext(InputMappingContext) == false)
 	{
 		Subsystem->AddMappingContext(InputMappingContext, InputPriority);

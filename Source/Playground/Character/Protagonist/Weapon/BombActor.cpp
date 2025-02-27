@@ -145,10 +145,10 @@ void ABombActor::Throw()
 	SetAimMovement(false);
 	
 	ensure(ThrowMontage != nullptr);
-	ensure(AnimInstance != nullptr);
-	if (ThrowMontage != nullptr && AnimInstance != nullptr)
+	ensure(ProtagonistAnimInstance != nullptr);
+	if (ThrowMontage != nullptr && ProtagonistAnimInstance != nullptr)
 	{
-		AnimInstance->Montage_Play(ThrowMontage, 1.f);
+		ProtagonistAnimInstance->Montage_Play(ThrowMontage, 1.f);
 	}
 
 	FActorSpawnParameters ActorSpawnParams;

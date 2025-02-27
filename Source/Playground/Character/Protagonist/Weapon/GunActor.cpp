@@ -67,7 +67,7 @@ void AGunActor::AttackInputStarted()
 	// Try and play a firing animation if specified
 	if (FireMontage != nullptr)
 	{
-		AnimInstance->Montage_Play(FireMontage, 1.f);
+		ProtagonistAnimInstance->Montage_Play(FireMontage, 1.f);
 	}
 }
 

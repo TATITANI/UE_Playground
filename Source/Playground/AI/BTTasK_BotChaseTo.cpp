@@ -20,12 +20,19 @@ EBTNodeResult::Type UBTTasK_BotChaseTo::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	BehaviorTreeComponent = &OwnerComp;
 	BotOwner->OnTakeAnyDamage.AddUniqueDynamic(this, &UBTTasK_BotChaseTo::OnDamaged);
-
+	
 	return Super::ExecuteTask(OwnerComp, NodeMemory);
+}
+
+void UBTTasK_BotChaseTo::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+	BotOwner->OnTakeAnyDamage.RemoveDynamic(this, &UBTTasK_BotChaseTo::OnDamaged);
+	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 }
 
 void UBTTasK_BotChaseTo::OnDamaged(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
 	BehaviorTreeComponent->GetAIOwner()->StopMovement();
+
 	FinishLatentTask(*BehaviorTreeComponent, EBTNodeResult::Aborted);
 }
