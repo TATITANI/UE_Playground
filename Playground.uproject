@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{ACF18919-4C2D-8515-6FA6-DEB680F7AA2D}",
+	"EngineAssociation": "{3143978C-4B80-2EF6-991B-00B430F51303}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -53,6 +53,10 @@
 				"Linux",
 				"Android"
 			]
+		},
+		{
+			"Name": "RigLogic",
+			"Enabled": true
 		}
 	]
 }

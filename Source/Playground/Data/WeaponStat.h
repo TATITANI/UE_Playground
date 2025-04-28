@@ -7,14 +7,14 @@
 #include "WeaponStat.generated.h"
 
 
-UENUM(BlueprintType)
-enum class EWeaponType : uint8
-{
-	WEAPON_None UMETA(DisplayName="None"),
-	SWORD UMETA(displayDisplayName = "Sword"),
-	GUN UMETA(displayDisplayName = "Gun"),
-	BOMB UMETA(displayDisplayName = "Bomb"),
-};
+//UENUM(BlueprintType)
+//enum class EWeaponType : uint8
+//{
+//	WEAPON_None UMETA(DisplayName="None"),
+//	SWORD UMETA(displayDisplayName = "Sword"),
+//	GUN UMETA(displayDisplayName = "Gun"),
+//	BOMB UMETA(displayDisplayName = "Bomb"),
+//};
 
 
 USTRUCT(Atomic, BlueprintType)

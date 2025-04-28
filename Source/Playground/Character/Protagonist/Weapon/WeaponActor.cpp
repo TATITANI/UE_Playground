@@ -105,7 +105,7 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 void AWeaponActor::ServerSetProtagonist_Implementation(AProtagonistCharacter* InProtagonist)
 {
 	SetProtagonist(InProtagonist);
-	PG_LOG(LogPGNetwork,Log,TEXT("Pro null :%d"),(Protagonist == nullptr));
+	PG_LOG(LogPGNetwork, Log, TEXT("Pro null :%d"), (Protagonist == nullptr));
 }
 
 
@@ -113,7 +113,6 @@ void AWeaponActor::SetProtagonist(AProtagonistCharacter* InProtagonist)
 {
 	this->Protagonist = InProtagonist;
 	this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
-
 }
 
 void AWeaponActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -142,9 +141,9 @@ void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 	if (TargetCharacter->IsLocallyControlled())
 	{
 		ServerSetProtagonist(TargetCharacter);
+		SetupInput();
 	}
 
-	SetupInput();
 	SetActorHiddenInGame(false);
 }
 

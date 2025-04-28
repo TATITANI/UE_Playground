@@ -54,31 +54,42 @@ void UCharacterWeaponComponent::BeginPlay()
 				EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Started, this, &UCharacterWeaponComponent::ClickChangeWeapon);
 			}
 
-			// todo
-			// onrep이 호출되면 하나씩빼고 비게되면 초기화 서버RPC호출
+			WeaponInventory->AddOnObtainWeaponDelegate(
+				FOnObtainWeapon::FDelegate::CreateUObject(this, &UCharacterWeaponComponent::ClientObtainWeaponEvent));
 
-			PendingReplicatedObjects.Add(DefaultWeaponActor);
-			PendingReplicatedObjects.Add(WeaponInventory);
-			
-			// WeaponInventory->AddOnObtainWeaponDelegate(
-			// 	FOnObtainWeapon::FDelegate::CreateUObject(this, &UCharacterWeaponComponent::ClientObtainWeaponEvent));
+			WeaponInventory->OnClientAddWeapon(DefaultWeaponActor);
+
 		}
 	}
-	
+
+	// sub object replicate
+	//AddReplicatedSubObject(WeaponInventory);
+
+}
+
+void UCharacterWeaponComponent::DestroyComponent(bool bPromoteChildren)
+{
+	Super::DestroyComponent(bPromoteChildren);
+	if (WeaponInventory)
+	{
+		//RemoveRefplicatedSubObject(WeaponInventory);
+	}
+
 }
 
 void UCharacterWeaponComponent::OnRep_WeaponInventory()
 {
 	PG_SUBLOG(LogPGNetwork, Warning, TEXT(""));
 	ensureAlways(WeaponInventory->IsValidLowLevel());
-	WeaponInventory->OnObtainWeapon.AddUObject(this, &UCharacterWeaponComponent::ClientObtainWeaponEvent);
+	//WeaponInventory->OnObtainWeapon.AddUObject(this, &UCharacterWeaponComponent::ClientObtainWeaponEvent);
+
 }
 
 
 void UCharacterWeaponComponent::OnRep_DefaultWeaponActor()
 {
 	PG_SUBLOG(LogPGNetwork, Warning, TEXT(""));
-	ServerObtainWeapon(DefaultWeaponActor);
+	// ServerObtainWeapon(DefaultWeaponActor);
 }
 
 
@@ -88,17 +99,6 @@ void UCharacterWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(UCharacterWeaponComponent, DefaultWeaponActor, COND_InitialOnly);
 	DOREPLIFETIME(UCharacterWeaponComponent, WeaponInventory);
-}
-
-bool UCharacterWeaponComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
-{
-	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
-	if (IsValid(WeaponInventory))
-	{
-		WroteSomething |= Channel->ReplicateSubobject(WeaponInventory, *Bunch, *RepFlags);
-	}
-
-	return WroteSomething;
 }
 
 void UCharacterWeaponComponent::ClickChangeWeapon(const FInputActionValue& Value)
@@ -132,8 +132,8 @@ void UCharacterWeaponComponent::ServerObtainWeapon_Implementation(AWeaponActor* 
 		return;
 
 	PG_SUBLOG(LogPGNetwork, Log, TEXT(""));
-	AttachWeapon(WeaponActor);
-	WeaponInventory->AddWeapon(WeaponActor);
+	// AttachWeapon(WeaponActor);
+	// WeaponInventory->OnClientAddWeapon(WeaponActor);
 }
 
 
@@ -151,6 +151,8 @@ void UCharacterWeaponComponent::ClientObtainWeaponEvent(AWeaponActor* WeaponActo
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ObtainSound, WeaponActor->GetActorLocation());
 	}
+
+	ServerObtainWeapon(WeaponActor);
 }
 
 
@@ -159,11 +161,6 @@ void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 	if (WeaponInventory->HasWeapon(WeaponActor) == false)
 	{
 		PG_SUBLOG(LogPGNetwork, Error, TEXT("inventory has not [ %s ] weapon"), *WeaponActor->GetName());
-		FWeaponList WeaponList = WeaponInventory->GetWeaponList();
-		for (auto WeaponEntry : WeaponList.Items)
-		{
-			PG_SUBLOG(LogPGNetwork, Warning, TEXT("has weapon : %s"), *WeaponEntry.WeaponActor->GetName());
-		}
 		return;
 	}
 
@@ -179,6 +176,7 @@ void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 	ProtagonistCharacter->AimCamByWeapon(CurrentWeapon->GetWeaponType());
 
 	OnChangeWeapon.Broadcast(CurrentWeapon);
+
 }
 
 void UCharacterWeaponComponent::SetWeaponHidden(bool IsHidden) const
