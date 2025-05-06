@@ -53,22 +53,34 @@ struct TStructOpsTypeTraits<FWeaponInfoList> : public TStructOpsTypeTraitsBase2<
 	enum { WithNetDeltaSerializer = true };
 };
 
+/***************************************/
+
+
 UCLASS(Blueprintable)
 class PLAYGROUND_API UWeaponInventory : public UObject
 {
 	GENERATED_BODY()
 
-	friend struct FWeaponInfoList;
+	//friend struct FWeaponInfoList;
 
 public:
 	UWeaponInventory();
 
 private:
 
-	UPROPERTY(ReplicatedUsing = OnRep_WeaponInfoList)
-	FWeaponInfoList HasWeaponInfos;
 
+	//----------------------------------------
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponInfoList)
+	FWeaponInfoList HasWeaponInfoList;
+	//----------------------------------------
+
+	// client only
+	//----------------------------------------
+	UPROPERTY()
 	TArray<AWeaponActor*> WeaponList;
+	//----------------------------------------
+
+	virtual void PostNetReceive() override;
 
 	 UFUNCTION()
 	 void OnRep_WeaponInfoList();
@@ -89,7 +101,7 @@ public:
 	void OnClientAddWeapon(class AWeaponActor* WeaponActor);
 
 	UFUNCTION()
-	void OnServerAddWeapon(class AWeaponActor* WeaponActor);
+	void OnServerAddWeapon(UWeaponInfo* WeaponInfo);
 
 
 	AWeaponActor* GetWeapon(EWeaponType WeaponType);

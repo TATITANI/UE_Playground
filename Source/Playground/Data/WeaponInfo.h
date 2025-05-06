@@ -11,26 +11,24 @@
  */
 
 UENUM(BlueprintType)
-namespace PGWeapon
+enum class EWeaponType : uint8
 {
-	enum EWeaponType : uint8
-	{
-		SWORD,
-		GUN,
-		BOMB
-		
-	};
+	NONE,
+	SWORD,
+	GUN,
+	BOMB
 
-}
+};
+
 
 UCLASS(BlueprintType)
 class PLAYGROUND_API UWeaponInfo : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
-	using namespace PGWeapon;
+	//using namespace PGWeapon;
 
-	UPROPERTY()
-	PGWeapon::EWeaponType WeaponType;
-
+public:
+	UPROPERTY(EditDefaultsOnly)
+	EWeaponType WeaponType;
 
 };

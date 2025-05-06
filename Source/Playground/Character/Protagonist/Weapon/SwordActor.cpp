@@ -102,7 +102,7 @@ void ASwordActor::InitTrail()
 void ASwordActor::SetCurrentAttackType(Sword::EAttackType AttackType)
 {
 	CurrentAttackType = AttackType;
-	if (Protagonist->IsLocallyControlled())
+	if (OwnerProtagonist->IsLocallyControlled())
 	{
 		ServerSetCurrentAttackType(AttackType);
 	}
@@ -147,10 +147,10 @@ void ASwordActor::AttackOnGround()
 
 			LastAttackTime = CurrentSec;
 
-			ServerAttackOnGroundEvent(AttackTimeGap, Protagonist->GetTransform());
+			ServerAttackOnGroundEvent(AttackTimeGap, OwnerProtagonist->GetTransform());
 
-			Protagonist->SetMovable(false);
-			Protagonist->ZoomOnSlash();
+			OwnerProtagonist->SetMovable(false);
+			OwnerProtagonist->ZoomOnSlash();
 		}
 	}
 }
@@ -166,7 +166,7 @@ TArray<FHitResult> ASwordActor::TraceGroundAttack(const FTransform& TrfProtagoni
 	                                    TrfProtagonist.GetRotation().Rotator(),
 	                                    AttackTraceType,
 	                                    false,
-	                                    {Protagonist},
+	                                    {OwnerProtagonist},
 	                                    EDrawDebugTrace::None,
 	                                    HitResults,
 	                                    true);
@@ -246,7 +246,7 @@ void ASwordActor::TriggerUpperAttack()
 	SetCurrentAttackType(Sword::EAttackType::Upper);
 
 	CurrentUpperComboNum = 0;
-	Protagonist->JumpCurrentCount = Protagonist->JumpMaxCount; // 추가 점프 불가
+	OwnerProtagonist->JumpCurrentCount = OwnerProtagonist->JumpMaxCount; // 추가 점프 불가
 
 	ServerTriggerUpperAttackEvent();
 }
@@ -322,7 +322,7 @@ void ASwordActor::ServerUpperAttackComboEvent_Implementation(int ComboNum)
 void ASwordActor::MulticastUpperAttackComboEvent_Implementation(int ComboNum, const TArray<int32>& BotNetObjectIDs)
 {
 	PlayMontage(UpperAttackMontage, FName(FString::Printf(TEXT("Attack_%d"), ComboNum)));
-	Protagonist->FixLocation(true);
+	OwnerProtagonist->FixLocation(true);
 
 	const TSharedPtr<FNetGUIDCache> GuidCache = GetWorld()->GetNetDriver()->GuidCache;
 	for (const int32 NetObjectID : BotNetObjectIDs)
@@ -344,7 +344,7 @@ void ASwordActor::JumpUpperAttackMontageEndEvent()
 
 	if (HasAuthority())
 	{
-		Protagonist->MulticastFixLocation(false);
+		OwnerProtagonist->MulticastFixLocation(false);
 		for (const auto Bot : LastGroundHitBots)
 		{
 			if (!Bot)
@@ -388,10 +388,10 @@ void ASwordActor::LowerAttack()
 	if (CurrentAttackType != Sword::None)
 		return;
 
-	Protagonist->JumpCurrentCount = Protagonist->JumpMaxCount; // 추가 점프 불가
+	OwnerProtagonist->JumpCurrentCount = OwnerProtagonist->JumpMaxCount; // 추가 점프 불가
 	SetCurrentAttackType(Sword::Lower);
 
-	ServerLowerAttackEvent(Protagonist->GetTransform());
+	ServerLowerAttackEvent(OwnerProtagonist->GetTransform());
 }
 
 TArray<FHitResult> ASwordActor::TraceLowerAttack(const FTransform& TrfProtagonist)
@@ -403,12 +403,12 @@ TArray<FHitResult> ASwordActor::TraceLowerAttack(const FTransform& TrfProtagonis
 	const FVector UpVectorProtagonist = TrfProtagonist.GetUnitAxis(EAxis::Z);
 
 	UKismetSystemLibrary::CapsuleTraceMulti(GetWorld(), TrfProtagonist.GetLocation() - UpVectorProtagonist * Height * 0.5f,
-	                                        Protagonist->GetActorLocation() - UpVectorProtagonist * Height * 0.5f,
+	                                        OwnerProtagonist->GetActorLocation() - UpVectorProtagonist * Height * 0.5f,
 	                                        Radius,
 	                                        Height,
 	                                        AttackTraceType,
 	                                        false,
-	                                        {Protagonist},
+	                                        {OwnerProtagonist},
 	                                        EDrawDebugTrace::None,
 	                                        HitResults,
 	                                        true);
@@ -418,7 +418,7 @@ TArray<FHitResult> ASwordActor::TraceLowerAttack(const FTransform& TrfProtagonis
 
 void ASwordActor::ServerLowerAttackEvent_Implementation(FTransform TrfProtagonist)
 {
-	Protagonist->LaunchCharacter(LowerAttackLaunchVelocity, true, true);
+	OwnerProtagonist->LaunchCharacter(LowerAttackLaunchVelocity, true, true);
 
 	TArray<FHitResult> HitResults = TraceLowerAttack(TrfProtagonist);
 
@@ -454,9 +454,9 @@ void ASwordActor::MulticastLowerAttackEvent_Implementation()
 	// FX
 	{
 		FHitResult HitResultGround;
-		UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), Protagonist->GetActorLocation(),
-		                                                Protagonist->GetActorLocation() + FVector::DownVector * 10000,
-		                                                {GroundObjectType}, false, {Protagonist}, EDrawDebugTrace::None, HitResultGround, true);
+		UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(), OwnerProtagonist->GetActorLocation(),
+		                                                OwnerProtagonist->GetActorLocation() + FVector::DownVector * 10000,
+		                                                {GroundObjectType}, false, {OwnerProtagonist}, EDrawDebugTrace::None, HitResultGround, true);
 		if (HitResultGround.bBlockingHit)
 		{
 			// UtilPlayground::PrintLog(FString::Printf(TEXT("HitGround Loc : %s"), *HitResultGround.Location.ToString()));
@@ -490,7 +490,7 @@ void ASwordActor::GroundAttackMontageEndEvent()
 	if (ProtagonistAnimInstance->Montage_IsPlaying(DefaultAttackMontage))
 		return;
 
-	Protagonist->SetMovable(true);
+	OwnerProtagonist->SetMovable(true);
 
 	if (CurrentAttackType == Sword::Default)
 	{
@@ -508,12 +508,12 @@ void ASwordActor::Equip(AProtagonistCharacter* TargetCharacter)
 
 	if (ensureAlwaysMsgf(SequenceActor, TEXT("SequenceActor is nullptr")))
 	{
-		SequenceActor->SetBindingByTag(TEXT("Protagonist"), {Protagonist});
+		SequenceActor->SetBindingByTag(TEXT("Protagonist"), {OwnerProtagonist});
 	}
 
-	if (ensureAlwaysMsgf(Protagonist, TEXT("Protagonist null")))
+	if (ensureAlwaysMsgf(OwnerProtagonist, TEXT("Protagonist null")))
 	{
-		Protagonist->MovementModeChangedDelegate.AddUniqueDynamic(this, &ASwordActor::OnChangedProtagonistMovementMode);
+		OwnerProtagonist->MovementModeChangedDelegate.AddUniqueDynamic(this, &ASwordActor::OnChangedProtagonistMovementMode);
 		ProtagonistAnimInstance->OnMontageEnded.AddUniqueDynamic(this, &ASwordActor::OnMontageEnd);
 	}
 
@@ -523,14 +523,14 @@ void ASwordActor::UnEquip()
 {
 	Super::UnEquip();
 
-	Protagonist->MovementModeChangedDelegate.RemoveDynamic(this, &ASwordActor::OnChangedProtagonistMovementMode);
+	OwnerProtagonist->MovementModeChangedDelegate.RemoveDynamic(this, &ASwordActor::OnChangedProtagonistMovementMode);
 	ProtagonistAnimInstance->OnMontageEnded.RemoveDynamic(this, &ASwordActor::OnMontageEnd);
 }
 
 void ASwordActor::OnChangedProtagonistMovementMode(ACharacter* Character, EMovementMode PrevMovementMode,
                                                    uint8 PreviousCustomMode)
 {
-	ensureAlways(Character == Protagonist);
+	ensureAlways(Character == OwnerProtagonist);
 
 	// note : 자신의 클라이언트에서는 GetReplicatedMovementMode가 항상 move_none으로 찍힘.
 	// 다른 캐릭터가 서버와 클라이언트에서 현재 이동상태를 비교해 동기화가 제대로 되고 있는지 확인할 수 있음  
@@ -540,7 +540,7 @@ void ASwordActor::OnChangedProtagonistMovementMode(ACharacter* Character, EMovem
 	// 	*StaticEnum<EMovementMode>()->GetNameStringByValue(Protagonist->GetReplicatedMovementMode()));
 
 
-	switch (Protagonist->GetCharacterMovement()->MovementMode)
+	switch (OwnerProtagonist->GetCharacterMovement()->MovementMode)
 	{
 	case MOVE_Walking:
 		if (CurrentAttackType == Sword::Lower)
@@ -561,7 +561,7 @@ void ASwordActor::OnChangedProtagonistMovementMode(ACharacter* Character, EMovem
 
 void ASwordActor::SpawnLowerAttackLandingFX()
 {
-	const FVector LocationFX = Protagonist->GetTargetLocation() + FVector::DownVector * Protagonist->GetDefaultHalfHeight();
+	const FVector LocationFX = OwnerProtagonist->GetTargetLocation() + FVector::DownVector * OwnerProtagonist->GetDefaultHalfHeight();
 	const FRotator RotatorFX = FRotator(90, 0, 0);
 	const FVector ScaleFX = FVector(1, 1, 2);
 	LowerAttackNiagaraComponent = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), LowerLandingFX,

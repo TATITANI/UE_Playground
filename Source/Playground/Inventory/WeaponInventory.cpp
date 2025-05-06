@@ -15,55 +15,55 @@ void FWeaponInfoEntry::PostReplicatedAdd(const FFastArraySerializer& InArraySeri
 
 void FWeaponInfoList::PostReplicatedAdd(const TArrayView<int32>& AddedIndices, int32 FinalSize)
 {
-	if (OwnerWeaponInventory == nullptr)
-	{
-		UE_LOG(LogPGNetwork, Error, TEXT("FWeaponList::PostReplicatedAdd owner null"));
-		return;
-	}
-
-#if 1 // netmode check - client에서 출력됨	
-	FString StrNetmode;
-	switch (OwnerWeaponInventory->GetWorld()->GetNetMode())
-	{
-	case NM_Standalone:
-		StrNetmode = TEXT("Standalone");
-		break;
-	case NM_ListenServer:
-		StrNetmode = TEXT("ListenServer");
-		break;
-	case NM_DedicatedServer:
-		StrNetmode = TEXT("DedicatedServer");
-		break;
-	case NM_Client:
-		StrNetmode = TEXT("Client");
-		break;
-	default:
-		StrNetmode = TEXT("Unknown");
-		break;
-	}
-	UE_LOG(LogPGNetwork, Warning, TEXT("[%s] FWeaponList::PostReplicatedAdd"), *StrNetmode);;
-#endif
-
-
-	for (auto id : AddedIndices)
-	{
-	/*	UE_LOG(LogPGNetwork, Log, TEXT("FWeaponList::PostReplicatedAdd - id : %d/ actorName : %s"),
-		       id, *Items[id].WeaponActor->GetName());*/
-
-
-		// 1) 인벤토리에 무기 액터가 있긴있어야됨. 빠른 교체를 위해서.
-		// 2) replicate는 액터가 아닌 무기정보로 해야됨
-
-		if (OwnerWeaponInventory->OnObtainWeapon.IsBound())
-		{
-			UE_LOG(LogPGNetwork, Log, TEXT("PostReplicatedAdd - WeaponActor : %s"), *Items[id].WeaponActor->GetName());
-			OwnerWeaponInventory->OnObtainWeapon.Broadcast(Items[id].WeaponActor);
-		}
-		else
-		{
-			UE_LOG(LogPGNetwork, Error, TEXT("OwnerWeaponInventory->OnObtainWeapon not bound"));
-		}
-	}
+//	if (OwnerWeaponInventory == nullptr)
+//	{
+//		UE_LOG(LogPGNetwork, Error, TEXT("FWeaponList::PostReplicatedAdd owner null"));
+//		return;
+//	}
+//
+//#if 1 // netmode check - client에서 출력됨	
+//	FString StrNetmode;
+//	switch (OwnerWeaponInventory->GetWorld()->GetNetMode())
+//	{
+//	case NM_Standalone:
+//		StrNetmode = TEXT("Standalone");
+//		break;
+//	case NM_ListenServer:
+//		StrNetmode = TEXT("ListenServer");
+//		break;
+//	case NM_DedicatedServer:
+//		StrNetmode = TEXT("DedicatedServer");
+//		break;
+//	case NM_Client:
+//		StrNetmode = TEXT("Client");
+//		break;
+//	default:
+//		StrNetmode = TEXT("Unknown");
+//		break;
+//	}
+//	UE_LOG(LogPGNetwork, Warning, TEXT("[%s] FWeaponList::PostReplicatedAdd"), *StrNetmode);;
+//#endif
+//
+//
+//	for (auto id : AddedIndices)
+//	{
+//	/*	UE_LOG(LogPGNetwork, Log, TEXT("FWeaponList::PostReplicatedAdd - id : %d/ actorName : %s"),
+//		       id, *Items[id].WeaponActor->GetName());*/
+//
+//
+//		// 1) 인벤토리에 무기 액터가 있긴있어야됨. 빠른 교체를 위해서.
+//		// 2) replicate는 액터가 아닌 무기정보로 해야됨
+//
+//		if (OwnerWeaponInventory->OnObtainWeapon.IsBound())
+//		{
+//			//UE_LOG(LogPGNetwork, Log, TEXT("PostReplicatedAdd - WeaponActor : %s"), *Items[id].WeaponActor->GetName());
+//			//OwnerWeaponInventory->OnObtainWeapon.Broadcast(Items[id].WeaponActor);
+//		}
+//		else
+//		{
+//			UE_LOG(LogPGNetwork, Error, TEXT("OwnerWeaponInventory->OnObtainWeapon not bound"));
+//		}
+//	}
 }
 
 UWeaponInventory::UWeaponInventory()
@@ -76,21 +76,28 @@ bool UWeaponInventory::IsSupportedForNetworking() const
 	return true;
 }
 
+void UWeaponInventory::PostNetReceive()
+{
+	UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::PostNetReceive"));
+	UObject::PostNetReceive();
+	
+}
+
  void UWeaponInventory::OnRep_WeaponInfoList()
  {
  	UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::OnRep_WeaponList"));
 
- 	auto Entries = HasWeaponInfos.WeaponInfos;
- 	for (auto Entry : Entries)
+ 	//auto Entries = HasWeaponInfos.WeaponInfos;
+ 	//for (auto Entry : Entries)
  	{
- 		UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::OnRep_WeaponList - %s"), *Entry.WeaponActor->GetName());
+ 		//UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::OnRep_WeaponList - %s"), *Entry.WeaponActor->GetName());
  	}
  }
 
 void UWeaponInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(UWeaponInventory, WeaponList);
+	DOREPLIFETIME(UWeaponInventory, HasWeaponInfoList);
 }
 
 
@@ -137,27 +144,20 @@ void UWeaponInventory::OnClientAddWeapon(AWeaponActor* WeaponActor)
 	}
 
 	WeaponList.Add(WeaponActor);
-	OnObtainWeapon.Broadcast(WeaponActor);
-	
-	// FWeaponEntry NewEntry;
-	// NewEntry.WeaponActor = WeaponActor;
-	// WeaponList.Items.Add(NewEntry);
-	// WeaponList.MarkItemDirty(NewEntry);
+
+
+
+	//OnObtainWeapon.Broadcast(WeaponActor);
+
 }
 
-void UWeaponInventory::OnServerAddWeapon(AWeaponActor* WeaponActor)
+void UWeaponInventory::OnServerAddWeapon(UWeaponInfo* WeaponInfo)
 {
-	if(ensureAlwaysMsgf(WeaponActor != nullptr, TEXT("WeaponActor Nullptr")) == false)
-	{
-		return;
-	}
+	FWeaponInfoEntry WeaponInfoEntry;
+	WeaponInfoEntry.WeaponInfo = WeaponInfo;
+	HasWeaponInfoList.WeaponInfos.Add(WeaponInfoEntry);
+	HasWeaponInfoList.MarkItemDirty(WeaponInfoEntry);
 
-	if(ensureAlwaysMsgf(HasWeapon(WeaponActor), TEXT("WeaponActor Nullptr")) == false)
-	{
-		return;
-	}
-
-	WeaponList.Add(WeaponActor);
 }
 
 AWeaponActor* UWeaponInventory::GetWeapon(EWeaponType WeaponType)

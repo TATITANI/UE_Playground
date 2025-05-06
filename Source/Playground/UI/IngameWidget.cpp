@@ -22,18 +22,18 @@ void UIngameWidget::NativeConstruct()
 
 	const auto PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(PlayerPawn);
-	ensureAlways(ProtagonistCharacter!= nullptr);
+	ensureAlways(ProtagonistCharacter != nullptr);
 	ProtagonistCharacter->WeaponComponent->OnChangeWeapon.AddUObject(this, &UIngameWidget::ChangeCurrentWeapon);
 	ProtagonistCharacter->WeaponComponent->OnCooldownWeapon.AddUObject(this, &UIngameWidget::Cooldown);
 	ProtagonistCharacter->WeaponComponent->OnUseWeapon.AddUObject(this, &UIngameWidget::UseWeapon);
 	ProtagonistCharacter->HealthComponent->OnHpChanged.AddLambda([this](int32 HP, int32 Delta, int32 MaxHP)
-	{
-		if(Delta < 0)
 		{
-			PlayHitAnimation();
-		}
-	});
-	
+			if (Delta < 0)
+			{
+				PlayHitAnimation();
+			}
+		});
+
 	// const auto WeaponInventory = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->WeaponInventory;
 	// ensureAlways(WeaponInventory != nullptr);
 	// WeaponInventory->OnObtainWeapon.AddUObject(this, &UIngameWidget::AddWeapon);
@@ -46,14 +46,14 @@ void UIngameWidget::NativeConstruct()
 
 
 	UHealthComponent* HealthComponent = Cast<UHealthComponent>(ProtagonistCharacter->FindComponentByClass(UHealthComponent::StaticClass()));
-	ensureAlways(HealthComponent!= nullptr);
+	ensureAlways(HealthComponent != nullptr);
 	HealthComponent->OnHpChanged.AddUObject(this, &UIngameWidget::UpdateHp);
 
 	UMaterialInterface* MaterialInterface = Cast<UMaterialInterface>(Img_HP_Gauge->Brush.GetResourceObject());
 	HPMaterialInstanceDynamic = UMaterialInstanceDynamic::Create(MaterialInterface, nullptr);
 	HPMaterialInstanceDynamic->AddToRoot(); // GC 삭제 방지
 	Img_HP_Gauge->SetBrushFromMaterial(HPMaterialInstanceDynamic);
-	
+
 }
 
 
@@ -61,7 +61,7 @@ void UIngameWidget::UpdateHp(int32 CurrentHp, int32 DeltaHp, int32 MaxHp) const
 {
 	if (ensure(Img_HP_Gauge))
 	{
-		ensureMsgf(MaxHp!=0, TEXT("MaxHp is zero !"));
+		ensureMsgf(MaxHp != 0, TEXT("MaxHp is zero !"));
 		const float HpRatio = static_cast<float>(CurrentHp) / MaxHp;
 		HPMaterialInstanceDynamic->SetScalarParameterValue(TEXT("FillAmount"), HpRatio);
 	}
@@ -77,9 +77,9 @@ void UIngameWidget::ChangeCurrentWeapon(AWeaponActor* WeaponActor)
 	}
 	auto WeaponSlots = HB_Weapon->GetAllChildren();
 	CurrentWeaponSlot = Cast<UWeaponSlotWidget>(*WeaponSlots.FindByPredicate([&](UWidget* SlotWidget)
-	{
-		return Cast<UWeaponSlotWidget>(SlotWidget)->GetWeaponType() == WeaponType;
-	}));
+		{
+			return Cast<UWeaponSlotWidget>(SlotWidget)->GetWeaponType() == WeaponType;
+		}));
 
 	ensureMsgf(CurrentWeaponSlot != nullptr, TEXT("changed weapon slot not exist"));
 	CurrentWeaponSlot->ActiveUseEffect(true);
@@ -106,7 +106,7 @@ EWeaponType UIngameWidget::GetSlotWeaponType(int8 SlotID)
 	if (WeaponSlotWidget == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("weapon slot not found"));
-		return EWeaponType::WEAPON_None;
+		return EWeaponType::NONE;
 	}
 	return WeaponSlotWidget->GetWeaponType();
 }

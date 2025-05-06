@@ -6,6 +6,7 @@
 #include "Data/CharacterStat.h"
 #include "Data/WeaponStat.h"
 #include "Engine/GameInstance.h"
+#include "Inventory/WeaponInventory.h"
 #include "Item/ItemData.h"
 #include "Item/ItemInventory.h"
 #include "MyGameInstance.generated.h"

@@ -29,12 +29,17 @@ private:
 
 protected:
 
+	UPROPERTY(EditDefaultsOnly, meta= (AllowPrivateAccess=true))
+	UWeaponInfo* WeaponInfo;
+
 	UPROPERTY()
 	TObjectPtr<UProtagonistAnimInstance> ProtagonistAnimInstance;
 
-	UPROPERTY(Replicated)
-	AProtagonistCharacter* Protagonist;
+	UPROPERTY(ReplicatedUsing = OnRep_Protagonist)
+	AProtagonistCharacter* OwnerProtagonist;
 
+	UFUNCTION()
+	void OnRep_Protagonist();
 	
 	class UEnhancedInputLocalPlayerSubsystem* Subsystem;
 
@@ -77,12 +82,9 @@ private:
 
 	void CooldownIfPossible(ETriggerEvent TriggerEvent);
 
-	UFUNCTION(Server, Reliable)
-	void ServerSetProtagonist(AProtagonistCharacter* InProtagonist);
 
-	UFUNCTION()
-	void SetProtagonist(AProtagonistCharacter* InProtagonist);
-	
+	void AttachToProtagonist();
+
 protected:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -97,7 +99,14 @@ protected:
 
 	
 public:
-	virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::WEAPON_None;);
+
+	UFUNCTION()
+	void OnObtained(AProtagonistCharacter* InProtagonist);
+
+
+	//virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::NONE;);
+	UWeaponInfo* GetWeaponInfo() const { return WeaponInfo; }
+	EWeaponType GetWeaponType() const { return WeaponInfo->WeaponType; }
 
 	virtual void Equip(AProtagonistCharacter* TargetCharacter);
 	virtual void UnEquip();

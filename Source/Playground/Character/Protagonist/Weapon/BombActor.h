@@ -63,7 +63,7 @@ protected:
 
 	virtual void UnEquip() override;
 	void SetVisibleTrajectory(bool bVisible);
-	virtual EWeaponType GetWeaponType() override { return EWeaponType::BOMB; };
+
 	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Completed; };
 
 };

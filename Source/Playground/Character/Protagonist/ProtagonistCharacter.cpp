@@ -76,6 +76,8 @@ AProtagonistCharacter::AProtagonistCharacter(const FObjectInitializer& ObjectIni
 	BodyMeshComponent = CreateOptionalDefaultSubobject<USkeletalMeshComponent>(TEXT("Body"));
 
 	bReplicates = true;
+
+
 }
 
 

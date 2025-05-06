@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/WeaponStat.h"
+#include "Inventory/WeaponInventory.h"
 #include "UObject/Object.h"
 #include "Utils/UtilPlayground.h"
 #include "CharacterCurrentInfo.generated.h"
@@ -27,7 +28,7 @@ public:
 private:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=WEAPON, meta=(AllowPrivateAccess=true))
-	EWeaponType CurrentWeaponType = EWeaponType::WEAPON_None;
+	EWeaponType CurrentWeaponType = EWeaponType::NONE;
 
 	// public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Movement, meta=(AllowPrivateAccess=true))

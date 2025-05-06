@@ -17,7 +17,6 @@ class PLAYGROUND_API AGunActor : public AWeaponActor
 
 protected:
 	virtual void BeginPlay() override;
-	virtual EWeaponType GetWeaponType() override { return EWeaponType::GUN; }
 	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Started; };
 
 protected:

@@ -109,7 +109,6 @@ private:
 
 protected:
 	virtual void BindInputActionsImpl(UEnhancedInputComponent* EnhancedInputComponent) override final;
-	virtual EWeaponType GetWeaponType() override { return EWeaponType::SWORD; }
 	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Started; };
 
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)

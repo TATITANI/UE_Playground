@@ -38,6 +38,8 @@ private:
 	UFUNCTION()
 	void OnRep_DefaultWeaponActor();
 
+
+
 	UPROPERTY()
 	TObjectPtr<AWeaponActor> CurrentWeapon;
 
@@ -58,17 +60,17 @@ private:
 	USoundBase* ObtainSound;
 
 
-private:
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void ClickChangeWeapon(const FInputActionValue& Value);
 
 	UFUNCTION()
-	void ClientObtainWeaponEvent(AWeaponActor* WeaponActor);
+	void OnClientObtainWeapon(AWeaponActor* WeaponActor);
 
-	UFUNCTION()
-	void AttachWeapon(AWeaponActor* WeaponActor) const;
+	void ChangeWeapon(class AWeaponActor* WeaponActor);
 
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 public:
 	FOnChangeWeapon OnChangeWeapon;
 	FOnCooldown OnCooldownWeapon;
@@ -79,7 +81,7 @@ public:
 	void ServerObtainWeapon(class AWeaponActor* WeaponActor);
 
 
-	void ChangeWeapon(class AWeaponActor* WeaponActor);
 	void SetWeaponHidden(bool IsHidden) const;
+
 
 };

@@ -23,7 +23,7 @@ private:
 	class UImage* Img_Weapon;
 
 	UPROPERTY(VisibleAnywhere)
-	EWeaponType WeaponType = EWeaponType::WEAPON_None;
+	EWeaponType WeaponType = EWeaponType::NONE;
 
 	UMaterialInstanceDynamic* MaterialInstanceDynamic;
 

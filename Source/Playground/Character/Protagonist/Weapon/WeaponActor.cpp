@@ -82,7 +82,7 @@ void AWeaponActor::AttackTriggerIfPossible(ETriggerEvent TriggerEvent)
 		if (ReusableMaxCnt > 0)
 		{
 			ReusableCnt--;
-			Protagonist->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
+			OwnerProtagonist->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
 		}
 		CooldownIfPossible(TriggerEvent);
 	}
@@ -97,34 +97,41 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 	{
 		IsCharging = true;
 		double CurrentSeconds = GetWorld()->GetTimeSeconds();
-		Protagonist->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
-		Protagonist->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
+		OwnerProtagonist->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
+		OwnerProtagonist->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
 	}
 }
 
-void AWeaponActor::ServerSetProtagonist_Implementation(AProtagonistCharacter* InProtagonist)
-{
-	SetProtagonist(InProtagonist);
-	PG_LOG(LogPGNetwork, Log, TEXT("Pro null :%d"), (Protagonist == nullptr));
-}
 
-
-void AWeaponActor::SetProtagonist(AProtagonistCharacter* InProtagonist)
+void AWeaponActor::AttachToProtagonist()
 {
-	this->Protagonist = InProtagonist;
-	this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
+	if (ensureAlways(OwnerProtagonist) == false)
+		return;
+
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(OwnerProtagonist->GetBodyMesh(), AttachmentRules, FName(GetSocketName()));
+
 }
 
 void AWeaponActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AWeaponActor, Protagonist);
+	DOREPLIFETIME(AWeaponActor, OwnerProtagonist);
 }
 
 void AWeaponActor::OnRefill()
 {
 	IsCharging = false;
 	ReusableCnt = ReusableMaxCnt;
+}
+
+void AWeaponActor::OnObtained(AProtagonistCharacter* InProtagonist)
+{
+	SetOwner(InProtagonist->GetController());
+	this->OwnerProtagonist = InProtagonist;
+	this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(OwnerProtagonist->GetMesh()->GetAnimInstance());
+
+	AttachToProtagonist();
 }
 
 
@@ -137,14 +144,13 @@ void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 		return;
 	}
 
-	SetProtagonist(TargetCharacter);
+
 	if (TargetCharacter->IsLocallyControlled())
 	{
-		ServerSetProtagonist(TargetCharacter);
 		SetupInput();
 	}
-
 	SetActorHiddenInGame(false);
+
 }
 
 
@@ -165,16 +171,16 @@ void AWeaponActor::UnEquip()
 
 void AWeaponActor::SetupInput()
 {
-	if (ensureAlwaysMsgf(Protagonist != nullptr, TEXT("Protagonist Null")) == false)
+	if (ensureAlwaysMsgf(OwnerProtagonist != nullptr, TEXT("Protagonist Null")) == false)
 	{
 		return;
 	}
 
-	if (Protagonist->IsLocallyControlled() == false)
+	if (OwnerProtagonist->IsLocallyControlled() == false)
 		return;
 
 	// Set up action bindings
-	const APlayerController* const PlayerController = Cast<APlayerController>(Protagonist->GetController());
+	const APlayerController* const PlayerController = Cast<APlayerController>(OwnerProtagonist->GetController());
 	ensureAlways(PlayerController != nullptr);
 	if (PlayerController == nullptr)
 	{
@@ -215,4 +221,12 @@ void AWeaponActor::RemoveInputMappingContext()
 	{
 		Subsystem->RemoveMappingContext(InputMappingContext);
 	}
+}
+
+void AWeaponActor::OnRep_Protagonist()
+{
+	ensureAlways(OwnerProtagonist);
+
+	//AttachToProtagonist();
+	//this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(OwnerProtagonist->GetMesh()->GetAnimInstance());
 }
