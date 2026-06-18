@@ -15,7 +15,6 @@ UMyGameInstance::UMyGameInstance()
 void UMyGameInstance::Init()
 {
 	Super::Init();
-	WeaponInventory = MakeShared<FWeaponInventory>();
 	ItemInventory = NewObject<UItemInventory>();
 
 	LoadSavingData();

@@ -47,4 +47,6 @@ public:
 	void Reset();
 	int32 GetCurrentHP() const { return CurrentHp; }
 	int32 GetMaxHP() const { return MaxHp; }
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 };

@@ -33,14 +33,24 @@ protected:
 	virtual void PostInitializeComponents() override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
 	void Init(class ABotGenerator* _Generator, FVector Loc);
 
 	virtual void Attack();
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAttackMontage(EBotState::Type BotState);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAttackedMontage(EBotState::Type BotState);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastStopMontages();
+	
 	bool IsIdle();
-	void KnockOut();
 
 public:
 	FSimpleMulticastDelegate OnAttackEnd;
@@ -52,6 +62,7 @@ public:
 	class UHealthComponent* HealthComponent;
 	
 private:
+	// todo 삭제. 제네레이터 안에서 처리하도록 수정
 	ABotGenerator* Generator;
 
 	UPROPERTY()
@@ -62,8 +73,9 @@ private:
 
 	/**
 	 * @brief 캐릭터 회전값을 기준으로 한 이동각도
+	 * strafe에 사용
 	 */
-	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess))
+	UPROPERTY(Replicated, BlueprintReadOnly, meta=(AllowPrivateAccess))
 	float CurrentVelocityAngle;
 	
 	UPROPERTY(VisibleAnywhere, Category="Attack")
@@ -84,11 +96,14 @@ private:
 
 	
 protected:
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
+	UPROPERTY(Replicated, BlueprintReadOnly, VisibleAnywhere)
 	TEnumAsByte<EBotState::Type> CurrentBotState = EBotState::Idle;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 public:
 	TEnumAsByte<EBotState::Type> GetCurrentState() const { return CurrentBotState; };
+	
 	void SetState(EBotState::Type BotState);
 
 	/**
@@ -109,4 +124,8 @@ private:
 
 	UFUNCTION()
 	void OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
+
+	UFUNCTION()
+	void KnockOut();
+
 };

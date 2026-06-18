@@ -4,40 +4,183 @@
 #include "Inventory/WeaponInventory.h"
 
 #include "Character/Protagonist/Weapon/WeaponActor.h"
+#include "Engine/PackageMapClient.h"
+#include "Net/UnrealNetwork.h"
 
-FWeaponInventory::FWeaponInventory()
+void FWeaponInfoEntry::PostReplicatedAdd(const FFastArraySerializer& InArraySerializer)
 {
+	// UE_LOG(LogPGNetwork, Log, TEXT("FWeaponEntry::PostReplicatedAdd("));
 }
 
-FWeaponInventory::~FWeaponInventory()
+
+void FWeaponInfoList::PostReplicatedAdd(const TArrayView<int32>& AddedIndices, int32 FinalSize)
 {
+//	if (OwnerWeaponInventory == nullptr)
+//	{
+//		UE_LOG(LogPGNetwork, Error, TEXT("FWeaponList::PostReplicatedAdd owner null"));
+//		return;
+//	}
+//
+//#if 1 // netmode check - client에서 출력됨	
+//	FString StrNetmode;
+//	switch (OwnerWeaponInventory->GetWorld()->GetNetMode())
+//	{
+//	case NM_Standalone:
+//		StrNetmode = TEXT("Standalone");
+//		break;
+//	case NM_ListenServer:
+//		StrNetmode = TEXT("ListenServer");
+//		break;
+//	case NM_DedicatedServer:
+//		StrNetmode = TEXT("DedicatedServer");
+//		break;
+//	case NM_Client:
+//		StrNetmode = TEXT("Client");
+//		break;
+//	default:
+//		StrNetmode = TEXT("Unknown");
+//		break;
+//	}
+//	UE_LOG(LogPGNetwork, Warning, TEXT("[%s] FWeaponList::PostReplicatedAdd"), *StrNetmode);;
+//#endif
+//
+//
+//	for (auto id : AddedIndices)
+//	{
+//	/*	UE_LOG(LogPGNetwork, Log, TEXT("FWeaponList::PostReplicatedAdd - id : %d/ actorName : %s"),
+//		       id, *Items[id].WeaponActor->GetName());*/
+//
+//
+//		// 1) 인벤토리에 무기 액터가 있긴있어야됨. 빠른 교체를 위해서.
+//		// 2) replicate는 액터가 아닌 무기정보로 해야됨
+//
+//		if (OwnerWeaponInventory->OnObtainWeapon.IsBound())
+//		{
+//			//UE_LOG(LogPGNetwork, Log, TEXT("PostReplicatedAdd - WeaponActor : %s"), *Items[id].WeaponActor->GetName());
+//			//OwnerWeaponInventory->OnObtainWeapon.Broadcast(Items[id].WeaponActor);
+//		}
+//		else
+//		{
+//			UE_LOG(LogPGNetwork, Error, TEXT("OwnerWeaponInventory->OnObtainWeapon not bound"));
+//		}
+//	}
 }
 
-bool FWeaponInventory::HasWeapon(AWeaponActor* WeaponActor) const
+UWeaponInventory::UWeaponInventory()
 {
+	// WeaponList.OwnerWeaponInventory = this;
+}
+
+bool UWeaponInventory::IsSupportedForNetworking() const
+{
+	return true;
+}
+
+void UWeaponInventory::PostNetReceive()
+{
+	UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::PostNetReceive"));
+	UObject::PostNetReceive();
+	
+}
+
+ void UWeaponInventory::OnRep_WeaponInfoList()
+ {
+ 	UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::OnRep_WeaponList"));
+
+ 	//auto Entries = HasWeaponInfos.WeaponInfos;
+ 	//for (auto Entry : Entries)
+ 	{
+ 		//UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::OnRep_WeaponList - %s"), *Entry.WeaponActor->GetName());
+ 	}
+ }
+
+void UWeaponInventory::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UWeaponInventory, HasWeaponInfoList);
+}
+
+
+bool UWeaponInventory::HasWeapon(AWeaponActor* WeaponActor) const
+{
+	UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::HasWeapon"));
+
 	return WeaponList.Contains(WeaponActor);
+
+	// auto Entries = WeaponList.Items;
+	// for (auto Entry : Entries)
+	// {
+	// 	UE_LOG(LogPGNetwork, Warning, TEXT("UWeaponInventory::HasWeapon - %s"), *Entry.WeaponActor->GetName());
+	// }
+	//
+	//
+	// return WeaponList.Items.FindByPredicate([WeaponActor](const FWeaponEntry& Entry)
+	// {
+	// 	return Entry.WeaponActor == WeaponActor;
+	// }) != nullptr;
 }
 
-bool FWeaponInventory::HasWeapon(EWeaponType WeaponType) const
+bool UWeaponInventory::HasWeapon(EWeaponType WeaponType) 
 {
-	return WeaponList.ContainsByPredicate([WeaponType](AWeaponActor* Weapon)
+
+	AWeaponActor* Weapon = *WeaponList.FindByPredicate([WeaponType](AWeaponActor* WeaponActor)
 	{
-		return Weapon->GetWeaponType() == WeaponType;
+		return WeaponActor->GetWeaponType() == WeaponType;
 	});
+
+	return Weapon != nullptr;
+
+	// return WeaponList.Items.FindByPredicate([WeaponType](const FWeaponEntry& Entry)
+	// {
+	// 	return Entry.WeaponActor && Entry.WeaponActor->GetWeaponType() == WeaponType;
+	// }) != nullptr;
 }
 
-void FWeaponInventory::AddWeapon(AWeaponActor* WeaponActor)
+void UWeaponInventory::OnClientAddWeapon(AWeaponActor* WeaponActor)
 {
+	if (!WeaponActor || HasWeapon(WeaponActor))
+	{
+		return;
+	}
+
 	WeaponList.Add(WeaponActor);
-	OnObtainWeapon.Broadcast(WeaponActor);
+
+
+
+	//OnObtainWeapon.Broadcast(WeaponActor);
 
 }
 
-AWeaponActor* FWeaponInventory::GetWeapon(EWeaponType WeaponType)
+void UWeaponInventory::OnServerAddWeapon(UWeaponInfo* WeaponInfo)
 {
-	AWeaponActor** WeaponActor = WeaponList.FindByPredicate([&](AWeaponActor *Weapon)
+	FWeaponInfoEntry WeaponInfoEntry;
+	WeaponInfoEntry.WeaponInfo = WeaponInfo;
+	HasWeaponInfoList.WeaponInfos.Add(WeaponInfoEntry);
+	HasWeaponInfoList.MarkItemDirty(WeaponInfoEntry);
+
+}
+
+AWeaponActor* UWeaponInventory::GetWeapon(EWeaponType WeaponType)
+{
+	AWeaponActor* FoundWeapon = *WeaponList.FindByPredicate([&](AWeaponActor* WeaponActor)
 	{
-		return Weapon->GetWeaponType() == WeaponType;
+		return WeaponActor->GetWeaponType() == WeaponType;
 	});
-	return *WeaponActor;
+
+	// const FWeaponEntry* FoundEntry = WeaponList.Items.FindByPredicate([&](const FWeaponEntry& Entry)
+	// {
+	// 	return Entry.WeaponActor && Entry.WeaponActor->GetWeaponType() == WeaponType;
+	// });
+
+	return FoundWeapon ? FoundWeapon : nullptr;
+}
+
+void UWeaponInventory::AddOnObtainWeaponDelegate(const FOnObtainWeapon::FDelegate& InHandler)
+{
+	OnObtainWeapon.Add(InHandler);
+}
+
+void UWeaponInventory::RemoveOnObtainWeaponDelegate(FDelegateHandle DelegateHandle)
+{
+	OnObtainWeapon.Remove(DelegateHandle);
 }

@@ -12,7 +12,7 @@ UHealthComponent::UHealthComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	bWantsInitializeComponent = true;
 }
 
@@ -40,6 +40,13 @@ void UHealthComponent::Reset()
 {
 	CurrentHp = MaxHp;
 	OnHpChanged.Broadcast(CurrentHp, 0, MaxHp);
+}
+
+void UHealthComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	PG_SUBLOG(LogPGNetwork, Warning, TEXT(""));
 }
 
 
@@ -70,7 +77,7 @@ void UHealthComponent::HandleTakenDamage(AActor* DamagedActor, float Damage, con
 
 	if (DamagedActor != nullptr && DamageCauser != nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
+		PG_SUBLOG(LogTemp, Log, TEXT("OwnerName : %s, DamagedActor : %s, DamageCauser : %s, taken damage hp : %d"),
 		       *GetOwner()->GetName(), *DamagedActor->GetName(), *DamageCauser->GetName(), CurrentHp);
 	}
 }

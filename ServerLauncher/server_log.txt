@@ -1,0 +1,37 @@
+LogInit: Display: No sandbox specified, assuming ../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Saved/Cooked/WindowsServer/
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+LogStreaming: Display: AsyncLoading2 - Created: Event Driven Loader: false, Async Loading Thread: false, Async Post Load: false
+LogStreaming: Display: AsyncLoading2 - Initialized
+LogHAL: Display: Platform has ~ 64 GB [68448337920 / 68719476736 / 64], which maps to Largest [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+LogStreaming: Warning: Failed to read file '../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Content/Localization/Game/Game.locmeta' error.
+LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+LogConfig: Display: Read in platform Android ini files took 0.02 seconds
+LogConfig: Display: Read in platform IOS ini files took 0.02 seconds
+LogConfig: Display: Read in platform Linux ini files took 0.03 seconds
+LogConfig: Display: Read in platform LinuxArm64 ini files took 0.03 seconds
+LogConfig: Display: Read in platform Mac ini files took 0.02 seconds
+LogConfig: Display: Read in platform TVOS ini files took 0.02 seconds
+LogConfig: Display: Read in platform VisionOS ini files took 0.02 seconds
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsServer"
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+LogLiveCoding: Display: Starting LiveCoding
+LogLiveCoding: Display: LiveCodingConsole Arguments: PlaygroundServer Win64 Development
+LogLiveCoding: Display: Detected running instance in process group "UE_Playground_0xbdbcdded", connecting to console process (PID: 13600)
+LogLiveCoding: Display: Waiting for server
+LogLiveCoding: Display: Successfully initialized, removing startup thread
+LogAudio: Display: Registering Engine Module Parameter Interfaces...
+LogStreaming: Display: AsyncLoading2 - NotifyRegistrationComplete: Registered 27186 public script object entries (707.98 KB)
+LogStreaming: Display: AsyncLoading2 - Thread Started: false, IsInitialLoad: false
+LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+LogStreaming: Warning: Failed to read file '../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Saved/SaveGames/Inventory.sav' error.
+LogInit: Display: Game Engine Initialized.
+LogInit: Display: Starting Game.
+LogCsvProfiler: Display: Metadata set : iris="0"
+LogInit: Display: Engine is initialized. Leaving FEngineLoop::Init()
+LogTrace: Display: Display Control listening on port 1985
+^C

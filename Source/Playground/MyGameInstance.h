@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Data/CharacterStat.h"
+#include "Data/WeaponStat.h"
 #include "Engine/GameInstance.h"
 #include "Inventory/WeaponInventory.h"
 #include "Item/ItemData.h"
@@ -27,20 +28,19 @@ private:
 
 	const FString SavingSlotName = "Inventory";
 	void LoadSavingData();
+
 public:
 	UMyGameInstance();
 	virtual void Init() override;
-	
+
 	template <class T>
 	TOptional<T> GetCharacterStat(ECharacterStatType StatType, FName RowName);
 
 	template <class T>
 	TOptional<T> GetWeaponStat(EWeaponType StatType, FName RowName);
-
-	TSharedPtr<FWeaponInventory> WeaponInventory;
 	
 	UPROPERTY(BlueprintReadWrite)
-	UItemInventory *ItemInventory;
+	UItemInventory* ItemInventory;
 
 	struct FStreamableManager* StreamableManager;
 

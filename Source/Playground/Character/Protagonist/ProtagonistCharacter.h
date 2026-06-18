@@ -25,7 +25,7 @@ class AProtagonistCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	AProtagonistCharacter();
+	AProtagonistCharacter(const FObjectInitializer& ObjectInitializer);
 
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -35,7 +35,10 @@ public:
 
 private:
 	virtual void BeginPlay() override;
+	virtual void PostNetInit() override;
 	virtual void PostInitProperties() override;
+	virtual void PossessedBy(AController* NewController) override;
+
 	virtual void PostInitializeComponents() override;
 	UFUNCTION()
 	void OnChangedMovementMode(class ACharacter* Character, EMovementMode PrevMovementMode,
@@ -56,7 +59,7 @@ private:
 
 	void StopLookAround(const FInputActionValue& Value);
 	virtual void Jump() override;
-	
+
 	UFUNCTION()
 	void TriggerDamagedState(bool bOn);
 
@@ -93,7 +96,10 @@ private:
 
 	UPROPERTY()
 	class UProtagonistAnimInstance* AnimInstance;
-	
+
+	UPROPERTY(VisibleAnywhere, meta=(AllowPrivateAccess))
+	TObjectPtr<USkeletalMeshComponent> BodyMeshComponent;
+
 	UPROPERTY(EditDefaultsOnly, Category=Animation, meta=(AllowPrivateAccess=true))
 	UAnimMontage* DamagedMontage;
 
@@ -102,15 +108,15 @@ private:
 	FTimerHandle DamageTriggerTimerHandle;
 
 	bool IsLookingAround = false;
-	
+
 	UPROPERTY(VisibleAnywhere)
 	bool Movable = true;
 
 public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
 	FCharacterCurrentInfo CharacterCurrentInfo;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
 	class UCharacterWeaponComponent* WeaponComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon, meta = (AllowPrivateAccess = "true"))
@@ -135,5 +141,29 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void ZoomOnSlash();
 
-	void FixLocation(bool bFix) const;
+	UFUNCTION(Server, Reliable)
+	void ServerFixLocation(bool bFix);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastFixLocation(bool bFix);
+
+	UPROPERTY()
+	bool bFixLocation = false;
+
+	UFUNCTION()
+	bool IsFixLocation() const { return bFixLocation; }
+	
+	UFUNCTION()
+	void SetFixLocation(bool bFix);
+	
+	UFUNCTION()
+	void FixLocation(bool bFix);
+
+	USkeletalMeshComponent* GetBodyMesh() { return BodyMeshComponent; }
+
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void ServerSetCurrentInfo(FCharacterCurrentInfo CurrentInfo);
 };

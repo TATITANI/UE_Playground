@@ -11,16 +11,21 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Engine/ActorChannel.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Serialization/FastArraySerializer.h"
 #include "Utils/UtilPlayground.h"
 
 // Sets default values for this component's properties
 UCharacterWeaponComponent::UCharacterWeaponComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	// off to improve performance if you don't need them.	
 
-	// ...
+	SetIsReplicatedByDefault(true);
+	bReplicateUsingRegisteredSubObjectList = true;
+
+
 }
 
 
@@ -29,55 +34,124 @@ void UCharacterWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PG_SUBLOG(LogPGNetwork, Log, TEXT(""));
+
 	ProtagonistCharacter = Cast<AProtagonistCharacter>(GetOwner());
-	if (ProtagonistCharacter == nullptr)
+
+	checkf(ProtagonistCharacter != nullptr, TEXT("Owner of UCharacterWeaponComponent was not found"));
+
+	if (ProtagonistCharacter->HasAuthority())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Owner of UCharacterWeaponComponent was not found"));
-		return;
+
+		// sub object replicate
+		WeaponInventory = NewObject<UWeaponInventory>(this);
+		AddReplicatedSubObject(WeaponInventory);
+
+
+		DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeaponClass));
+		ensureAlways(DefaultWeaponActor);
+	}
+	else
+	{
+		if (ProtagonistCharacter->IsLocallyControlled())
+		{
+			if (UEnhancedInputComponent* EnhancedInputComponent =
+				Cast<UEnhancedInputComponent>(ProtagonistCharacter->InputComponent))
+			{
+				EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Started, this, &UCharacterWeaponComponent::ClickChangeWeapon);
+			}
+		}
 	}
 
-	if (UEnhancedInputComponent* EnhancedInputComponent =
-		Cast<UEnhancedInputComponent>(ProtagonistCharacter->InputComponent))
-		// Cast<UEnhancedInputComponent>(ProtagonistCharacter->GetLocalViewingPlayerController()->InputComponent))
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.SetTickFunctionEnable(true);
+	PrimaryComponentTick.bStartWithTickEnabled = true;
+	SetComponentTickEnabled(true);
+
+	UE_LOG(LogTemp, Warning, TEXT("Tick Registered: %d, bCanEverTick: %d, bStartWithTickEnabled: %d"),
+		PrimaryComponentTick.IsTickFunctionRegistered(),
+		PrimaryComponentTick.bCanEverTick,
+		PrimaryComponentTick.bStartWithTickEnabled);
+
+}
+
+void UCharacterWeaponComponent::DestroyComponent(bool bPromoteChildren)
+{
+	Super::DestroyComponent(bPromoteChildren);
+	if (WeaponInventory)
 	{
-		EnhancedInputComponent->BindAction(ChangeWeaponAction, ETriggerEvent::Started, this, &UCharacterWeaponComponent::ClickChangeWeapon);
+		RemoveReplicatedSubObject(WeaponInventory);
 	}
 
-	WeaponInventory = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->WeaponInventory;
-	ensure(WeaponInventory != nullptr);
+}
 
-	AWeaponActor* DefaultWeaponActor = Cast<AWeaponActor>(GetWorld()->SpawnActor(DefaultWeapon));
-	ensure(DefaultWeaponActor != nullptr);
-	
-	ObtainWeapon(DefaultWeaponActor);
-	
+void UCharacterWeaponComponent::OnRep_WeaponInventory()
+{
+	PG_SUBLOG(LogPGNetwork, Warning, TEXT(""));
+	ensureAlways(WeaponInventory->IsValidLowLevel());
+	//WeaponInventory->OnObtainWeapon.AddUObject(this, &UCharacterWeaponComponent::ClientObtainWeaponEvent);
+
 }
 
 
+void UCharacterWeaponComponent::OnRep_DefaultWeaponActor()
+{
+	PG_SUBLOG(LogPGNetwork, Warning, TEXT(""));
+
+	OnClientObtainWeapon(DefaultWeaponActor);
+}
+
+
+void UCharacterWeaponComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME_CONDITION(UCharacterWeaponComponent, DefaultWeaponActor, COND_InitialOnly);
+	//DOREPLIFETIME(UCharacterWeaponComponent, WeaponInventory);
+}
 
 void UCharacterWeaponComponent::ClickChangeWeapon(const FInputActionValue& Value)
 {
-	if(CurrentWeapon->IsHidden())
+	if (CurrentWeapon->IsHidden())
 		return;
-	
+
 	const int8 SlotID = static_cast<int8>(Value.Get<float>()) - 1;;
 	const auto MyHUD = Cast<AMyHUD>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetHUD());
 	const auto WeaponType = MyHUD->IngameWidget->GetSlotWeaponType(SlotID);
-	// UE_LOG(LogTemp,Log,TEXT("ClickChangeWeapon : %d, %d"), SlotID, WeaponType);
-	if (WeaponType != EWeaponType::WEAPON_None)
+	if (WeaponType != EWeaponType::NONE)
 	{
 		const auto WeaponActor = WeaponInventory->GetWeapon(WeaponType);
 		ChangeWeapon(WeaponActor);
 	}
 }
 
-void UCharacterWeaponComponent::ObtainWeapon(AWeaponActor* WeaponActor)
-{
-	ensure(WeaponActor);
-	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
-	WeaponActor->AttachToComponent(ProtagonistCharacter->GetMesh(), AttachmentRules, FName(WeaponActor->GetSocketName()));
 
-	WeaponInventory->AddWeapon(WeaponActor);
+void UCharacterWeaponComponent::ServerObtainWeapon_Implementation(AWeaponActor* WeaponActor)
+{
+	if (ensureAlways(WeaponActor) == false)
+		return;
+
+	if (ensureAlways(ProtagonistCharacter) == false)
+		return;
+
+	PG_SUBLOG(LogPGNetwork, Log, TEXT(""));
+
+	WeaponInventory->OnServerAddWeapon(WeaponActor->GetWeaponInfo());
+	WeaponActor->OnObtained(ProtagonistCharacter);
+
+}
+
+
+void UCharacterWeaponComponent::OnClientObtainWeapon(AWeaponActor* WeaponActor)
+{
+
+	/*PG_SUBLOG(LogPGNetwork, Warning, TEXT(""));
+	if (ensureAlwaysMsgf(WeaponInventory, TEXT("WeaponInventory null")) == false)
+	{
+		return;
+	}
+
+	WeaponInventory->OnClientAddWeapon(WeaponActor);
+	WeaponActor->OnObtained(ProtagonistCharacter);
 
 	ChangeWeapon(WeaponActor);
 
@@ -85,26 +159,44 @@ void UCharacterWeaponComponent::ObtainWeapon(AWeaponActor* WeaponActor)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ObtainSound, WeaponActor->GetActorLocation());
 	}
+
+	ServerObtainWeapon(WeaponActor);*/
+
 }
+
 
 void UCharacterWeaponComponent::ChangeWeapon(AWeaponActor* WeaponActor)
 {
 	if (WeaponInventory->HasWeapon(WeaponActor) == false)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s weapon not in inventory"), *WeaponActor->GetName());
+		PG_SUBLOG(LogPGNetwork, Error, TEXT("inventory has not [ %s ] weapon"), *WeaponActor->GetName());
 		return;
 	}
+
 	if (CurrentWeapon != nullptr)
 	{
 		CurrentWeapon->UnEquip();
 	}
 
 	CurrentWeapon = WeaponActor;
-	WeaponActor->Equip(ProtagonistCharacter);
-	ProtagonistCharacter->CharacterCurrentInfo.SetCurrentWeaponType(WeaponActor->GetWeaponType());
-	ProtagonistCharacter->AimCamByWeapon(WeaponActor->GetWeaponType());
-	
-	OnChangeWeapon.Broadcast(WeaponActor);
+	CurrentWeapon->Equip(ProtagonistCharacter);
+
+	ProtagonistCharacter->CharacterCurrentInfo.SetCurrentWeaponType(CurrentWeapon->GetWeaponType());
+	ProtagonistCharacter->AimCamByWeapon(CurrentWeapon->GetWeaponType());
+
+	OnChangeWeapon.Broadcast(CurrentWeapon);
+
+}
+
+void UCharacterWeaponComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+
+	bool InvenNull = WeaponInventory == nullptr;
+	UE_LOG(LogPGNetwork, Warning, TEXT("InvenNull %d"), InvenNull);
+
+		
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 void UCharacterWeaponComponent::SetWeaponHidden(bool IsHidden) const

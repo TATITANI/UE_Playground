@@ -7,6 +7,7 @@
 #include "Character/Bot/BotCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Engine/DataTable.h"
+#include "Utils/UtilPlayground.h"
 
 UBTTask_Attack::UBTTask_Attack()
 {
@@ -18,7 +19,7 @@ UBTTask_Attack::UBTTask_Attack()
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Bot = Cast<ABotCharacter>(OwnerComp.GetAIOwner()->GetCharacter());
-	if (ensure(Bot != nullptr) == false)
+	if (ensureAlways(Bot != nullptr) == false)
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -29,8 +30,9 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 		Bot->OnAttackEnd.Remove(AttackEndHandle);
 	});
 	IsAttacking = true;
-
+	
 	Bot->Attack();
+	
 	return EBTNodeResult::InProgress;
 }
 

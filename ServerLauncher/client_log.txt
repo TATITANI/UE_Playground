@@ -1,0 +1,265 @@
+LogInit: Display: No sandbox specified, assuming ../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Saved/Cooked/WindowsClient/
+LogAudio: Display: Pre-Initializing Audio Device Manager...
+LogAudio: Display: AudioInfo: 'OPUS' Registered
+LogAudioDebug: Display: Lib vorbis DLL was dynamically loaded.
+LogAudio: Display: AudioInfo: 'OGG' Registered
+LogAudio: Display: AudioInfo: 'ADPCM' Registered
+LogAudio: Display: AudioInfo: 'PCM' Registered
+LogAudio: Display: AudioInfo: 'BINKA' Registered
+LogAudio: Display: AudioInfo: 'RADA' Registered
+LogAudio: Display: Audio Device Manager Pre-Initialized
+RenderDocPlugin: Display: RenderDoc plugin will not be loaded. Use '-AttachRenderDoc' on the cmd line or enable 'renderdoc.AutoAttach' in the plugin settings.
+LogStreaming: Display: AsyncLoading2 - Created: Event Driven Loader: false, Async Loading Thread: true, Async Post Load: true
+LogStreaming: Display: AsyncLoading2 - Initialized
+LogHAL: Display: Platform has ~ 64 GB [68448337920 / 68719476736 / 64], which maps to Largest [LargestMinGB=32, LargerMinGB=12, DefaultMinGB=8, SmallerMinGB=6, SmallestMinGB=0)
+LogCsvProfiler: Display: Metadata set : extradevelopmentmemorymb="0"
+LogStreaming: Warning: Failed to read file '../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Content/Localization/Game/Game.locmeta' error.
+LogD3D12RHI: Display: Creating D3D12 RHI with Max Feature Level SM6
+LogD3D12RHI: Display: Not using pipeline state disk cache per r.D3D12.PSO.DiskCache=0
+LogD3D12RHI: Display: Not using driver-optimized pipeline state disk cache per r.D3D12.PSO.DriverOptimizedDiskCache=0
+LogShaderLibrary: Display: Using ../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Content/ShaderArchive-Global-PCD3D_SM6-PCD3D_SM6.ushaderbytecode for material shader code. Total 6413 unique shaders.
+LogShaderLibrary: Display: Cooked Context: Using Shared Shader Library Global
+LogShaderLibrary: Display: Logical shader library 'Global' has been created as a monolithic library
+LogShaderLibrary: Display: Running without a pakfile/IoStore and did not find a monolithic library 'Global_SC' - attempting disk search for its chunks
+LogShaderLibrary: Display:    ....  not found
+LogTemp: Display: Clearing the OS Cache
+LogShaderLibrary: Display: Using ../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Content/ShaderArchive-Playground-PCD3D_SM6-PCD3D_SM6.ushaderbytecode for material shader code. Total 4312 unique shaders.
+LogShaderLibrary: Display: Cooked Context: Using Shared Shader Library Playground
+LogShaderLibrary: Display: Logical shader library 'Playground' has been created as a monolithic library
+LogStreaming: Display: FlushAsyncLoading(1): 1 QueuedPackages, 0 AsyncPackages
+LogConfig: Display: Read in platform Android ini files took 0.02 seconds
+LogConfig: Display: Read in platform IOS ini files took 0.02 seconds
+LogConfig: Display: Read in platform Linux ini files took 0.03 seconds
+LogConfig: Display: Read in platform LinuxArm64 ini files took 0.03 seconds
+LogConfig: Display: Read in platform Mac ini files took 0.02 seconds
+LogConfig: Display: Read in platform TVOS ini files took 0.02 seconds
+LogConfig: Display: Read in platform VisionOS ini files took 0.02 seconds
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64Editor not found.
+LogDeviceProfileManager: Display: Deviceprofile LinuxArm64 not found.
+LogCsvProfiler: Display: Metadata set : deviceprofile="WindowsClient"
+LogShaderLibrary: Warning: Spent 1.38 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.03 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.17 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.23 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.03 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.18 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.11 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.05 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.36 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.54 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.49 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.47 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 7.85 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 6.09 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.29 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.67 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.60 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 4.60 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 9.79 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 9.53 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 9.82 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 8.09 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 8.02 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.55 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 8.18 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.89 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 13.13 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 12.99 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 13.08 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 12.44 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 13.03 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 9.64 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 13.01 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 12.86 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 12.99 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 10.21 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 10.14 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.23 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.45 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.24 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.11 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.11 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.29 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.98 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.13 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.32 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.18 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.36 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.36 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.12 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.32 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.35 ms in a blocking wait for shader preload, NumRefs: 10, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 18.13 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 6.05 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 12.32 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 12.32 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 20.92 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 15.43 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.44 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 15.42 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 7.97 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.32 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.41 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 1.42 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 8.78 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.94 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 3.19 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 21.44 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 6.44 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 24.76 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 6.36 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 8.01 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 7.39 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.22 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.41 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.40 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 8.54 ms in a blocking wait for shader preload, NumRefs: 2, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 17.95 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 5.43 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 18.00 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 15.84 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 6.32 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 27.76 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 7.46 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 16.98 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 11.87 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 9.06 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 17.39 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 11.67 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 11.70 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 2.67 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 6.54 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 27.09 ms in a blocking wait for shader preload, NumRefs: 5, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 27.06 ms in a blocking wait for shader preload, NumRefs: 5, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 24.93 ms in a blocking wait for shader preload, NumRefs: 5, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 24.95 ms in a blocking wait for shader preload, NumRefs: 5, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 21.16 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 11.34 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 11.17 ms in a blocking wait for shader preload, NumRefs: 3, FramePreloadStarted: 1, CurrentFrame: 1
+LogShaderLibrary: Warning: Spent 21.30 ms in a blocking wait for shader preload, NumRefs: 1, FramePreloadStarted: 1, CurrentFrame: 1
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogAudioCaptureCore: Display: No Audio Capture implementations found. Audio input will be silent.
+LogMetaSound: Display: MetaSound Page Target Initialized to 'Default'
+LogLiveCoding: Display: Starting LiveCoding
+LogLiveCoding: Display: LiveCodingConsole Arguments: PlaygroundClient Win64 Development
+LogLiveCoding: Display: Detected running instance in process group "UE_Playground_0xbdbcdded", connecting to console process (PID: 26716)
+LogLiveCoding: Display: Waiting for server
+LogAudio: Display: Registering Engine Module Parameter Interfaces...
+LogStreaming: Display: AsyncLoading2 - NotifyRegistrationComplete: Registered 27200 public script object entries (707.98 KB)
+LogStreaming: Display: AsyncLoading2 - Thread Started: true, IsInitialLoad: false
+LogAudio: Display: Initializing Audio Device Manager...
+LogAudio: Display: Loading Default Audio Settings Objects...
+LogAudio: Display: No default SoundConcurrencyObject specified (or failed to load).
+LogAudio: Display: Audio Device Manager Initialized
+LogAudio: Display: Creating Audio Device:                 Id: 1, Scope: Shared, Realtime: True
+LogAudioMixer: Display: Audio Mixer Platform Settings:
+LogAudioMixer: Display: 	Sample Rate:						  48000
+LogAudioMixer: Display: 	Callback Buffer Frame Size Requested: 1024
+LogAudioMixer: Display: 	Callback Buffer Frame Size To Use:	  1024
+LogAudioMixer: Display: 	Number of buffers to queue:			  1
+LogAudioMixer: Display: 	Max Channels (voices):				  32
+LogAudioMixer: Display: 	Number of Async Source Workers:		  4
+LogAudio: Display: AudioDevice MaxSources: 32
+LogAudio: Display: Audio Spatialization Plugin: None (built-in).
+LogAudio: Display: Audio Reverb Plugin: None (built-in).
+LogAudio: Display: Audio Occlusion Plugin: None (built-in).
+LogAudioMixer: Display: Initializing audio mixer using platform API: 'XAudio2'
+LogAudioMixer: Display: Using Audio Hardware Device ???(High Definition Audio Device)
+LogAudioMixer: Display: Initializing Sound Submixes...
+LogAudioMixer: Display: Creating Master Submix 'MasterSubmixDefault'
+LogAudioMixer: Display: Creating Master Submix 'MasterReverbSubmixDefault'
+LogAudioMixer: Display: Output buffers initialized: Frames=1024, Channels=2, Samples=2048, InstanceID=1
+LogAudioMixer: Display: Starting AudioMixerPlatformInterface::RunInternal(), InstanceID=1
+LogAudioMixer: Display: FMixerPlatformXAudio2::SubmitBuffer() called for the first time. InstanceID=1
+LogCsvProfiler: Display: Metadata set : largeworldcoordinates="1"
+LogStreaming: Warning: Failed to read file '../../../UnrealEngine-5.5.0-release/../Playground_DS_5.5/Saved/SaveGames/Inventory.sav' error.
+LogAudio: Display: Audio Device (ID: 1) registered with world 'Untitled'.
+LogInit: Display: Game Engine Initialized.
+LogInit: Display: Starting Game.
+LogAudio: Display: Audio Device unregistered from world 'None'.
+LogAudio: Display: Audio Device (ID: 1) registered with world 'MainMenuMap'.
+LogRHI: Display: ShaderPipelineCache: Paused Batching. 1
+LogRHI: Display: ShaderPipelineCache: Resumed Batching. 0
+LogRHI: Display: ShaderPipelineCache: Batching Resumed.
+LogInit: Display: Engine is initialized. Leaving FEngineLoop::Init()
+LogRHI: Display: Encountered a new graphics PSO: 257195009
+LogRHI: Display: Encountered a new graphics PSO: 3127996757
+LogRHI: Display: Encountered a new graphics PSO: 3461925011
+LogRHI: Display: Encountered a new graphics PSO: 2094147047
+LogRHI: Display: Encountered a new graphics PSO: 834665915
+LogRHI: Display: Encountered a new graphics PSO: 1004208946
+LogRHI: Display: Encountered a new graphics PSO: 3540805760
+LogRHI: Display: Encountered a new graphics PSO: 482174781
+LogRHI: Display: Encountered a new graphics PSO: 1446925621
+LogRHI: Display: Encountered a new graphics PSO: 2917786177
+LogRHI: Display: Encountered a new graphics PSO: 592338105
+LogRHI: Display: Encountered a new graphics PSO: 877799743
+LogRHI: Display: Encountered a new graphics PSO: 4109891773
+LogRHI: Display: Encountered a new graphics PSO: 4251240980
+LogRHI: Display: Encountered a new graphics PSO: 2863241443
+LogRHI: Display: Encountered a new graphics PSO: 2236112058
+LogRHI: Display: Encountered a new graphics PSO: 931589751
+LogRHI: Display: Encountered a new graphics PSO: 1021465165
+LogRHI: Display: Encountered a new graphics PSO: 1174220289
+LogCsvProfiler: Display: Metadata set : streamingpoolsizemb="1000"
+LogRenderTargetPool: Warning: r.RenderTargetPoolMin exceeded 1259/400 MB (ok in editor, bad on fixed memory platform)
+LogRHI: Display: Encountered a new graphics PSO: 3734969397
+LogRHI: Display: Encountered a new graphics PSO: 2961030044
+LogTrace: Display: Display Control listening on port 37206
+LogRHI: Display: Encountered a new graphics PSO: 4081066142
+LogRHI: Display: Encountered a new graphics PSO: 870707484
+LogRHI: Display: Encountered a new graphics PSO: 980861877
+LogRHI: Display: Encountered a new graphics PSO: 1841008962
+LogRHI: Display: Encountered a new graphics PSO: 1113216283
+LogRHI: Display: Encountered a new graphics PSO: 4138595354
+LogRHI: Display: Encountered a new graphics PSO: 4241033875
+LogRHI: Display: Encountered a new graphics PSO: 337535265
+LogRHI: Display: Encountered a new graphics PSO: 3685707420
+LogRHI: Display: Encountered a new graphics PSO: 1794894816
+LogCsvProfiler: Display: Metadata set : iris="0"
+LogAudio: Display: Audio Device unregistered from world 'None'.
+LogStreaming: Display: FlushAsyncLoading(85): 1 QueuedPackages, 0 AsyncPackages
+LogLiveCoding: Display: Successfully initialized, removing startup thread
+LogAudio: Display: Audio Device (ID: 1) registered with world 'ThirdPersonMap'.
+LogWorldPartition: Display: WorldPartition initialize started...
+LogWorldPartition: Display: WorldPartition initialize took 99 us
+LogRHI: Display: Encountered a new graphics PSO: 2406479667
+LogRHI: Display: Encountered a new graphics PSO: 4257995206
+LogRHI: Display: Encountered a new compute PSO: 4175915472
+LogRHI: Display: Encountered a new graphics PSO: 887954344
+LogRHI: Display: Encountered a new graphics PSO: 4287528555
+LogRHI: Display: Encountered a new graphics PSO: 2842939906
+LogRHI: Display: Encountered a new graphics PSO: 3224788161
+LogRHI: Display: Encountered a new graphics PSO: 3441735275
+LogRHI: Display: Encountered a new graphics PSO: 3263951767
+LogRHI: Display: Encountered a new compute PSO: 2182077875
+LogRHI: Display: Encountered a new graphics PSO: 2400923095
+LogRHI: Display: Encountered a new graphics PSO: 3316590291
+LogRHI: Display: Encountered a new graphics PSO: 2456054138
+LogRHI: Display: Encountered a new graphics PSO: 1741547207
+LogRHI: Display: Encountered a new graphics PSO: 4266470449
+LogRHI: Display: Encountered a new graphics PSO: 2455390376
+LogRHI: Display: Encountered a new graphics PSO: 1444787699
+LogRHI: Display: Encountered a new graphics PSO: 3998340595
+LogRHI: Display: Encountered a new graphics PSO: 1700200558
+LogRHI: Display: Encountered a new graphics PSO: 2681323088
+LogRHI: Display: Encountered a new graphics PSO: 3432324015
+LogRHI: Display: Encountered a new graphics PSO: 4208628807
+LogRHI: Display: Encountered a new graphics PSO: 1813214286
+LogRHI: Display: Encountered a new graphics PSO: 2110643698
+LogRHI: Display: Encountered a new graphics PSO: 147391968
+LogRHI: Display: Encountered a new graphics PSO: 2634339502
+LogRHI: Display: Encountered a new graphics PSO: 298642865
+LogRHI: Display: Encountered a new graphics PSO: 3610917720
+LogRHI: Display: Encountered a new graphics PSO: 1911018763
+LogRenderer: Display: Invalidated clipmap due to WPO threshold change. This can occur due to resolution or FOV changes.
+LogRHI: Display: Encountered a new graphics PSO: 3554480225
+LogRHI: Display: Encountered a new graphics PSO: 3820103937
+LogRHI: Display: Encountered a new graphics PSO: 3583736902
+LogRHI: Display: Encountered a new graphics PSO: 2030652053
+LogInit: Display: PreExit Game.
+LogAudio: Display: Beginning Audio Device Manager Shutdown (Module: AudioMixerXAudio2)...
+LogAudio: Display: Destroying 1 Remaining Audio Device(s)...
+LogAudio: Display: Audio Device unregistered from world 'ThirdPersonMap'.
+LogAudio: Display: Shutting down audio device while 1 references to it are still alive. For more information, compile with INSTRUMENT_AUDIODEVICE_HANDLES.
+LogAudio: Display: Audio Device Manager Shutdown

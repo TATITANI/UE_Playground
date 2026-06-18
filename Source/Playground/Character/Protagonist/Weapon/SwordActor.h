@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Character/Protagonist/Weapon/WeaponActor.h"
-
 #include "SwordActor.generated.h"
 
 
@@ -29,9 +28,15 @@ class PLAYGROUND_API ASwordActor : public AWeaponActor
 	GENERATED_BODY()
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category="Attack", meta=(AllowPrivateAccess))
+	FVector LowerAttackLaunchVelocity = FVector(0,0,-2000);
+	
+	UPROPERTY(Replicated)
 	uint8 CurrentAttackSectionID = 0;
+
 	const uint8 DefaultAttackSectionMaxID = 3;
 
+	UPROPERTY()
 	uint8 CurrentUpperComboNum = 1;
 
 	UPROPERTY(EditDefaultsOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
@@ -49,6 +54,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category=Attack, meta=(AllowPrivateAccess=true))
 	TEnumAsByte<ETraceTypeQuery> AttackTraceType;
 
+	// 서버에서 관리
+	UPROPERTY()
 	TArray<class ABotCharacter*> LastGroundHitBots;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Animation, meta=(AllowPrivateAccess = "true"))
@@ -90,31 +97,93 @@ private:
 	class ULevelSequence* UpperAttackSequence;
 
 	class ULevelSequencePlayer* UpperAttackSequencePlayer;
+	class ALevelSequenceActor* SequenceActor;
 
+	UPROPERTY()
 	class UNiagaraComponent* TrailComponent;
+
+	UPROPERTY(Replicated)
 	UNiagaraComponent* LowerAttackNiagaraComponent;
 
 	TMap<UAnimMontage*, FSimpleDelegate> AttackMontageEndEventMap;
 
 protected:
-	virtual EWeaponType GetWeaponType() override { return EWeaponType::SWORD; }
+	virtual void BindInputActionsImpl(UEnhancedInputComponent* EnhancedInputComponent) override final;
 	virtual ETriggerEvent GetAttackTriggerEvent() override { return ETriggerEvent::Started; };
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly)
 	TEnumAsByte<Sword::EAttackType> CurrentAttackType = Sword::EAttackType::Default;
+
+	UFUNCTION()
+	void SetCurrentAttackType(Sword::EAttackType AttackType);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetCurrentAttackType(Sword::EAttackType AttackType);
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 private:
 	virtual void AttackInputStarted() override;
-	void GroundAttackToBots();
+
+	void InitTrail();
+	
+	UFUNCTION()
+	void PlayMontage(UAnimMontage* Montage, FName SectionName = FName());
+
+	void ApplyDamageBot(ABotCharacter* Bot, bool bKnockOut = false) const;
+
+
+	/********* Ground Attack ********/
 	void AttackOnGround();
 
+	TArray<FHitResult> TraceGroundAttack(const FTransform& TrfProtagonist);
+	
+	void GroundAttackToBots(const FTransform& TrfProtagonist, const TArray<FHitResult> &HitResults);
+	
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAttackOnGroundEvent(float AttackTimeGap, FTransform TrfProtagonist);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastAttackOnGroundEvent(int32 MontageSectionID, const TArray<FVector_NetQuantize100> &HitPoints);
+
+
+	/********* Upper Attack ********/
+	UFUNCTION()
 	void TriggerUpperAttack();
+
+	UFUNCTION(Server, Reliable)
+	void ServerTriggerUpperAttackEvent();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastTriggerUpperAttack();
+
+	UFUNCTION()
 	void UpperAttackCombo();
 
+	UFUNCTION(Server, Reliable)
+	void ServerUpperAttackComboEvent(int ComboNum);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastUpperAttackComboEvent(int ComboNum,const TArray<int32>& BotNetObjectIDs);
+	
+	UFUNCTION()
+	void JumpUpperAttackMontageEndEvent();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJumpUpperFullAttackEvent();
+
+
+	/********* Lower Attack ********/
 	void LowerAttack();
 
-	void AttackToBot(ABotCharacter* Bot, TOptional<FVector> HitPoint, bool bKnockOut = false);
+	TArray<FHitResult> TraceLowerAttack(const FTransform& TrfProtagonist);
 
+	UFUNCTION(Server, Reliable)
+	void ServerLowerAttackEvent(FTransform TrfProtagonist);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLowerAttackEvent();
+	
 	FName GetGroundAttackSectionName(int32 SectionID) const;
 
 	UFUNCTION()
@@ -123,17 +192,25 @@ private:
 	UFUNCTION()
 	void GroundAttackMontageEndEvent();
 
-	UFUNCTION()
-	void JumpUpperAttackMontageEndEvent();
 
+	
+private:	
 	UFUNCTION()
 	void OnChangedProtagonistMovementMode(ACharacter* Character, EMovementMode PrevMovementMode,
 	                                      uint8 PreviousCustomMode);
 
 	void SpawnLowerAttackLandingFX();
 
+	UFUNCTION()
+	void SetActiveTrail(bool bActive);
+
+
+	virtual void Tick(float DeltaSeconds) override;
+
 public:
+	ASwordActor();
 	virtual void Equip(AProtagonistCharacter* TargetCharacter) override;
 	virtual void UnEquip() override;
 	virtual void BeginPlay() override;
+	virtual void Destroyed() override;
 };

@@ -21,6 +21,7 @@
 #include "Item/DroppedItemTable.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Logging/LogMacros.h"
+#include "Net/UnrealNetwork.h"
 #include "PhysicsEngine/ConstraintUtils.h"
 #include "UI/FloatingDamage.h"
 #include "Utils/UtilPlayground.h"
@@ -45,17 +46,22 @@ void ABotCharacter::BeginPlay()
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ensure(GameInstance != nullptr);
 
-	AIController = Cast<ABotAIController>(GetController());
-	ensure(AIController);
-	
 	auto BotStat = GameInstance->GetCharacterStat<FBotStat>
 		(ECharacterStatType::Bot, "1");
-	
+
 	HealthComponent->Init(BotStat->MaxHp);
 	HealthComponent->OnDead.AddUObject(this, &ABotCharacter::OnDeadCallback);
+
 	OnTakeAnyDamage.AddDynamic(this, &ABotCharacter::OnTakeDamageCallback);
 
 	AttackDamage = BotStat->Damage;
+}
+
+void ABotCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	AIController = Cast<ABotAIController>(NewController);
+	ensureAlways(AIController);
 }
 
 void ABotCharacter::PostInitializeComponents()
@@ -75,12 +81,17 @@ void ABotCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FVector HpLookDir = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation() - GetActorLocation();
-	HpLookDir.Z = 0;
-	const FRotator HpRotation = UKismetMathLibrary::MakeRotFromX(HpLookDir);
-	HpWidgetComponent->SetWorldRotation(HpRotation);
+	// FVector HpLookDir = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation() - GetActorLocation();
+	// HpLookDir.Z = 0;
+	// const FRotator HpRotation = UKismetMathLibrary::MakeRotFromX(HpLookDir);
+	// HpWidgetComponent->SetWorldRotation(HpRotation);
 
-	CurrentVelocityAngle = (AIController->GetFocusActor() == nullptr) ? 0 : UKismetAnimationLibrary::CalculateDirection(GetVelocity(), GetActorRotation());
+	if (HasAuthority())
+	{
+		CurrentVelocityAngle = (AIController->GetFocusActor() == nullptr)
+			                       ? 0
+			                       : UKismetAnimationLibrary::CalculateDirection(GetVelocity(), GetActorRotation());
+	}
 }
 
 void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
@@ -95,10 +106,34 @@ void ABotCharacter::Init(ABotGenerator* _Generator, FVector Loc)
 
 void ABotCharacter::Attack()
 {
+	PG_LOG(LogPGNetwork, Warning, TEXT(""));
 	SetState(EBotState::Attacking);
-	AnimInstance->PlayAttackMontage(GetCurrentState());
+	MulticastPlayAttackMontage(GetCurrentState());
 }
 
+void ABotCharacter::MulticastStopMontages_Implementation()
+{
+	AnimInstance->StopAllMontages(0);
+}
+
+
+void ABotCharacter::MulticastPlayAttackMontage_Implementation(EBotState::Type BotState)
+{
+	AnimInstance->PlayAttackMontage(BotState);
+}
+
+void ABotCharacter::MulticastPlayAttackedMontage_Implementation(EBotState::Type BotState)
+{
+	AnimInstance->PlayAttackedMontage(BotState);
+}
+
+
+void ABotCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ABotCharacter, CurrentVelocityAngle);
+	DOREPLIFETIME(ABotCharacter, CurrentBotState);
+}
 
 void ABotCharacter::SetState(EBotState::Type BotState)
 {
@@ -113,7 +148,7 @@ bool ABotCharacter::ResetCurrentState(EBotState::Type ResetConditionState)
 		SetState(EBotState::Idle);
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -151,7 +186,10 @@ void ABotCharacter::CheckAttack()
 
 void ABotCharacter::OnDeadCallback()
 {
-	Generator->ReturnBot(this);
+	if (Generator)
+	{
+		Generator->ReturnBot(this);
+	}
 	AIController->StopBehaviorTree(FString("Bot Dead"));
 
 	// 드랍 아이템
@@ -169,9 +207,10 @@ void ABotCharacter::OnDeadCallback()
 void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy,
                                          AActor* DamageCauser)
 {
-	if(GetCurrentState() == EBotState::KnockOut)
+	PG_LOG(LogPGNetwork, Warning, TEXT(""));
+	if (GetCurrentState() == EBotState::KnockOut)
 		return;
-	
+
 	if (DamageType->IsA(UDamageType_KnockOut::StaticClass()))
 	{
 		KnockOut();
@@ -179,17 +218,18 @@ void ABotCharacter::OnTakeDamageCallback(AActor* DamagedActor, float Damage, con
 	else
 	{
 		SetState(EBotState::Attacked);
-		AnimInstance->PlayAttackedMontage(GetCurrentState());
+		MulticastPlayAttackedMontage(GetCurrentState());
 	}
 }
 
 void ABotCharacter::KnockOut()
 {
 	SetState(EBotState::KnockOut);
-	AnimInstance->StopAllMontages(0);
-	
 	GetWorldTimerManager().SetTimer(KnockOutTimerHandle, FTimerDelegate::CreateLambda([this]
 	{
 		SetState(EBotState::StandUp);
 	}), KnockOutDuration, false);
+
+	MulticastStopMontages();
+
 }

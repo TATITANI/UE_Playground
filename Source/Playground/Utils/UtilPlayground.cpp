@@ -3,6 +3,8 @@
 
 #include "Utils/UtilPlayground.h"
 
+DEFINE_LOG_CATEGORY(LogPGNetwork);
+
 UtilPlayground::UtilPlayground()
 {
 }

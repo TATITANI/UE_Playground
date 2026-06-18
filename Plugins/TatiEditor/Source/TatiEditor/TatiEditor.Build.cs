@@ -1,12 +1,13 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class TatiEditor : ModuleRules
 {
 	public TatiEditor(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicIncludePaths.AddRange(
 			new string[]
@@ -16,18 +17,17 @@ public class TatiEditor : ModuleRules
 		);
 
 
-		
 		PrivateIncludePaths.AddRange(
-			new string[]
+			new[]
 			{
-				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/Blutility/Private",
-				System.IO.Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/SceneOutliner/Private"
+				Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/Blutility/Private",
+				Path.GetFullPath(Target.RelativeEnginePath) + "Source/Editor/SceneOutliner/Private"
 				// ... add other private include paths required here ...
 			}
 		);
 
 		PublicDependencyModuleNames.AddRange(
-			new string[]
+			new[]
 			{
 				"Core", "Blutility", "EditorScriptingUtilities", "UMG",
 				"Niagara", "UnrealEd", "AssetTools", "ContentBrowser", "InputCore",
@@ -38,7 +38,7 @@ public class TatiEditor : ModuleRules
 
 
 		PrivateDependencyModuleNames.AddRange(
-			new string[]
+			new[]
 			{
 				"CoreUObject",
 				"Engine",

@@ -4,27 +4,24 @@ using UnrealBuildTool;
 
 public class ComputeShader : ModuleRules
 {
-	
-	public ComputeShader(ReadOnlyTargetRules Target) : base(Target) 
+	public ComputeShader(ReadOnlyTargetRules Target) : base(Target)
 
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PrivateIncludePaths.AddRange(new string[] 
+
+		PrivateIncludePaths.AddRange(new string[]
 		{
 		});
-		
+
 		PublicIncludePaths.AddRange(
-			new string[] {
+			new string[]
+			{
 				// ... add public include paths required here ...
 			}
-		);  
-		
-		
-		if (Target.bBuildEditor == true)
-		{
-			PrivateDependencyModuleNames.Add("TargetPlatform");
-		}
+		);
+
+
+		if (Target.bBuildEditor) PrivateDependencyModuleNames.Add("TargetPlatform");
 		PublicDependencyModuleNames.Add("Core");
 		PublicDependencyModuleNames.Add("Engine");
 		PublicDependencyModuleNames.Add("MaterialShaderQualitySettings");
@@ -32,26 +29,22 @@ public class ComputeShader : ModuleRules
 		PublicDependencyModuleNames.Add("RenderCore");
 		PublicDependencyModuleNames.Add("RHI");
 
-		PrivateDependencyModuleNames.AddRange(new string[]
+		PrivateDependencyModuleNames.AddRange(new[]
 		{
 			"CoreUObject",
 			"Renderer",
 			"RenderCore",
 			"RHI",
-			"Projects",
+			"Projects"
 		});
-		
-		if (Target.bBuildEditor == true)
-		{
 
+		if (Target.bBuildEditor)
 			PrivateDependencyModuleNames.AddRange(
-				new string[] {
+				new[]
+				{
 					"SlateCore",
 					"Slate"
 				}
 			);
-		
-		}
-	} 
-
+	}
 }

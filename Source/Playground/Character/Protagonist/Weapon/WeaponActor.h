@@ -19,7 +19,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
 	bool IsBindInputAction = false;
 
 private:
@@ -28,26 +28,29 @@ private:
 	void RemoveInputMappingContext();
 
 protected:
-	UProtagonistAnimInstance* AnimInstance;
+
+	UPROPERTY(EditDefaultsOnly, meta= (AllowPrivateAccess=true))
+	UWeaponInfo* WeaponInfo;
+
+	UPROPERTY()
+	TObjectPtr<UProtagonistAnimInstance> ProtagonistAnimInstance;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Protagonist)
+	AProtagonistCharacter* OwnerProtagonist;
+
+	UFUNCTION()
+	void OnRep_Protagonist();
+	
 	class UEnhancedInputLocalPlayerSubsystem* Subsystem;
 
+	UPROPERTY()
 	UMeshComponent* MeshComponent;
 
-	float Damage;
-
-	float CoolTime;
-	double RefillTime;
-
-protected:
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* InputMappingContext;
 
 	// MappingContext Priority
 	int32 InputPriority = 1;
-
-	/** The Character holding this weapon*/
-	AProtagonistCharacter* Protagonist;
 
 	UPROPERTY(EditDefaultsOnly, Category= Socket, meta=(AllowPrivateAccess=true))
 	FName SocketName = "GripPoint_Sword";
@@ -64,6 +67,11 @@ protected:
 	
 	FTimerHandle RefillTimerHandle;
 
+	float Damage;
+
+	float CoolTime;
+	double RefillTime;
+
 private:
 	void BindInputActions(UEnhancedInputComponent* EnhancedInputComponent);
 	void OnAttackInputStarted();
@@ -73,7 +81,15 @@ private:
 	void AttackTriggerIfPossible(ETriggerEvent TriggerEvent);
 
 	void CooldownIfPossible(ETriggerEvent TriggerEvent);
+
+
+	void AttachToProtagonist();
+
 protected:
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void BindInputActionsImpl(UEnhancedInputComponent* EnhancedInputComponent){}
 	virtual void AttackInputStarted()	{	};
 	virtual void AttackInputTrigger(){	};
 	virtual void AttackInputCompleted()	{	};
@@ -81,9 +97,16 @@ protected:
 	virtual ETriggerEvent GetAttackTriggerEvent() PURE_VIRTUAL(AWeaponActor::GetAttackTriggerEvent, return ETriggerEvent::None;);
 	virtual void OnRefill();
 
-
+	
 public:
-	virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::WEAPON_None;);
+
+	UFUNCTION()
+	void OnObtained(AProtagonistCharacter* InProtagonist);
+
+
+	//virtual EWeaponType GetWeaponType() PURE_VIRTUAL(AWeaponActor::GetWeaponType, return EWeaponType::NONE;);
+	UWeaponInfo* GetWeaponInfo() const { return WeaponInfo; }
+	EWeaponType GetWeaponType() const { return WeaponInfo->WeaponType; }
 
 	virtual void Equip(AProtagonistCharacter* TargetCharacter);
 	virtual void UnEquip();

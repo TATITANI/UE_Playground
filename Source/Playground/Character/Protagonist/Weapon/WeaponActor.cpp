@@ -10,6 +10,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Component/CharacterWeaponComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Utils/UtilPlayground.h"
 
 
@@ -17,23 +18,28 @@
 AWeaponActor::AWeaponActor()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	bReplicates = true;
 }
 
 void AWeaponActor::BeginPlay()
 {
 	Super::BeginPlay();
-	SetActorTickEnabled(false);
 	MeshComponent = Cast<UMeshComponent>(FindComponentByClass(UMeshComponent::StaticClass()));
 	MeshComponent->SetRenderCustomDepth(true);
 
 	const auto GameInstance = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	ensure(GameInstance != nullptr);
+	ensureAlways(GameInstance != nullptr);
 	auto WeaponStat = GameInstance->GetWeaponStat<FWeaponStat>(GetWeaponType(), FName("1"));
 
-	ensureMsgf(WeaponStat.IsSet(), TEXT("Weapon Stat is Null"));
+	ensureAlwaysMsgf(WeaponStat.IsSet(), TEXT("Weapon Stat is Null"));
 	this->Damage = WeaponStat->Damage;
 	this->CoolTime = WeaponStat->CoolTime;
 	ReusableCnt = ReusableMaxCnt;
+}
+
+void AWeaponActor::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
 }
 
 
@@ -52,7 +58,7 @@ void AWeaponActor::OnAttackInputTriggered()
 {
 	if (!IsAttack)
 		return;
-	
+
 	AttackInputTrigger();
 
 	AttackTriggerIfPossible(ETriggerEvent::Triggered);
@@ -73,10 +79,10 @@ void AWeaponActor::AttackTriggerIfPossible(ETriggerEvent TriggerEvent)
 {
 	if (GetAttackTriggerEvent() == TriggerEvent)
 	{
-		if(ReusableMaxCnt >0)
+		if (ReusableMaxCnt > 0)
 		{
 			ReusableCnt--;
-			Protagonist->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
+			OwnerProtagonist->WeaponComponent->OnUseWeapon.Broadcast(ReusableCnt, ReusableMaxCnt);
 		}
 		CooldownIfPossible(TriggerEvent);
 	}
@@ -91,11 +97,27 @@ void AWeaponActor::CooldownIfPossible(ETriggerEvent TriggerEvent)
 	{
 		IsCharging = true;
 		double CurrentSeconds = GetWorld()->GetTimeSeconds();
-		Protagonist->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
-		Protagonist->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
+		OwnerProtagonist->WeaponComponent->OnCooldownWeapon.Broadcast(CurrentSeconds, CurrentSeconds + CoolTime);
+		OwnerProtagonist->GetWorldTimerManager().SetTimer(RefillTimerHandle, this, &AWeaponActor::OnRefill, CoolTime, false);
 	}
 }
 
+
+void AWeaponActor::AttachToProtagonist()
+{
+	if (ensureAlways(OwnerProtagonist) == false)
+		return;
+
+	const FAttachmentTransformRules AttachmentRules(EAttachmentRule::SnapToTarget, true);
+	AttachToComponent(OwnerProtagonist->GetBodyMesh(), AttachmentRules, FName(GetSocketName()));
+
+}
+
+void AWeaponActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWeaponActor, OwnerProtagonist);
+}
 
 void AWeaponActor::OnRefill()
 {
@@ -103,16 +125,32 @@ void AWeaponActor::OnRefill()
 	ReusableCnt = ReusableMaxCnt;
 }
 
+void AWeaponActor::OnObtained(AProtagonistCharacter* InProtagonist)
+{
+	SetOwner(InProtagonist->GetController());
+	this->OwnerProtagonist = InProtagonist;
+	this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(OwnerProtagonist->GetMesh()->GetAnimInstance());
+
+	AttachToProtagonist();
+}
+
 
 void AWeaponActor::Equip(AProtagonistCharacter* TargetCharacter)
 {
-	Protagonist = TargetCharacter;
-	ensure(Protagonist != nullptr);
-	AnimInstance = Cast<UProtagonistAnimInstance>(Protagonist->GetMesh()->GetAnimInstance());
-	ensure(AnimInstance!=nullptr);
+	PG_LOG(LogPGNetwork, Log, TEXT(""));
 
-	SetupInput();
+	if (ensureAlwaysMsgf(TargetCharacter, TEXT("Protagonist nullptr")) == false)
+	{
+		return;
+	}
+
+
+	if (TargetCharacter->IsLocallyControlled())
+	{
+		SetupInput();
+	}
 	SetActorHiddenInGame(false);
+
 }
 
 
@@ -133,27 +171,44 @@ void AWeaponActor::UnEquip()
 
 void AWeaponActor::SetupInput()
 {
-	// Set up action bindings
-	const APlayerController* const PlayerController = Cast<APlayerController>(Protagonist->GetController());
-	ensure(PlayerController != nullptr);
-	if (PlayerController == nullptr)
+	if (ensureAlwaysMsgf(OwnerProtagonist != nullptr, TEXT("Protagonist Null")) == false)
+	{
 		return;
+	}
+
+	if (OwnerProtagonist->IsLocallyControlled() == false)
+		return;
+
+	// Set up action bindings
+	const APlayerController* const PlayerController = Cast<APlayerController>(OwnerProtagonist->GetController());
+	ensureAlways(PlayerController != nullptr);
+	if (PlayerController == nullptr)
+	{
+		PG_LOG(LogTemp, Log, TEXT("PlayerController is nullptr"));
+		return;
+	}
+
 
 	AddInputMappingContext(PlayerController);
 
 	if (IsBindInputAction == false)
 	{
 		UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerController->InputComponent);
-		ensure(EnhancedInputComponent != nullptr);
-		BindInputActions(EnhancedInputComponent);
-		IsBindInputAction = true;
+		if (ensureAlwaysMsgf(EnhancedInputComponent != nullptr, TEXT("EnhancedInputComponent is nullptr")))
+		{
+			PG_LOG(LogPGNetwork, Log, TEXT("Bind Input"));
+			BindInputActions(EnhancedInputComponent);
+			BindInputActionsImpl(EnhancedInputComponent);
+
+			IsBindInputAction = true;
+		}
 	}
 }
 
 void AWeaponActor::AddInputMappingContext(const APlayerController* PlayerController)
 {
 	Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
-	ensure(Subsystem != nullptr);
+	ensureAlways(Subsystem != nullptr);
 	if (Subsystem->HasMappingContext(InputMappingContext) == false)
 	{
 		Subsystem->AddMappingContext(InputMappingContext, InputPriority);
@@ -166,4 +221,12 @@ void AWeaponActor::RemoveInputMappingContext()
 	{
 		Subsystem->RemoveMappingContext(InputMappingContext);
 	}
+}
+
+void AWeaponActor::OnRep_Protagonist()
+{
+	ensureAlways(OwnerProtagonist);
+
+	//AttachToProtagonist();
+	//this->ProtagonistAnimInstance = Cast<UProtagonistAnimInstance>(OwnerProtagonist->GetMesh()->GetAnimInstance());
 }
